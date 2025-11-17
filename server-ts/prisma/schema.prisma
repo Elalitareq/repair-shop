@@ -1,0 +1,327 @@
+// Prisma Schema for Repair Shop Management System
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ==================== User & Authentication ====================
+
+model User {
+  id        Int      @id @default(autoincrement())
+  username  String   @unique
+  email     String   @unique
+  password  String
+  role      String   @default("user")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+// ==================== Categories ====================
+
+model Category {
+  id          Int        @id @default(autoincrement())
+  name        String     @unique
+  description String?
+  parentId    Int?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  
+  parent      Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: Restrict)
+  children    Category[] @relation("CategoryHierarchy")
+  items       Item[]
+
+  @@map("categories")
+}
+
+// ==================== Reference Data ====================
+
+model Condition {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  items       Item[]
+
+  @@map("conditions")
+}
+
+model Quality {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  items       Item[]
+
+  @@map("qualities")
+}
+
+model IssueType {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  repairIssues RepairIssue[]
+
+  @@map("issue_types")
+}
+
+model RepairState {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  description String?
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  repairs     Repair[]
+
+  @@map("repair_states")
+}
+
+model PaymentMethod {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  description String?
+  feeRate     Float    @default(0.0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  payments    Payment[]
+
+  @@map("payment_methods")
+}
+
+// ==================== Customers ====================
+
+model Customer {
+  id           Int      @id @default(autoincrement())
+  name         String
+  phone        String   @unique
+  email        String?
+  address      String?
+  companyName  String?
+  type         String   @default("customer")
+  locationLink String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  repairs      Repair[]
+  sales        Sale[]
+  batches      Batch[]
+
+  @@map("customers")
+}
+
+// ==================== Inventory & Batches ====================
+
+model Batch {
+  id              Int      @id @default(autoincrement())
+  batchNumber     String   @unique
+  supplierId      Int
+  purchaseDate    DateTime
+  totalQuantity   Int
+  soldQuantity    Int      @default(0)
+  totalCost       Float
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  supplier        Customer @relation(fields: [supplierId], references: [id], onDelete: Restrict)
+  items           Item[]
+
+  @@map("batches")
+}
+
+model Item {
+  id              Int      @id @default(autoincrement())
+  name            String
+  categoryId      Int
+  brand           String?
+  model           String?
+  imei            String?  @unique
+  description     String?
+  conditionId     Int
+  qualityId       Int
+  stockQuantity   Int      @default(0)
+  minStockLevel   Int      @default(5)
+  unitCost        Float
+  sellingPrice    Float
+  batchId         Int?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  category        Category  @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  condition       Condition @relation(fields: [conditionId], references: [id], onDelete: Restrict)
+  quality         Quality   @relation(fields: [qualityId], references: [id], onDelete: Restrict)
+  batch           Batch?    @relation(fields: [batchId], references: [id], onDelete: SetNull)
+  saleItems       SaleItem[]
+  stockUsages     StockUsage[]
+
+  @@map("items")
+}
+
+// ==================== Repairs ====================
+
+model Repair {
+  id              Int      @id @default(autoincrement())
+  repairNumber    String   @unique
+  customerId      Int
+  deviceBrand     String
+  deviceModel     String
+  deviceImei      String?
+  password        String?
+  estimatedCost   Float?
+  finalCost       Float?
+  stateId         Int
+  extraInfo       String?
+  receivedDate    DateTime @default(now())
+  completedDate   DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  customer        Customer      @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  state           RepairState   @relation(fields: [stateId], references: [id], onDelete: Restrict)
+  issues          RepairIssue[]
+  images          RepairImage[]
+  stockUsages     StockUsage[]
+
+  @@map("repairs")
+}
+
+model RepairIssue {
+  id          Int      @id @default(autoincrement())
+  repairId    Int
+  issueTypeId Int
+  description String
+  resolved    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  repair      Repair    @relation(fields: [repairId], references: [id], onDelete: Cascade)
+  issueType   IssueType @relation(fields: [issueTypeId], references: [id], onDelete: Restrict)
+
+  @@map("repair_issues")
+}
+
+model RepairImage {
+  id          Int      @id @default(autoincrement())
+  repairId    Int
+  imagePath   String
+  category    String   @default("during")
+  description String?
+  synced      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  repair      Repair   @relation(fields: [repairId], references: [id], onDelete: Cascade)
+
+  @@map("repair_images")
+}
+
+// ==================== Stock Management ====================
+
+model StockUsage {
+  id          Int      @id @default(autoincrement())
+  itemId      Int
+  repairId    Int?
+  quantity    Int
+  unitCost    Float
+  reason      String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  item        Item     @relation(fields: [itemId], references: [id], onDelete: Restrict)
+  repair      Repair?  @relation(fields: [repairId], references: [id], onDelete: SetNull)
+
+  @@map("stock_usages")
+}
+
+// ==================== Sales & Payments ====================
+
+model Sale {
+  id              Int      @id @default(autoincrement())
+  saleNumber      String   @unique
+  customerId      Int?
+  status          String   @default("draft")
+  paymentStatus   String   @default("pending")
+  subtotal        Float
+  discountType    String?
+  discountValue   Float    @default(0.0)
+  discountAmount  Float    @default(0.0)
+  taxRate         Float    @default(0.0)
+  taxAmount       Float    @default(0.0)
+  totalAmount     Float
+  notes           String?
+  saleDate        DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  customer        Customer?  @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  items           SaleItem[]
+  payments        Payment[]
+
+  @@map("sales")
+}
+
+model SaleItem {
+  id          Int      @id @default(autoincrement())
+  saleId      Int
+  itemId      Int
+  quantity    Int
+  unitPrice   Float
+  discount    Float    @default(0.0)
+  total       Float
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  sale        Sale     @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  item        Item     @relation(fields: [itemId], references: [id], onDelete: Restrict)
+
+  @@map("sale_items")
+}
+
+model Payment {
+  id              Int      @id @default(autoincrement())
+  saleId          Int
+  paymentMethodId Int
+  amount          Float
+  referenceNumber String?
+  status          String   @default("completed")
+  notes           String?
+  paymentDate     DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  sale            Sale          @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  paymentMethod   PaymentMethod @relation(fields: [paymentMethodId], references: [id], onDelete: Restrict)
+
+  @@map("payments")
+}
+
+// ==================== Synchronization ====================
+
+model SyncLog {
+  id          Int      @id @default(autoincrement())
+  entityType  String
+  entityId    Int
+  operation   String
+  synced      Boolean  @default(false)
+  syncedAt    DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("sync_logs")
+}

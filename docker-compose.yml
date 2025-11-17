@@ -1,0 +1,47 @@
+# Docker Setup for Repair Shop Management System
+
+version: "3.8"
+
+services:
+  # Go Backend
+  backend:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+      - DB_PATH=/app/database/repair_shop.db
+      - UPLOAD_PATH=/app/uploads
+      - GIN_MODE=release
+    volumes:
+      - ./server/database:/app/database
+      - ./server/uploads:/app/uploads
+      - ./server/.env:/app/.env
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Database Backup Service (Optional)
+  backup:
+    image: alpine:latest
+    volumes:
+      - ./server/database:/data
+      - ./backups:/backups
+    command: >
+      sh -c "
+        while true; do
+          tar -czf /backups/backup_$$(date +%Y%m%d_%H%M%S).tar.gz -C /data .
+          find /backups -name '*.tar.gz' -mtime +7 -delete
+          sleep 86400
+        done
+      "
+    restart: unless-stopped
+
+volumes:
+  database_data:
+  uploads_data:
