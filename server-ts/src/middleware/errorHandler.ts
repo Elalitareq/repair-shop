@@ -18,6 +18,7 @@ export const errorHandler = (
   res: Response,
   _next: NextFunction
 ) => {
+  console.log(err);
   if (err instanceof AppError) {
     logger.error(
       `${err.statusCode} - ${err.message} - ${req.originalUrl} - ${req.method}`

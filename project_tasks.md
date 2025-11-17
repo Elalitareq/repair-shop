@@ -1,3 +1,5 @@
+- Created `ItemFormPage` and `ItemDetailPage` routes and basic UI scaffolding for item creation and details (front-end).
+- `ImageService` added to support image uploads; backend endpoints to be implemented in `server-ts`.
 # Repair Shop Management — Project Tasks (Consolidated)
 
 This file consolidates all development tasks across the mobile, backend, and sync systems. It replaces the previous task documents (DEVELOPMENT_TASKS.md, api_tasks.md, PROJECT_SPECIFICATION.md, TECHNICAL_ARCHITECTURE.md, SETUP_COMPLETE.md, DATABASE_STATUS.md).
@@ -41,6 +43,8 @@ This file consolidates all development tasks across the mobile, backend, and syn
    - [ ] Complete item search indexing & optimized filters (case-insensitive, brand/model search)
    - [ ] Add stock movement history and audit logging
 
+      - GitHub Issue: https://github.com/Elalitareq/repair-shop/issues/1
+
 2. Repair Management
 
    - [ ] Core repair CRUD endpoints (create, update, assign, track)
@@ -48,17 +52,23 @@ This file consolidates all development tasks across the mobile, backend, and syn
    - [ ] Repair images: multipart upload + image categorization (before/during/after)
    - [ ] Repair analytics & reporting
 
+      - GitHub Issue: https://github.com/Elalitareq/repair-shop/issues/3
+
 3. Billing & Sales
 
    - [ ] Improve sale confirmation workflows (stock reservation, partial payments)
    - [ ] Payment gateway integration (plugin points) + payment reconciliation
    - [ ] Receipt generation (PDF/print support)
 
+      - GitHub Issue: https://github.com/Elalitareq/repair-shop/issues/4
+
 4. Synchronization & Offline-first
 
    - [ ] Design cloud sync with conflict resolution
    - [ ] Implement offline queuing + retry logic
    - [ ] Partial sync optimizations for images and large datasets
+
+      - GitHub Issue: https://github.com/Elalitareq/repair-shop/issues/5
 
 5. Mobile Integration & UX
 
@@ -67,10 +77,14 @@ This file consolidates all development tasks across the mobile, backend, and syn
    - [ ] Add map links & contact integrations for customers
    - [ ] Finalize repair screens and parts usage UI
 
+      - GitHub Issue: https://github.com/Elalitareq/repair-shop/issues/7
+
 6. Image & Media Storage
 
    - [ ] Add cloud image provider – S3-compatible or other
    - [ ] Implement compression & deduplication for mobile uploads
+
+   - GitHub Issue: https://github.com/Elalitareq/repair-shop/issues/8
 
 7. Security & Production Readiness
 
@@ -78,10 +92,31 @@ This file consolidates all development tasks across the mobile, backend, and syn
    - [ ] Hardening: rate limit, auth expiry, refresh tokens
    - [ ] Audit logging, RBAC, and permissions
 
+   - GitHub Issue: https://github.com/Elalitareq/repair-shop/issues/9
+
 8. Testing & CI
    - [ ] Unit + integration tests (backend + mobile E2E)
    - [ ] CI pipeline for TypeScript backend (lint, test, build)
    - [ ] Create reproducible production configuration + Docker image
+
+   - GitHub Issue: https://github.com/Elalitareq/repair-shop/issues/10
+
+---
+
+## 🔁 Short-term front-end progress (Nov 17, 2025)
+
+- Implemented `CategoryService` and `ReferenceService` in the Flutter app using `ApiClient` to fetch categories, conditions and qualities from the TypeScript API.
+- Updated `categoriesProvider`, `conditionsProvider`, and `qualitiesProvider` to use these services and return remote data.
+- Created GitHub issues for the major task areas and assigned them to milestones (see `ISSUES.md`).
+
+### Next front-end tasks
+
+1. Wire category dropdowns and filters in `InventoryPage` to show remote categories.
+2. Implement the front-end file upload flow for item images (thumbnail + metadata), plus a `ImageService` to talk to `POST /api/items/:id/images` or `POST /api/images` as implemented on the backend.
+3. Add a progress indicator and preview when uploading images; persist image url in `createItem`/`updateItem` calls.
+4. Add unit tests for `CategoryService` and `ReferenceService` to validate API responses.
+
+If you’d like me to open a PR with these front-end changes, I can stage the changes and push them for review.
 
 ---
 

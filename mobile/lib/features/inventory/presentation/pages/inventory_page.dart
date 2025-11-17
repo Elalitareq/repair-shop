@@ -225,58 +225,106 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
           mainAxisSize: MainAxisSize.min,
           children: [
             // Category filter
-            DropdownButtonFormField<String>(
-              value: _selectedCategory,
-              decoration: const InputDecoration(labelText: 'Category'),
-              items: [
-                const DropdownMenuItem(
-                  value: 'All',
-                  child: Text('All Categories'),
+            Consumer(builder: (context, ref, _) {
+              final categoriesAsync = ref.watch(categoriesProvider);
+              return categoriesAsync.when(
+                data: (categories) => DropdownButtonFormField<String>(
+                  value: _selectedCategory,
+                  decoration: const InputDecoration(labelText: 'Category'),
+                  items: [
+                    const DropdownMenuItem(value: 'All', child: Text('All Categories')),
+                    ...categories.map((c) => DropdownMenuItem(
+                          value: c.id.toString(),
+                          child: Text(c.getFullPath()),
+                        )),
+                  ],
+                  onChanged: (value) {
+                    setState(() {
+                      _selectedCategory = value ?? 'All';
+                    });
+                  },
                 ),
-                // Add category items here when categories are loaded
-              ],
-              onChanged: (value) {
-                setState(() {
-                  _selectedCategory = value ?? 'All';
-                });
-              },
-            ),
+                loading: () => const CircularProgressIndicator(),
+                error: (_, __) => DropdownButtonFormField<String>(
+                  value: _selectedCategory,
+                  decoration: const InputDecoration(labelText: 'Category'),
+                  items: const [DropdownMenuItem(value: 'All', child: Text('All Categories'))],
+                  onChanged: (value) {
+                    setState(() {
+                      _selectedCategory = value ?? 'All';
+                    });
+                  },
+                ),
+              );
+            }),
 
             // Condition filter
-            DropdownButtonFormField<String>(
-              value: _selectedCondition,
-              decoration: const InputDecoration(labelText: 'Condition'),
-              items: [
-                const DropdownMenuItem(
-                  value: 'All',
-                  child: Text('All Conditions'),
+            Consumer(builder: (context, ref, _) {
+              final condAsync = ref.watch(conditionsProvider);
+              return condAsync.when(
+                data: (conds) => DropdownButtonFormField<String>(
+                  value: _selectedCondition,
+                  decoration: const InputDecoration(labelText: 'Condition'),
+                  items: [
+                    const DropdownMenuItem(value: 'All', child: Text('All Conditions')),
+                    ...conds.map((c) => DropdownMenuItem(
+                          value: c.id.toString(),
+                          child: Text(c.name),
+                        )),
+                  ],
+                  onChanged: (value) {
+                    setState(() {
+                      _selectedCondition = value ?? 'All';
+                    });
+                  },
                 ),
-                // Add condition items here when conditions are loaded
-              ],
-              onChanged: (value) {
-                setState(() {
-                  _selectedCondition = value ?? 'All';
-                });
-              },
-            ),
+                loading: () => const CircularProgressIndicator(),
+                error: (_, __) => DropdownButtonFormField<String>(
+                  value: _selectedCondition,
+                  decoration: const InputDecoration(labelText: 'Condition'),
+                  items: const [DropdownMenuItem(value: 'All', child: Text('All Conditions'))],
+                  onChanged: (value) {
+                    setState(() {
+                      _selectedCondition = value ?? 'All';
+                    });
+                  },
+                ),
+              );
+            }),
 
             // Quality filter
-            DropdownButtonFormField<String>(
-              value: _selectedQuality,
-              decoration: const InputDecoration(labelText: 'Quality'),
-              items: [
-                const DropdownMenuItem(
-                  value: 'All',
-                  child: Text('All Qualities'),
+            Consumer(builder: (context, ref, _) {
+              final qualsAsync = ref.watch(qualitiesProvider);
+              return qualsAsync.when(
+                data: (quals) => DropdownButtonFormField<String>(
+                  value: _selectedQuality,
+                  decoration: const InputDecoration(labelText: 'Quality'),
+                  items: [
+                    const DropdownMenuItem(value: 'All', child: Text('All Qualities')),
+                    ...quals.map((q) => DropdownMenuItem(
+                          value: q.id.toString(),
+                          child: Text(q.name),
+                        )),
+                  ],
+                  onChanged: (value) {
+                    setState(() {
+                      _selectedQuality = value ?? 'All';
+                    });
+                  },
                 ),
-                // Add quality items here when qualities are loaded
-              ],
-              onChanged: (value) {
-                setState(() {
-                  _selectedQuality = value ?? 'All';
-                });
-              },
-            ),
+                loading: () => const CircularProgressIndicator(),
+                error: (_, __) => DropdownButtonFormField<String>(
+                  value: _selectedQuality,
+                  decoration: const InputDecoration(labelText: 'Quality'),
+                  items: const [DropdownMenuItem(value: 'All', child: Text('All Qualities'))],
+                  onChanged: (value) {
+                    setState(() {
+                      _selectedQuality = value ?? 'All';
+                    });
+                  },
+                ),
+              );
+            }),
           ],
         ),
         actions: [

@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/dashboard/presentation/pages/dashboard_page.dart';
 import '../../features/inventory/presentation/pages/inventory_page.dart';
+import '../../features/inventory/presentation/pages/item_form_page.dart';
+import '../../features/inventory/presentation/pages/item_detail_page.dart';
 import '../../features/customers/presentation/pages/customers_page.dart';
 import '../../features/repairs/presentation/pages/repairs_page.dart';
 import '../../features/repairs/presentation/pages/repair_detail_page.dart';
@@ -51,6 +53,23 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/inventory',
         name: 'inventory',
         builder: (context, state) => const InventoryPage(),
+        routes: [
+          GoRoute(path: 'items/new', name: 'item-create', builder: (context, state) => const ItemFormPage()),
+          GoRoute(
+            path: 'items/:id',
+            name: 'item-detail',
+            builder: (context, state) {
+              final id = state.pathParameters['id']!;
+              return ItemDetailPage(itemId: id);
+            },
+            routes: [
+              GoRoute(path: 'edit', name: 'item-edit', builder: (context, state) {
+                final id = state.pathParameters['id']!;
+                return ItemFormPage(itemId: int.tryParse(id));
+              }),
+            ],
+          ),
+        ],
       ),
 
       GoRoute(

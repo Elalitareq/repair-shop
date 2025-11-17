@@ -1,15 +1,26 @@
-import { Router } from "express";
+import {
+  type NextFunction,
+  type Request,
+  type Response,
+  Router,
+} from "express";
 import { body } from "express-validator";
 import { AuthController } from "../controllers/auth.controller";
 import { asyncHandler } from "../middleware/errorHandler";
 
-const router = Router();
+const router: Router = Router();
 const authController = new AuthController();
 
 router.post(
   "/login",
+  (req: Request, _res: Response, next: NextFunction) => {
+    console.log(req.body);
+    next();
+  },
   [
-    body("username").notEmpty().withMessage("Username is required"),
+    body("username_or_email")
+      .notEmpty()
+      .withMessage("Username or email is required"),
     body("password").notEmpty().withMessage("Password is required"),
   ],
   asyncHandler(authController.login.bind(authController))

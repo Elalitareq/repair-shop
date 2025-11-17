@@ -7,7 +7,7 @@ import repairRoutes from "./repair.routes";
 import saleRoutes from "./sale.routes";
 import referenceRoutes from "./reference.routes";
 
-const router = Router();
+const router: Router = Router();
 
 router.use("/auth", authRoutes);
 router.use("/categories", categoryRoutes);

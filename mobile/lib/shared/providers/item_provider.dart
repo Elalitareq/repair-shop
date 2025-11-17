@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/models.dart';
 import '../services/item_service.dart';
+import '../services/category_service.dart';
+import '../services/reference_service.dart';
 import '../../core/network/api_client.dart';
 
 // Item Service Provider
@@ -501,23 +503,23 @@ final lowStockItemsProvider = FutureProvider<List<Item>>((ref) async {
 
 // Categories Provider
 final categoriesProvider = FutureProvider<List<Category>>((ref) async {
-  // This would typically come from a category service
-  // For now, return empty list - will be implemented when category service is created
-  return [];
+  final categoryService = ref.watch(categoryServiceProvider);
+  final response = await categoryService.getCategories();
+  return response.dataOrThrow;
 });
 
 // Conditions Provider
 final conditionsProvider = FutureProvider<List<Condition>>((ref) async {
-  // This would typically come from a reference service
-  // For now, return empty list - will be implemented when reference service is created
-  return [];
+  final refService = ref.watch(referenceServiceProvider);
+  final response = await refService.getConditions();
+  return response.dataOrThrow;
 });
 
 // Qualities Provider
 final qualitiesProvider = FutureProvider<List<Quality>>((ref) async {
-  // This would typically come from a reference service
-  // For now, return empty list - will be implemented when reference service is created
-  return [];
+  final refService = ref.watch(referenceServiceProvider);
+  final response = await refService.getQualities();
+  return response.dataOrThrow;
 });
 
 // Suppliers Provider (Customers with type 'dealer')

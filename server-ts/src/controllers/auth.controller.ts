@@ -12,12 +12,14 @@ export class AuthController {
       throw new AppError(400, errors.array()[0].msg);
     }
 
-    const { username, password } = req.body;
+    const { username_or_email: username, password } = req.body;
 
+    console.log("User not found for username:", username);
     const user = await prisma.user.findUnique({
       where: { username },
     });
 
+    console.log("User not found for username:", user);
     if (!user) {
       throw new AppError(401, "Invalid credentials");
     }
@@ -26,7 +28,6 @@ export class AuthController {
     if (!isValidPassword) {
       throw new AppError(401, "Invalid credentials");
     }
-
     const secret = process.env.JWT_SECRET!;
     const token = jwt.sign(
       {
