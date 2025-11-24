@@ -18,6 +18,12 @@ class ApiClient {
     _dio = Dio();
     _setupInterceptors();
     _configureOptions();
+    // Log base URL for debugging
+    final debugMode =
+        (dotenv.env['DEBUG_MODE'] ?? 'false').toLowerCase() == 'true';
+    if (debugMode) {
+      _logger.i('ApiClient initialized, baseUrl=${_dio.options.baseUrl}');
+    }
   }
 
   void _setupInterceptors() {
@@ -149,7 +155,20 @@ class ApiClient {
         statusCode: response.statusCode ?? 200,
       );
     } catch (e) {
-      _logger.e('Error parsing response: $e');
+      // If response is HTML (starts with '<') or Content-Type not JSON, log more info when DEBUG_MODE
+      final contentType = response.headers.value('content-type') ?? '';
+      final debugMode =
+          (dotenv.env['DEBUG_MODE'] ?? 'false').toLowerCase() == 'true';
+      if (debugMode) {
+        final path = response.requestOptions.path;
+        _logger.e('Error parsing response from $path: $e');
+        _logger.e('Response content-type: $contentType');
+        _logger.e(
+          'Response body (first 512 chars): ${response.data?.toString().substring(0, (response.data?.toString().length ?? 0).clamp(0, 512))}',
+        );
+      } else {
+        _logger.e('Error parsing response: $e');
+      }
       return ApiResponse<T>.error(
         message: 'Failed to parse response: ${e.toString()}',
         statusCode: response.statusCode ?? 500,

@@ -19,6 +19,15 @@ flutter config --enable-web || true
 echo "Building web artifacts..."
 flutter build web
 
+echo "Checking for lib/main.dart and void main()..."
+if [ ! -f "lib/main.dart" ]; then
+  echo "Warning: lib/main.dart does not exist. Please ensure you have a main.dart in the lib/ directory."
+else
+  if ! grep -q "void main\(" lib/main.dart; then
+    echo "Warning: lib/main.dart does not contain a 'void main()' entrypoint. Please add it."
+  fi
+fi
+
 # Optional: provide the path to the generated web entrypoint (build artifacts)
 BUILD_DIR="build/web"
 if [ -d "$BUILD_DIR" ]; then

@@ -8,6 +8,11 @@ class DatabaseHelper {
   static const int _databaseVersion = 1;
 
   static Future<Database> get database async {
+    if (kIsWeb) {
+      throw UnsupportedError(
+        'Local SQLite database is disabled on the web. Use backend APIs instead.',
+      );
+    }
     _database ??= await _initDatabase();
     return _database!;
   }
@@ -31,6 +36,7 @@ class DatabaseHelper {
   }
 
   static Future<void> initialize() async {
+    if (kIsWeb) return;
     await database;
   }
 

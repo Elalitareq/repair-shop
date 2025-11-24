@@ -35,7 +35,84 @@ Alternatively, use the provided helper script to automate the steps:
 ./scripts/rebuild_web.sh
 ```
 
+You can also run the helper to search for generated entrypoints and related build artifacts:
+
+```bash
+./scripts/find_web_entrypoint.sh
+```
+
 If you run from VS Code, make sure your launch configuration doesn't point to a custom, non-existent entrypoint and restart the Dart & Flutter extension.
+
+Helpful scripts available in `mobile/scripts/`:
+
+- `./scripts/rebuild_web.sh` — cleans and rebuilds web artifacts
+- `./scripts/run_web.sh` — starts flutter run for web (defaults to bodyless 'chrome' device) and will regenerate the entrypoint while launching a debug session
+- `./scripts/find_web_entrypoint.sh` — searches for generated entrypoints in common build locations
+
+- `./scripts/serve_build.sh` — serve the static `build/web` folder using python3 or `http-server` for quick debugging (prevents `file://` and CORS errors)
 
 If the issue persists, check the `build/web` directory for generated files like `main.dart.js` and `index.html` and confirm that `lib/main.dart` contains `void main()`.
 
+Also verify Flutter web support is enabled on your machine:
+
+```bash
+flutter doctor -v
+```
+
+If web support is not enabled, run:
+
+````bash
+flutter config --enable-web
+
+Note: In this project the web build intentionally does not initialize a local SQLite database (sqflite). The web client uses backend APIs for all persistence. If you need to enable local DB on web for testing, you'll need to configure `sqflite_common_ffi_web` or `sqflite_web` and adapt `DatabaseHelper` accordingly.
+
+## Deployment
+
+This repo includes a simple deployment helper and example Nginx config to help publish the `build/web` artifacts to a server.
+
+Files added:
+- `mobile/scripts/deploy_to_server.sh` — rsync-based deploy script that copies `build/web/` into a remote path, optionally changes owner, reloads Nginx and runs a health check.
+- `mobile/deploy/nginx/repair_shop.conf` — example Nginx server config tuned for Flutter web (static assets served directly, correct caching for fingerprinted assets, and SPA fallback for other URLs).
+
+Deploy example (root deploy):
+```bash
+cd mobile
+chmod +x scripts/deploy_to_server.sh
+./scripts/deploy_to_server.sh --host root@185.70.185.15 --remote-path /var/www/repair_shop_web --reload --base-url https://repairshop.thefallenpc.com
+
+Override the API base URL at deploy time (optional):
+````
+
+./scripts/deploy_to_server.sh --host root@185.70.185.15 --remote-path /var/www/repair_shop_web --reload --chown www-data:www-data --api-base-url https://repairshop.thefallenpc.com/api --env-file .env
+
+```
+
+```
+
+The script uses `rsync -avz` and `--delete` so your remote folder reflects the build output exactly. It also supports `--chown owner:group` if you want to update ownership, and `--reload` to run `sudo nginx -t && sudo systemctl reload nginx` on the remote host.
+
+Security & SSH notes:
+
+- The script assumes SSH key-based login for convenience; if your server requires password authentication you may want to use an SSH agent or `rsync` setup with a key.
+- Use a deploy account with minimal privileges where possible (avoid deploying as root if not necessary). The script will attempt to `sudo` only when `--reload` or `--chown` require it.
+
+After deploy, validate the site with the asset check helper:
+
+````bash
+chmod +x scripts/check_server_assets.sh
+./scripts/check_server_assets.sh https://repairshop.thefallenpc.com
+
+Also verify that your Nginx configuration proxies API requests to your backend API and does not apply SPA fallback to `/api/` paths. If an API fetch returns HTML (index.html) and your app tries to parse JSON it will throw a syntax error like `Unexpected token '<'`.
+
+Use the API check helper to verify JSON endpoints:
+
+```bash
+chmod +x scripts/check_api_endpoints.sh
+./scripts/check_api_endpoints.sh https://repairshop.thefallenpc.com /api/health /api/backups/download
+````
+
+If the script prints HTML content for the endpoint or the `Content-Type` is `text/html`, ensure your Nginx config contains the `location /api/` proxy rule and reload Nginx.
+
+```
+
+```
