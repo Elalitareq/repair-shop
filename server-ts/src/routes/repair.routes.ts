@@ -3,7 +3,7 @@ import { RepairController } from "../controllers/repair.controller";
 import { authenticate } from "../middleware/auth";
 import { asyncHandler } from "../middleware/errorHandler";
 
-const router = Router();
+const router: Router = Router();
 const repairController = new RepairController();
 
 router.get(

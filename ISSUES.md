@@ -9,7 +9,7 @@ These are the issues that can be created automatically via `scripts/create_githu
    - Wire to Flutter ItemService
    - Add tests
 
-2. Items: Image upload & management  (milestone: Images - #6)
+2. Items: Image upload & management (milestone: Images - #6)
 
    - Add multipart upload endpoint
    - Add image processing (thumbnail/preserve exif)

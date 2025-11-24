@@ -20,8 +20,8 @@ class User extends BaseModel {
 
   const User({
     required super.id,
-    required super.createdAt,
-    required super.updatedAt,
+    super.createdAt,
+    super.updatedAt,
     super.syncStatus,
     required this.username,
     required this.email,

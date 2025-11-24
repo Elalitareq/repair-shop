@@ -4,7 +4,7 @@ import { CategoryController } from "../controllers/category.controller";
 import { authenticate } from "../middleware/auth";
 import { asyncHandler } from "../middleware/errorHandler";
 
-const router = Router();
+const router: Router = Router();
 const categoryController = new CategoryController();
 
 router.get(

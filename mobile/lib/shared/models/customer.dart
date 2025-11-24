@@ -29,8 +29,8 @@ class Customer extends BaseModel {
 
   const Customer({
     required super.id,
-    required super.createdAt,
-    required super.updatedAt,
+    super.createdAt,
+    super.updatedAt,
     super.syncStatus,
     required this.name,
     this.companyName,

@@ -22,6 +22,7 @@ class AuthService {
     );
 
     if (response.isSuccess && response.data != null) {
+      print(response.data);
       final authResponse = AuthResponse.fromJson(response.data!);
 
       // Save tokens
@@ -125,14 +126,21 @@ class AuthResponse {
   });
 
   factory AuthResponse.fromJson(Map<String, dynamic> json) {
+    final token = json['token'] as String?;
+    final refreshToken = json['refresh_token'] as String?;
+    final userJson = json['user'];
+
+    if (token == null || refreshToken == null || userJson == null) {
+      throw FormatException(
+        'Invalid auth response: missing required tokens or user',
+      );
+    }
+
     return AuthResponse(
-      accessToken:
-          json['token'] as String, // Server returns 'token', not 'access_token'
-      refreshToken: json['refresh_token'] as String,
-      user: User.fromJson(json['user'] as Map<String, dynamic>),
-      expiresAt: DateTime.now().add(
-        const Duration(hours: 24),
-      ), // Default expiry since server doesn't send it
+      accessToken: token,
+      refreshToken: refreshToken,
+      user: User.fromJson(userJson as Map<String, dynamic>),
+      expiresAt: DateTime.now().add(const Duration(hours: 24)),
     );
   }
 

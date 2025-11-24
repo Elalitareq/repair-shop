@@ -32,8 +32,8 @@ class Payment extends BaseModel {
 
   const Payment({
     required super.id,
-    required super.createdAt,
-    required super.updatedAt,
+    super.createdAt,
+    super.updatedAt,
     super.syncStatus,
     required this.saleId,
     required this.paymentMethod,

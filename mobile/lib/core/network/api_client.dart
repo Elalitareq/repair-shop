@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -167,6 +168,46 @@ class ApiClient {
       message: 'An unexpected error occurred: ${error.toString()}',
       statusCode: 500,
     );
+  }
+
+  // Download raw bytes (for backups)
+  Future<ApiResponse<Uint8List>> downloadBytes(
+    String path, {
+    Map<String, dynamic>? queryParameters,
+  }) async {
+    try {
+      final response = await _dio.get<List<int>>(
+        path,
+        queryParameters: queryParameters,
+        options: Options(responseType: ResponseType.bytes),
+      );
+      final bytes = Uint8List.fromList(response.data ?? []);
+      return ApiResponse<Uint8List>.success(
+        data: bytes,
+        message: 'Download successful',
+        statusCode: response.statusCode ?? 200,
+      );
+    } catch (e) {
+      return _handleError<Uint8List>(e);
+    }
+  }
+
+  // Upload multipart form data
+  Future<ApiResponse<T>> uploadMultipart<T>(
+    String path, {
+    required FormData formData,
+    T Function(dynamic)? fromJson,
+  }) async {
+    try {
+      final response = await _dio.post(
+        path,
+        data: formData,
+        options: Options(contentType: 'multipart/form-data'),
+      );
+      return _handleResponse<T>(response, fromJson);
+    } catch (e) {
+      return _handleError<T>(e);
+    }
   }
 
   ApiResponse<T> _handleDioError<T>(DioException error) {

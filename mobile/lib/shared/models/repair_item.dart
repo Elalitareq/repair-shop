@@ -22,8 +22,8 @@ class RepairItem extends BaseModel {
     required this.unitPrice,
     required this.totalPrice,
     this.isLabor = false,
-    required super.createdAt,
-    required super.updatedAt,
+    super.createdAt,
+    super.updatedAt,
     super.syncStatus,
   });
 

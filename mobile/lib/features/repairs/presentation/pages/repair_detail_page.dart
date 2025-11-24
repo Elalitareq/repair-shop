@@ -449,7 +449,10 @@ class _RepairDetailPageState extends ConsumerState<RepairDetailPage> {
               ],
             ),
             const SizedBox(height: 16),
-            _buildInfoRow('Created', dateFormat.format(repair.createdAt)),
+            _buildInfoRow(
+              'Created',
+              dateFormat.format(repair.createdAt ?? DateTime.now()),
+            ),
             if (repair.estimatedCompletion != null)
               _buildInfoRow(
                 'Estimated Completion',

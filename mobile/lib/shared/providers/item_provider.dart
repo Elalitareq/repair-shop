@@ -1,6 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/models.dart';
 import '../services/item_service.dart';
+import '../services/serial_service.dart';
+import '../models/serial.dart';
+// Serial service provider is added for IMEI management
 import '../services/category_service.dart';
 import '../services/reference_service.dart';
 import '../../core/network/api_client.dart';
@@ -260,6 +263,25 @@ final itemDetailProvider =
       return ItemDetailNotifier(itemService);
     });
 
+// Provider for serials per item
+// SerialService is provided by `serial_service.dart` — don't re-declare it here.
+
+final serialsForItemProvider = FutureProvider.family<List<Serial>, int>((
+  ref,
+  itemId,
+) async {
+  final service = ref.watch(serialServiceProvider);
+  final resp = await service.getSerials(itemId: itemId);
+  return resp.dataOrThrow;
+});
+
+// Provider for fetching batches (simple list for selection)
+final batchesProvider = FutureProvider<List<BatchStockInfo>>((ref) async {
+  final service = ref.watch(itemServiceProvider);
+  final resp = await service.getBatches(page: 1, limit: 50);
+  return resp.dataOrThrow;
+});
+
 // Batch List Provider
 class BatchListState {
   final List<BatchStockInfo> batches;
@@ -471,6 +493,25 @@ class BatchDetailNotifier extends StateNotifier<BatchDetailState> {
 
       if (response.isSuccess && response.data != null) {
         state = state.copyWith(batch: response.data, isLoading: false);
+        return true;
+      } else {
+        state = state.copyWith(isLoading: false, error: response.message);
+        return false;
+      }
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+      return false;
+    }
+  }
+
+  Future<bool> deleteBatch(int id) async {
+    state = state.copyWith(isLoading: true, error: null);
+
+    try {
+      final response = await _itemService.deleteBatch(id);
+
+      if (response.isSuccess) {
+        state = state.copyWith(isLoading: false);
         return true;
       } else {
         state = state.copyWith(isLoading: false, error: response.message);

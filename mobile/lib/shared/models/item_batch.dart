@@ -1,6 +1,7 @@
 import 'package:json_annotation/json_annotation.dart';
 import 'base_model.dart';
 import 'customer.dart';
+import 'serial.dart';
 
 part 'item_batch.g.dart';
 
@@ -22,6 +23,8 @@ class ItemBatch extends BaseModel {
   @JsonKey(name: 'total_quantity')
   final int totalQuantity;
 
+  @JsonKey(name: 'serials')
+  final List<Serial>? serials;
   @JsonKey(name: 'sold_quantity')
   final int soldQuantity;
 
@@ -33,9 +36,10 @@ class ItemBatch extends BaseModel {
 
   const ItemBatch({
     required super.id,
-    required super.createdAt,
-    required super.updatedAt,
+    super.createdAt,
+    super.updatedAt,
     super.syncStatus,
+    this.serials,
     required this.batchNumber,
     required this.supplierId,
     this.supplier,

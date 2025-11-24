@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../shared/models/item.dart';
 import '../../../../shared/providers/item_provider.dart';
+import 'batch_form_page.dart';
 
 class InventoryPage extends ConsumerStatefulWidget {
   const InventoryPage({super.key});
@@ -17,6 +18,15 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
   String _selectedCondition = 'All';
   String _selectedQuality = 'All';
   bool _showLowStockOnly = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Load items when page loads
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(itemListProvider.notifier).loadItems(refresh: true);
+    });
+  }
 
   @override
   void dispose() {
@@ -41,6 +51,11 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
           IconButton(
             onPressed: () => _showFilterDialog(context),
             icon: const Icon(Icons.filter_list),
+          ),
+          IconButton(
+            onPressed: () => context.go('/inventory/batches'),
+            icon: const Icon(Icons.view_list),
+            tooltip: 'Batches',
           ),
         ],
       ),
@@ -177,9 +192,9 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
             Text('Quality: ${item.quality?.name ?? 'No Quality'}'),
             if (item.brand != null || item.model != null)
               Text('${item.brand ?? ''} ${item.model ?? ''}'.trim()),
-            if (item.imei != null) Text('IMEI: ${item.imei}'),
+            // IMEI moved to Serial model - we display serials on item details
             Text(
-              'Stock: ${item.stockQuantity} • Cost: \$${item.unitCost.toStringAsFixed(2)}',
+              'Stock: ${item.stockQuantity} • Price: \$${item.sellingPrice?.toStringAsFixed(2) ?? "N/A"}',
             ),
           ],
         ),
@@ -188,10 +203,7 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
           itemBuilder: (context) => [
             const PopupMenuItem(value: 'edit', child: Text('Edit')),
             const PopupMenuItem(value: 'view', child: Text('View Details')),
-            const PopupMenuItem(
-              value: 'adjust_stock',
-              child: Text('Adjust Stock'),
-            ),
+            const PopupMenuItem(value: 'add_batch', child: Text('Add Batch')),
             const PopupMenuItem(value: 'delete', child: Text('Delete')),
           ],
         ),
@@ -225,106 +237,142 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
           mainAxisSize: MainAxisSize.min,
           children: [
             // Category filter
-            Consumer(builder: (context, ref, _) {
-              final categoriesAsync = ref.watch(categoriesProvider);
-              return categoriesAsync.when(
-                data: (categories) => DropdownButtonFormField<String>(
-                  value: _selectedCategory,
-                  decoration: const InputDecoration(labelText: 'Category'),
-                  items: [
-                    const DropdownMenuItem(value: 'All', child: Text('All Categories')),
-                    ...categories.map((c) => DropdownMenuItem(
+            Consumer(
+              builder: (context, ref, _) {
+                final categoriesAsync = ref.watch(categoriesProvider);
+                return categoriesAsync.when(
+                  data: (categories) => DropdownButtonFormField<String>(
+                    value: _selectedCategory,
+                    decoration: const InputDecoration(labelText: 'Category'),
+                    items: [
+                      const DropdownMenuItem(
+                        value: 'All',
+                        child: Text('All Categories'),
+                      ),
+                      ...categories.map(
+                        (c) => DropdownMenuItem(
                           value: c.id.toString(),
                           child: Text(c.getFullPath()),
-                        )),
-                  ],
-                  onChanged: (value) {
-                    setState(() {
-                      _selectedCategory = value ?? 'All';
-                    });
-                  },
-                ),
-                loading: () => const CircularProgressIndicator(),
-                error: (_, __) => DropdownButtonFormField<String>(
-                  value: _selectedCategory,
-                  decoration: const InputDecoration(labelText: 'Category'),
-                  items: const [DropdownMenuItem(value: 'All', child: Text('All Categories'))],
-                  onChanged: (value) {
-                    setState(() {
-                      _selectedCategory = value ?? 'All';
-                    });
-                  },
-                ),
-              );
-            }),
+                        ),
+                      ),
+                    ],
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedCategory = value ?? 'All';
+                      });
+                    },
+                  ),
+                  loading: () => const CircularProgressIndicator(),
+                  error: (_, __) => DropdownButtonFormField<String>(
+                    value: _selectedCategory,
+                    decoration: const InputDecoration(labelText: 'Category'),
+                    items: const [
+                      DropdownMenuItem(
+                        value: 'All',
+                        child: Text('All Categories'),
+                      ),
+                    ],
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedCategory = value ?? 'All';
+                      });
+                    },
+                  ),
+                );
+              },
+            ),
 
             // Condition filter
-            Consumer(builder: (context, ref, _) {
-              final condAsync = ref.watch(conditionsProvider);
-              return condAsync.when(
-                data: (conds) => DropdownButtonFormField<String>(
-                  value: _selectedCondition,
-                  decoration: const InputDecoration(labelText: 'Condition'),
-                  items: [
-                    const DropdownMenuItem(value: 'All', child: Text('All Conditions')),
-                    ...conds.map((c) => DropdownMenuItem(
+            Consumer(
+              builder: (context, ref, _) {
+                final condAsync = ref.watch(conditionsProvider);
+                return condAsync.when(
+                  data: (conds) => DropdownButtonFormField<String>(
+                    value: _selectedCondition,
+                    decoration: const InputDecoration(labelText: 'Condition'),
+                    items: [
+                      const DropdownMenuItem(
+                        value: 'All',
+                        child: Text('All Conditions'),
+                      ),
+                      ...conds.map(
+                        (c) => DropdownMenuItem(
                           value: c.id.toString(),
                           child: Text(c.name),
-                        )),
-                  ],
-                  onChanged: (value) {
-                    setState(() {
-                      _selectedCondition = value ?? 'All';
-                    });
-                  },
-                ),
-                loading: () => const CircularProgressIndicator(),
-                error: (_, __) => DropdownButtonFormField<String>(
-                  value: _selectedCondition,
-                  decoration: const InputDecoration(labelText: 'Condition'),
-                  items: const [DropdownMenuItem(value: 'All', child: Text('All Conditions'))],
-                  onChanged: (value) {
-                    setState(() {
-                      _selectedCondition = value ?? 'All';
-                    });
-                  },
-                ),
-              );
-            }),
+                        ),
+                      ),
+                    ],
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedCondition = value ?? 'All';
+                      });
+                    },
+                  ),
+                  loading: () => const CircularProgressIndicator(),
+                  error: (_, __) => DropdownButtonFormField<String>(
+                    value: _selectedCondition,
+                    decoration: const InputDecoration(labelText: 'Condition'),
+                    items: const [
+                      DropdownMenuItem(
+                        value: 'All',
+                        child: Text('All Conditions'),
+                      ),
+                    ],
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedCondition = value ?? 'All';
+                      });
+                    },
+                  ),
+                );
+              },
+            ),
 
             // Quality filter
-            Consumer(builder: (context, ref, _) {
-              final qualsAsync = ref.watch(qualitiesProvider);
-              return qualsAsync.when(
-                data: (quals) => DropdownButtonFormField<String>(
-                  value: _selectedQuality,
-                  decoration: const InputDecoration(labelText: 'Quality'),
-                  items: [
-                    const DropdownMenuItem(value: 'All', child: Text('All Qualities')),
-                    ...quals.map((q) => DropdownMenuItem(
+            Consumer(
+              builder: (context, ref, _) {
+                final qualsAsync = ref.watch(qualitiesProvider);
+                return qualsAsync.when(
+                  data: (quals) => DropdownButtonFormField<String>(
+                    value: _selectedQuality,
+                    decoration: const InputDecoration(labelText: 'Quality'),
+                    items: [
+                      const DropdownMenuItem(
+                        value: 'All',
+                        child: Text('All Qualities'),
+                      ),
+                      ...quals.map(
+                        (q) => DropdownMenuItem(
                           value: q.id.toString(),
                           child: Text(q.name),
-                        )),
-                  ],
-                  onChanged: (value) {
-                    setState(() {
-                      _selectedQuality = value ?? 'All';
-                    });
-                  },
-                ),
-                loading: () => const CircularProgressIndicator(),
-                error: (_, __) => DropdownButtonFormField<String>(
-                  value: _selectedQuality,
-                  decoration: const InputDecoration(labelText: 'Quality'),
-                  items: const [DropdownMenuItem(value: 'All', child: Text('All Qualities'))],
-                  onChanged: (value) {
-                    setState(() {
-                      _selectedQuality = value ?? 'All';
-                    });
-                  },
-                ),
-              );
-            }),
+                        ),
+                      ),
+                    ],
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedQuality = value ?? 'All';
+                      });
+                    },
+                  ),
+                  loading: () => const CircularProgressIndicator(),
+                  error: (_, __) => DropdownButtonFormField<String>(
+                    value: _selectedQuality,
+                    decoration: const InputDecoration(labelText: 'Quality'),
+                    items: const [
+                      DropdownMenuItem(
+                        value: 'All',
+                        child: Text('All Qualities'),
+                      ),
+                    ],
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedQuality = value ?? 'All';
+                      });
+                    },
+                  ),
+                );
+              },
+            ),
           ],
         ),
         actions: [
@@ -352,96 +400,22 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
       case 'view':
         context.go('/inventory/items/${item.id}');
         break;
-      case 'adjust_stock':
-        _showAdjustStockDialog(context, item);
+      case 'add_batch':
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => BatchFormPage(itemId: item.id),
+          ),
+        ).then((result) {
+          if (result == true) {
+            ref.read(itemListProvider.notifier).loadItems(refresh: true);
+          }
+        });
         break;
       case 'delete':
         _showDeleteConfirmation(context, item);
         break;
     }
-  }
-
-  void _showAdjustStockDialog(BuildContext context, Item item) {
-    final TextEditingController quantityController = TextEditingController();
-    String adjustmentType = 'add'; // 'add' or 'subtract'
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Adjust Stock for ${item.displayName}'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text('Current stock: ${item.stockQuantity}'),
-            const SizedBox(height: 16),
-            DropdownButtonFormField<String>(
-              value: adjustmentType,
-              decoration: const InputDecoration(labelText: 'Adjustment Type'),
-              items: const [
-                DropdownMenuItem(value: 'add', child: Text('Add to Stock')),
-                DropdownMenuItem(
-                  value: 'subtract',
-                  child: Text('Subtract from Stock'),
-                ),
-              ],
-              onChanged: (value) {
-                adjustmentType = value ?? 'add';
-              },
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: quantityController,
-              decoration: const InputDecoration(
-                labelText: 'Quantity',
-                hintText: 'Enter quantity to adjust',
-              ),
-              keyboardType: TextInputType.number,
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              final quantity = int.tryParse(quantityController.text);
-              if (quantity != null && quantity > 0) {
-                final newQuantity = adjustmentType == 'add'
-                    ? item.stockQuantity + quantity
-                    : item.stockQuantity - quantity;
-
-                if (newQuantity >= 0) {
-                  final success = await ref
-                      .read(itemDetailProvider.notifier)
-                      .adjustStock(itemId: item.id, quantity: newQuantity);
-                  if (success) {
-                    Navigator.of(context).pop();
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Stock adjusted successfully'),
-                      ),
-                    );
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Failed to adjust stock')),
-                    );
-                  }
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Cannot reduce stock below zero'),
-                    ),
-                  );
-                }
-              }
-            },
-            child: const Text('Adjust'),
-          ),
-        ],
-      ),
-    );
   }
 
   void _showDeleteConfirmation(BuildContext context, Item item) {
@@ -465,6 +439,8 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
                   .deleteItem(item.id);
               Navigator.of(context).pop();
               if (success) {
+                // Reload the item list after deletion
+                ref.read(itemListProvider.notifier).loadItems(refresh: true);
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Item deleted successfully')),
                 );

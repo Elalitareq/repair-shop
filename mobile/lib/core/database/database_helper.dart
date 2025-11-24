@@ -145,7 +145,6 @@ class DatabaseHelper {
         category_id INTEGER,
         brand TEXT,
         model TEXT,
-        imei TEXT,
         condition_id INTEGER,
         quality_id INTEGER,
         purchase_date TEXT,
@@ -163,6 +162,21 @@ class DatabaseHelper {
         FOREIGN KEY (batch_id) REFERENCES item_batches(id)
       )
     ''');
+    // Serial table
+    await db.execute('''
+        CREATE TABLE IF NOT EXISTS serials (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          imei TEXT UNIQUE NOT NULL,
+          item_id INTEGER NOT NULL,
+          batch_id INTEGER NOT NULL,
+          status TEXT DEFAULT 'available',
+          created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+          updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+          sync_status INTEGER DEFAULT 0,
+          FOREIGN KEY (item_id) REFERENCES items(id),
+          FOREIGN KEY (batch_id) REFERENCES item_batches(id)
+        )
+      ''');
 
     // Repair states table
     await db.execute('''
@@ -285,7 +299,10 @@ class DatabaseHelper {
       'CREATE INDEX IF NOT EXISTS idx_items_category ON items(category_id)',
     );
     await db.execute(
-      'CREATE INDEX IF NOT EXISTS idx_items_imei ON items(imei)',
+      'CREATE INDEX IF NOT EXISTS idx_serials_imei ON serials(imei)',
+    );
+    await db.execute(
+      'CREATE INDEX IF NOT EXISTS idx_serials_item ON serials(item_id)',
     );
     await db.execute(
       'CREATE INDEX IF NOT EXISTS idx_repairs_customer ON repairs(customer_id)',

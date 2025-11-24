@@ -3,7 +3,7 @@ import { CustomerController } from "../controllers/customer.controller";
 import { authenticate } from "../middleware/auth";
 import { asyncHandler } from "../middleware/errorHandler";
 
-const router = Router();
+const router: Router = Router();
 const customerController = new CustomerController();
 
 router.get(

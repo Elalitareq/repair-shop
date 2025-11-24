@@ -10,8 +10,8 @@ class Condition extends BaseModel {
 
   Condition({
     required super.id,
-    required super.createdAt,
-    required super.updatedAt,
+    super.createdAt,
+    super.updatedAt,
     required this.name,
     this.description,
   });

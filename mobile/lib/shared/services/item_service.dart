@@ -285,6 +285,24 @@ class ItemService {
     );
   }
 
+  // Delete batch
+  Future<ApiResponse<void>> deleteBatch(int id) async {
+    final response = await _apiClient.delete<Map<String, dynamic>>(
+      '/batches/$id',
+    );
+
+    if (response.isSuccess) {
+      return ApiResponse.success(
+        message: response.data!['message'] ?? response.message,
+      );
+    }
+
+    return ApiResponse.error(
+      message: response.message,
+      statusCode: response.statusCode,
+    );
+  }
+
   // Get low stock batches
   Future<ApiResponse<List<BatchStockInfo>>> getLowStockBatches() async {
     final response = await _apiClient.get<Map<String, dynamic>>(

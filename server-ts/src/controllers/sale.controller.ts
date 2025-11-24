@@ -239,18 +239,112 @@ export class SaleController {
       throw new AppError(404, "Sale not found");
     }
 
-    // Reduce stock when confirming sale
+    // Reduce stock when confirming sale with batch-aware accounting
     if (status === "confirmed" && sale.status === "draft") {
+      let totalCogs = 0;
+
       for (const saleItem of sale.items) {
-        await prisma.item.update({
+        const item = await prisma.item.findUnique({
           where: { id: saleItem.itemId },
-          data: {
-            stockQuantity: {
-              decrement: saleItem.quantity,
+          include: { serials: { include: { batch: true } } },
+        });
+
+        if (!item) continue;
+
+        let remainingQuantity = saleItem.quantity;
+        let itemCogs = 0;
+
+        // Sort serials by batch purchase date (FIFO)
+        const availableSerials = item.serials
+          .filter((s) => s.status === "available")
+          .sort(
+            (a, b) =>
+              a.batch.purchaseDate.getTime() - b.batch.purchaseDate.getTime()
+          );
+
+        // Process serials for this item
+        for (const serial of availableSerials) {
+          if (remainingQuantity <= 0) break;
+
+          // Mark serial as sold
+          await prisma.serial.update({
+            where: { id: serial.id },
+            data: { status: "sold" },
+          });
+
+          // Update batch sold quantity
+          await prisma.batch.update({
+            where: { id: serial.batchId },
+            data: {
+              soldQuantity: { increment: 1 },
             },
+          });
+
+          // Add to COGS
+          itemCogs += serial.batch.unitCost;
+          totalCogs += serial.batch.unitCost;
+
+          remainingQuantity--;
+        }
+
+        // If item doesn't have enough serials or is not phone type, handle remaining stock
+        if (remainingQuantity > 0) {
+          // For non-phone items, estimate COGS based on average batch cost
+          const batches = await prisma.batch.findMany({
+            where: { serials: { some: { itemId: saleItem.itemId } } },
+            orderBy: { purchaseDate: "desc" },
+            take: 5, // Last 5 batches for average
+          });
+
+          if (batches.length > 0) {
+            const avgCost =
+              batches.reduce((sum, b) => sum + b.unitCost, 0) / batches.length;
+            itemCogs += avgCost * remainingQuantity;
+            totalCogs += avgCost * remainingQuantity;
+          }
+
+          // Reduce general stock
+          await prisma.item.update({
+            where: { id: saleItem.itemId },
+            data: {
+              stockQuantity: {
+                decrement: remainingQuantity,
+              },
+            },
+          });
+        } else {
+          // Update item stock quantity based on available serials
+          const availableCount =
+            item.serials.filter((s) => s.status === "available").length -
+            saleItem.quantity;
+          await prisma.item.update({
+            where: { id: saleItem.itemId },
+            data: {
+              stockQuantity: Math.max(0, availableCount),
+            },
+          });
+        }
+
+        // Log stock usage with cost
+        await prisma.stockUsage.create({
+          data: {
+            itemId: saleItem.itemId,
+            quantity: saleItem.quantity,
+            unitCost: itemCogs / saleItem.quantity, // Average cost per unit
+            reason: `Sale ${sale.saleNumber}`,
           },
         });
       }
+
+      // Update sale with COGS and profit
+      const profit = sale.totalAmount - totalCogs;
+      await prisma.sale.update({
+        where: { id: parseInt(id) },
+        data: {
+          cogs: totalCogs,
+          profit: profit,
+        },
+      });
     }
 
     const updated = await prisma.sale.update({

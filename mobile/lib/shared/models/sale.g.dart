@@ -8,8 +8,12 @@ part of 'sale.dart';
 
 Sale _$SaleFromJson(Map<String, dynamic> json) => Sale(
       id: (json['id'] as num).toInt(),
-      createdAt: DateTime.parse(json['created_at'] as String),
-      updatedAt: DateTime.parse(json['updated_at'] as String),
+      createdAt: json['created_at'] == null
+          ? null
+          : DateTime.parse(json['created_at'] as String),
+      updatedAt: json['updated_at'] == null
+          ? null
+          : DateTime.parse(json['updated_at'] as String),
       syncStatus: (json['sync_status'] as num?)?.toInt() ?? 0,
       saleNumber: json['sale_number'] as String,
       customerId: (json['customer_id'] as num?)?.toInt(),
@@ -30,8 +34,8 @@ Sale _$SaleFromJson(Map<String, dynamic> json) => Sale(
 
 Map<String, dynamic> _$SaleToJson(Sale instance) => <String, dynamic>{
       'id': instance.id,
-      'created_at': instance.createdAt.toIso8601String(),
-      'updated_at': instance.updatedAt.toIso8601String(),
+      'created_at': instance.createdAt?.toIso8601String(),
+      'updated_at': instance.updatedAt?.toIso8601String(),
       'sync_status': instance.syncStatus,
       'sale_number': instance.saleNumber,
       'customer_id': instance.customerId,

@@ -10,8 +10,8 @@ class Quality extends BaseModel {
 
   Quality({
     required super.id,
-    required super.createdAt,
-    required super.updatedAt,
+    super.createdAt,
+    super.updatedAt,
     required this.name,
     this.description,
   });

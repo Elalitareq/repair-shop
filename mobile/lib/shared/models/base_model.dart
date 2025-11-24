@@ -9,18 +9,18 @@ class BaseModel {
   final int id;
 
   @JsonKey(name: 'created_at')
-  final DateTime createdAt;
+  final DateTime? createdAt;
 
   @JsonKey(name: 'updated_at')
-  final DateTime updatedAt;
+  final DateTime? updatedAt;
 
   @JsonKey(name: 'sync_status')
   final int syncStatus;
 
   const BaseModel({
     required this.id,
-    required this.createdAt,
-    required this.updatedAt,
+    this.createdAt,
+    this.updatedAt,
     this.syncStatus = 0,
   });
 

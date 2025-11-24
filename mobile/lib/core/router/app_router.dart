@@ -5,18 +5,27 @@ import 'package:go_router/go_router.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/dashboard/presentation/pages/dashboard_page.dart';
 import '../../features/inventory/presentation/pages/inventory_page.dart';
+import '../../features/inventory/presentation/pages/batch_list_page.dart';
+import '../../features/inventory/presentation/pages/batch_form_page.dart';
 import '../../features/inventory/presentation/pages/item_form_page.dart';
 import '../../features/inventory/presentation/pages/item_detail_page.dart';
 import '../../features/customers/presentation/pages/customers_page.dart';
+import '../../features/customers/presentation/pages/customer_detail_page.dart';
+import '../../features/customers/presentation/pages/customer_form_page.dart';
 import '../../features/repairs/presentation/pages/repairs_page.dart';
 import '../../features/repairs/presentation/pages/repair_detail_page.dart';
 import '../../features/repairs/presentation/pages/repair_form_page.dart';
+import '../../features/settings/presentation/pages/settings_page.dart';
+import '../../features/settings/presentation/pages/backup_page.dart';
+import '../../features/settings/presentation/pages/categories_settings_page.dart';
+import '../../features/settings/presentation/pages/conditions_settings_page.dart';
+import '../../features/settings/presentation/pages/qualities_settings_page.dart';
 import '../../shared/providers/auth_provider.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authProvider);
 
-  return GoRouter(
+  final router = GoRouter(
     initialLocation: authState.isAuthenticated ? '/dashboard' : '/login',
     redirect: (context, state) {
       final isLoggedIn = authState.isAuthenticated;
@@ -54,7 +63,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         name: 'inventory',
         builder: (context, state) => const InventoryPage(),
         routes: [
-          GoRoute(path: 'items/new', name: 'item-create', builder: (context, state) => const ItemFormPage()),
+          GoRoute(
+            path: 'items/new',
+            name: 'item-create',
+            builder: (context, state) => const ItemFormPage(),
+          ),
           GoRoute(
             path: 'items/:id',
             name: 'item-detail',
@@ -63,10 +76,43 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               return ItemDetailPage(itemId: id);
             },
             routes: [
-              GoRoute(path: 'edit', name: 'item-edit', builder: (context, state) {
-                final id = state.pathParameters['id']!;
-                return ItemFormPage(itemId: int.tryParse(id));
-              }),
+              GoRoute(
+                path: 'edit',
+                name: 'item-edit',
+                builder: (context, state) {
+                  final id = state.pathParameters['id']!;
+                  return ItemFormPage(itemId: int.tryParse(id));
+                },
+              ),
+            ],
+          ),
+          GoRoute(
+            path: 'batches',
+            name: 'batches',
+            builder: (context, state) => const BatchListPage(),
+            routes: [
+              GoRoute(
+                path: 'new/:itemId',
+                name: 'batch-create',
+                builder: (context, state) {
+                  final itemId = int.parse(state.pathParameters['itemId']!);
+                  return BatchFormPage(itemId: itemId);
+                },
+              ),
+              GoRoute(
+                path: 'edit/:id',
+                name: 'batch-edit',
+                builder: (context, state) {
+                  final id = int.parse(state.pathParameters['id']!);
+                  return BatchFormPage(batchId: id);
+                },
+              ),
+              GoRoute(
+                path: ':id',
+                name: 'batch-detail',
+                builder: (context, state) =>
+                    Container(), // TODO: Replace with Batch detail page
+              ),
             ],
           ),
         ],
@@ -76,6 +122,31 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/customers',
         name: 'customers',
         builder: (context, state) => const CustomersPage(),
+        routes: [
+          GoRoute(
+            path: 'new',
+            name: 'customer-create',
+            builder: (context, state) => const CustomerFormPage(),
+          ),
+          GoRoute(
+            path: ':id',
+            name: 'customer-detail',
+            builder: (context, state) {
+              final id = int.parse(state.pathParameters['id']!);
+              return CustomerDetailPage(customerId: id);
+            },
+            routes: [
+              GoRoute(
+                path: 'edit',
+                name: 'customer-edit',
+                builder: (context, state) {
+                  final id = int.parse(state.pathParameters['id']!);
+                  return CustomerFormPage(customerId: id);
+                },
+              ),
+            ],
+          ),
+        ],
       ),
 
       GoRoute(
@@ -111,6 +182,34 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           ),
         ],
       ),
+
+      GoRoute(
+        path: '/settings',
+        name: 'settings',
+        builder: (context, state) => const SettingsPage(),
+        routes: [
+          GoRoute(
+            path: 'categories',
+            name: 'settings-categories',
+            builder: (context, state) => const CategoriesSettingsPage(),
+          ),
+          GoRoute(
+            path: 'conditions',
+            name: 'settings-conditions',
+            builder: (context, state) => const ConditionsSettingsPage(),
+          ),
+          GoRoute(
+            path: 'qualities',
+            name: 'settings-qualities',
+            builder: (context, state) => const QualitiesSettingsPage(),
+          ),
+          GoRoute(
+            path: 'backup',
+            name: 'settings-backup',
+            builder: (context, state) => const BackupPage(),
+          ),
+        ],
+      ),
     ],
     errorBuilder: (context, state) => Scaffold(
       appBar: AppBar(title: const Text('Page Not Found')),
@@ -131,4 +230,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
     ),
   );
+
+  // Debug: route registration complete
+  return router;
 });

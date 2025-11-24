@@ -23,8 +23,8 @@ class Category extends BaseModel {
 
   const Category({
     required super.id,
-    required super.createdAt,
-    required super.updatedAt,
+    super.createdAt,
+    super.updatedAt,
     super.syncStatus,
     required this.name,
     this.description,

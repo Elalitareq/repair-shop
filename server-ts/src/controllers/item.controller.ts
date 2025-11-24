@@ -4,6 +4,22 @@ import { AuthRequest } from "../middleware/auth";
 import { prisma } from "../utils/prisma";
 import type { Item } from "@prisma/client";
 
+// Transform Prisma item to snake_case for mobile client
+function transformItemToSnakeCase(item: any) {
+  return {
+    ...item,
+    category_id: item.categoryId,
+    condition_id: item.conditionId,
+    quality_id: item.qualityId,
+    item_type: item.itemType,
+    stock_quantity: item.stockQuantity,
+    min_stock_level: item.minStockLevel,
+    selling_price: item.sellingPrice,
+    created_at: item.createdAt,
+    updated_at: item.updatedAt,
+  };
+}
+
 export class ItemController {
   async getAll(req: AuthRequest, res: Response) {
     const {
@@ -33,7 +49,6 @@ export class ItemController {
           category: true,
           condition: true,
           quality: true,
-          batch: true,
         },
         orderBy: { name: "asc" },
       });
@@ -53,7 +68,6 @@ export class ItemController {
             category: true,
             condition: true,
             quality: true,
-            batch: true,
           },
           orderBy: { name: "asc" },
         }),
@@ -62,7 +76,7 @@ export class ItemController {
     }
 
     res.json({
-      data: items,
+      data: items.map(transformItemToSnakeCase),
       pagination: {
         page: parseInt(page as string),
         limit: parseInt(limit as string),
@@ -79,20 +93,29 @@ export class ItemController {
       throw new AppError(400, "Search query is required");
     }
 
+    // Search serials for IMEI matches, map to item ids
+    // Note: `serial` model will exist after running `prisma generate`.
+    // @ts-ignore - prisma client generated types might not be updated here yet
+    const serialMatches = await prisma.serial.findMany({
+      where: { imei: { contains: q as string } },
+      select: { itemId: true },
+    });
+
+    const itemIds = serialMatches.map((s: any) => s.itemId);
+
     const items = await prisma.item.findMany({
       where: {
         OR: [
           { name: { contains: q as string } },
           { brand: { contains: q as string } },
           { model: { contains: q as string } },
-          { imei: { contains: q as string } },
+          ...(itemIds.length > 0 ? [{ id: { in: itemIds } }] : []),
         ],
       },
       include: {
         category: true,
         condition: true,
         quality: true,
-        batch: true,
       },
       take: 50,
     });
@@ -126,11 +149,7 @@ export class ItemController {
         category: true,
         condition: true,
         quality: true,
-        batch: {
-          include: {
-            supplier: true,
-          },
-        },
+        serials: true,
       },
     });
 
@@ -138,72 +157,86 @@ export class ItemController {
       throw new AppError(404, "Item not found");
     }
 
-    res.json({ data: item });
+    res.json({ data: transformItemToSnakeCase(item) });
   }
 
   async create(req: AuthRequest, res: Response) {
+    // Support both camelCase and snake_case from client
     const {
       name,
       categoryId,
+      category_id,
       brand,
       model,
-      imei,
       description,
       conditionId,
+      condition_id,
       qualityId,
+      quality_id,
+      itemType,
+      item_type,
       stockQuantity,
+      stock_quantity,
       minStockLevel,
-      unitCost,
+      min_stock_level,
       sellingPrice,
-      batchId,
+      selling_price,
     } = req.body;
+
+    // Use snake_case first (mobile convention), fallback to camelCase
+    const finalCategoryId = category_id || categoryId;
+    const finalConditionId = condition_id || conditionId;
+    const finalQualityId = quality_id || qualityId;
+    const finalItemType = item_type || itemType || "other";
+    const finalStockQuantity =
+      stock_quantity !== undefined ? stock_quantity : stockQuantity;
+    const finalMinStockLevel =
+      min_stock_level !== undefined ? min_stock_level : minStockLevel;
+    const finalSellingPrice =
+      selling_price !== undefined ? selling_price : sellingPrice;
 
     if (
       !name ||
-      !categoryId ||
-      !conditionId ||
-      !qualityId ||
-      unitCost === undefined ||
-      sellingPrice === undefined
+      !finalCategoryId ||
+      !finalConditionId ||
+      !finalQualityId ||
+      finalSellingPrice === undefined
     ) {
-      throw new AppError(400, "Required fields missing");
-    }
-
-    // Check IMEI uniqueness
-    if (imei) {
-      const existing = await prisma.item.findUnique({
-        where: { imei },
+      console.log({
+        name,
+        categoryId: finalCategoryId,
+        conditionId: finalConditionId,
+        qualityId: finalQualityId,
+        sellingPrice: finalSellingPrice,
       });
-      if (existing) {
-        throw new AppError(409, "Item with this IMEI already exists");
-      }
+      throw new AppError(400, "Required fields missing");
     }
 
     const item = await prisma.item.create({
       data: {
         name,
-        categoryId,
+        categoryId: finalCategoryId,
         brand,
         model,
-        imei,
         description,
-        conditionId,
-        qualityId,
-        stockQuantity: stockQuantity || 0,
-        minStockLevel: minStockLevel || 5,
-        unitCost,
-        sellingPrice,
-        batchId,
+        conditionId: finalConditionId,
+        qualityId: finalQualityId,
+        itemType: finalItemType,
+        stockQuantity: finalStockQuantity || 0,
+        minStockLevel: finalMinStockLevel || 5,
+        sellingPrice: finalSellingPrice,
       },
       include: {
         category: true,
         condition: true,
         quality: true,
-        batch: true,
       },
     });
 
-    res.status(201).json({ data: item, message: "Item created successfully" });
+    res.status(201).json({
+      data: transformItemToSnakeCase(item),
+      message: "Item created successfully",
+    });
   }
 
   async update(req: AuthRequest, res: Response) {
@@ -218,15 +251,7 @@ export class ItemController {
       throw new AppError(404, "Item not found");
     }
 
-    // Check IMEI uniqueness
-    if (data.imei && data.imei !== item.imei) {
-      const existing = await prisma.item.findUnique({
-        where: { imei: data.imei },
-      });
-      if (existing) {
-        throw new AppError(409, "IMEI already exists");
-      }
-    }
+    // IMEI moved to Serial model - uniqueness enforcement should be done via serial endpoints
 
     const updated = await prisma.item.update({
       where: { id: parseInt(id) },
@@ -235,7 +260,6 @@ export class ItemController {
         category: true,
         condition: true,
         quality: true,
-        batch: true,
       },
     });
 
@@ -308,11 +332,12 @@ export class ItemController {
 
     // Log stock usage if needed
     if (reason) {
+      // TODO: Track batch-specific cost when implementing batch deduction
       await prisma.stockUsage.create({
         data: {
           itemId: parseInt(id),
           quantity,
-          unitCost: item.unitCost,
+          unitCost: 0, // Will be updated when batch tracking is implemented
           reason,
         },
       });

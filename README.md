@@ -6,11 +6,6 @@ A comprehensive management system for mobile and accessories stores that handles
 
 This application is designed for a mobile and accessories store that performs device repairs. The system manages:
 
-- **Inventory Management**: Items, categories, stock tracking with IMEI support
-- **Customer Management**: Dealers and customers with comprehensive contact information
-- **Repair Management**: Full repair lifecycle with issue tracking and image documentation
-- **Offline/Online Sync**: Seamless operation regardless of internet connectivity
-
 ## 📚 Documentation
 
 | Document                                  | Description                                     |
@@ -41,9 +36,26 @@ This application is designed for a mobile and accessories store that performs de
    ```bash
    # Initialize local SQLite database
    npm run db:init
-   npm run db:migrate
-   npm run db:seed
+   # Apply Prisma schema changes using db push (no migration files required)
+   pnpm prisma db push
+   pnpm prisma generate
+   # If you have seed data
    ```
+
+- Flutter (Mobile): We removed `file_picker_linux`, `file_picker_macos`, and `file_picker_windows` from the `mobile/pubspec.yaml` after discovering they are not available on pub.dev. Avoid adding these platform-specific packages if they are not published.
+
+  Alternatives:
+
+  - Use `file_selector` (Flutter team package) as a cross-platform file selection solution.
+  - Ask `file_picker` maintainers to add inline `pluginClass` or `dartPluginClass` entries for the target platforms.
+
+  # If migrating old 'imei' values from items to serials: run the helper script
+
+  pnpm --silent node prisma/scripts/migrate-imei-to-serials.ts
+
+  ```
+
+  ```
 
 3. **Start Development**
 

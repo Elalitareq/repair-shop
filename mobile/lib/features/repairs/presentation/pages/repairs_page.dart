@@ -388,7 +388,9 @@ class _RepairCard extends StatelessWidget {
 
                   // Date
                   Text(
-                    DateFormat('MMM dd, yyyy').format(repair.createdAt),
+                    DateFormat(
+                      'MMM dd, yyyy',
+                    ).format(repair.createdAt ?? DateTime.now()),
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: theme.textTheme.bodySmall?.color?.withOpacity(0.7),
                     ),

@@ -52,6 +52,84 @@ class CategoryService {
       statusCode: response.statusCode,
     );
   }
+
+  Future<ApiResponse<Category>> createCategory({
+    required String name,
+    String? description,
+    int? parentId,
+  }) async {
+    final response = await _apiClient.post<Map<String, dynamic>>(
+      '/categories',
+      data: {
+        'name': name,
+        if (description != null) 'description': description,
+        if (parentId != null) 'parent_id': parentId,
+      },
+    );
+
+    if (response.isSuccess && response.data != null) {
+      final category = Category.fromJson(response.data!['data']);
+      return ApiResponse.success(
+        data: category,
+        message: response.message,
+        statusCode: response.statusCode,
+      );
+    }
+
+    return ApiResponse.error(
+      message: response.message,
+      statusCode: response.statusCode,
+    );
+  }
+
+  Future<ApiResponse<Category>> updateCategory({
+    required int id,
+    required String name,
+    String? description,
+    int? parentId,
+  }) async {
+    final response = await _apiClient.put<Map<String, dynamic>>(
+      '/categories/$id',
+      data: {
+        'name': name,
+        if (description != null) 'description': description,
+        if (parentId != null) 'parent_id': parentId,
+      },
+    );
+
+    if (response.isSuccess && response.data != null) {
+      final category = Category.fromJson(response.data!['data']);
+      return ApiResponse.success(
+        data: category,
+        message: response.message,
+        statusCode: response.statusCode,
+      );
+    }
+
+    return ApiResponse.error(
+      message: response.message,
+      statusCode: response.statusCode,
+    );
+  }
+
+  Future<ApiResponse<void>> deleteCategory(int id) async {
+    final response = await _apiClient.delete<Map<String, dynamic>>(
+      '/categories/$id',
+    );
+
+    if (response.isSuccess) {
+      return ApiResponse.success(
+        data: null,
+        message: response.message,
+        statusCode: response.statusCode,
+      );
+    }
+
+    return ApiResponse.error(
+      message: response.message,
+      statusCode: response.statusCode,
+    );
+  }
 }
 
 // Provider for CategoryService

@@ -3,8 +3,6 @@ import 'base_model.dart';
 import 'category.dart';
 import 'condition.dart';
 import 'quality.dart';
-import 'customer.dart';
-import 'item_batch.dart';
 
 part 'item.g.dart';
 
@@ -16,47 +14,43 @@ class Item extends BaseModel {
   final Category? category;
   final String? brand;
   final String? model;
-  final String? imei;
+  // IMEI moved to Serial model - use Serial list to represent device serials
+  final String? description;
   @JsonKey(name: 'condition_id')
   final int? conditionId;
   final Condition? condition;
   @JsonKey(name: 'quality_id')
   final int? qualityId;
   final Quality? quality;
-  @JsonKey(name: 'purchase_date')
-  final DateTime purchaseDate;
-  @JsonKey(name: 'supplier_id')
-  final int? supplierId;
-  final Customer? supplier;
-  @JsonKey(name: 'batch_id')
-  final int? batchId;
-  final ItemBatch? batch;
+  @JsonKey(name: 'item_type')
+  final String itemType; // 'phone' or 'other'
   @JsonKey(name: 'stock_quantity')
   final int stockQuantity;
-  @JsonKey(name: 'unit_cost')
-  final double unitCost;
+  @JsonKey(name: 'min_stock_level')
+  final int minStockLevel;
+  @JsonKey(name: 'selling_price')
+  final double? sellingPrice;
+  final List<String>? barcodes; // List of barcode strings
 
   Item({
     required super.id,
-    required super.createdAt,
-    required super.updatedAt,
+    super.createdAt,
+    super.updatedAt,
     required this.name,
     this.categoryId,
     this.category,
     this.brand,
     this.model,
-    this.imei,
+    this.description,
     this.conditionId,
     this.condition,
     this.qualityId,
     this.quality,
-    required this.purchaseDate,
-    this.supplierId,
-    this.supplier,
-    this.batchId,
-    this.batch,
+    this.itemType = 'other',
     this.stockQuantity = 0,
-    required this.unitCost,
+    this.minStockLevel = 5,
+    this.sellingPrice,
+    this.barcodes,
   });
 
   factory Item.fromJson(Map<String, dynamic> json) => _$ItemFromJson(json);
@@ -73,18 +67,16 @@ class Item extends BaseModel {
     Category? category,
     String? brand,
     String? model,
-    String? imei,
+    String? description,
     int? conditionId,
     Condition? condition,
     int? qualityId,
     Quality? quality,
-    DateTime? purchaseDate,
-    int? supplierId,
-    Customer? supplier,
-    int? batchId,
-    ItemBatch? batch,
+    String? itemType,
     int? stockQuantity,
-    double? unitCost,
+    int? minStockLevel,
+    double? sellingPrice,
+    List<String>? barcodes,
   }) {
     return Item(
       id: id ?? this.id,
@@ -95,18 +87,16 @@ class Item extends BaseModel {
       category: category ?? this.category,
       brand: brand ?? this.brand,
       model: model ?? this.model,
-      imei: imei ?? this.imei,
+      description: description ?? this.description,
       conditionId: conditionId ?? this.conditionId,
       condition: condition ?? this.condition,
       qualityId: qualityId ?? this.qualityId,
       quality: quality ?? this.quality,
-      purchaseDate: purchaseDate ?? this.purchaseDate,
-      supplierId: supplierId ?? this.supplierId,
-      supplier: supplier ?? this.supplier,
-      batchId: batchId ?? this.batchId,
-      batch: batch ?? this.batch,
+      itemType: itemType ?? this.itemType,
       stockQuantity: stockQuantity ?? this.stockQuantity,
-      unitCost: unitCost ?? this.unitCost,
+      minStockLevel: minStockLevel ?? this.minStockLevel,
+      sellingPrice: sellingPrice ?? this.sellingPrice,
+      barcodes: barcodes ?? this.barcodes,
     );
   }
 

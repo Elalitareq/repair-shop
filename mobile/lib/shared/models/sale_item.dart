@@ -40,8 +40,8 @@ class SaleItem extends BaseModel {
 
   const SaleItem({
     required super.id,
-    required super.createdAt,
-    required super.updatedAt,
+    super.createdAt,
+    super.updatedAt,
     super.syncStatus,
     required this.saleId,
     required this.itemId,

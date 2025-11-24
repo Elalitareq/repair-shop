@@ -1,327 +1,362 @@
 // Prisma Schema for Repair Shop Management System
 
 generator client {
-  provider = "prisma-client-js"
+    provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+    provider = "sqlite"
+    url      = env("DATABASE_URL")
 }
 
 // ==================== User & Authentication ====================
 
 model User {
-  id        Int      @id @default(autoincrement())
-  username  String   @unique
-  email     String   @unique
-  password  String
-  role      String   @default("user")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+    id        Int      @id @default(autoincrement())
+    username  String   @unique
+    email     String   @unique
+    password  String
+    role      String   @default("user")
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
 
-  @@map("users")
+    @@map("users")
 }
 
 // ==================== Categories ====================
 
 model Category {
-  id          Int        @id @default(autoincrement())
-  name        String     @unique
-  description String?
-  parentId    Int?
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
-  
-  parent      Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: Restrict)
-  children    Category[] @relation("CategoryHierarchy")
-  items       Item[]
+    id          Int      @id @default(autoincrement())
+    name        String   @unique
+    description String?
+    parentId    Int?
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
 
-  @@map("categories")
+    parent   Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: Restrict)
+    children Category[] @relation("CategoryHierarchy")
+    items    Item[]
+
+    @@map("categories")
 }
 
 // ==================== Reference Data ====================
 
 model Condition {
-  id          Int      @id @default(autoincrement())
-  name        String   @unique
-  description String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  items       Item[]
+    id          Int      @id @default(autoincrement())
+    name        String   @unique
+    description String?
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
 
-  @@map("conditions")
+    items Item[]
+
+    @@map("conditions")
 }
 
 model Quality {
-  id          Int      @id @default(autoincrement())
-  name        String   @unique
-  description String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  items       Item[]
+    id          Int      @id @default(autoincrement())
+    name        String   @unique
+    description String?
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
 
-  @@map("qualities")
+    items Item[]
+
+    @@map("qualities")
 }
 
 model IssueType {
-  id          Int      @id @default(autoincrement())
-  name        String   @unique
-  description String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  repairIssues RepairIssue[]
+    id          Int      @id @default(autoincrement())
+    name        String   @unique
+    description String?
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
 
-  @@map("issue_types")
+    repairIssues RepairIssue[]
+
+    @@map("issue_types")
 }
 
 model RepairState {
-  id          Int      @id @default(autoincrement())
-  name        String   @unique
-  description String?
-  order       Int      @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  repairs     Repair[]
+    id          Int      @id @default(autoincrement())
+    name        String   @unique
+    description String?
+    order       Int      @default(0)
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
 
-  @@map("repair_states")
+    repairs Repair[]
+
+    @@map("repair_states")
 }
 
 model PaymentMethod {
-  id          Int      @id @default(autoincrement())
-  name        String   @unique
-  description String?
-  feeRate     Float    @default(0.0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  payments    Payment[]
+    id          Int      @id @default(autoincrement())
+    name        String   @unique
+    description String?
+    feeRate     Float    @default(0.0)
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
 
-  @@map("payment_methods")
+    payments Payment[]
+
+    @@map("payment_methods")
 }
 
 // ==================== Customers ====================
 
 model Customer {
-  id           Int      @id @default(autoincrement())
-  name         String
-  phone        String   @unique
-  email        String?
-  address      String?
-  companyName  String?
-  type         String   @default("customer")
-  locationLink String?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  
-  repairs      Repair[]
-  sales        Sale[]
-  batches      Batch[]
+    id           Int      @id @default(autoincrement())
+    name         String
+    phone        String   @unique
+    email        String?
+    address      String?
+    companyName  String?
+    type         String   @default("customer")
+    locationLink String?
+    createdAt    DateTime @default(now())
+    updatedAt    DateTime @updatedAt
 
-  @@map("customers")
+    repairs Repair[]
+    sales   Sale[]
+    batches Batch[]
+
+    @@map("customers")
 }
 
 // ==================== Inventory & Batches ====================
 
 model Batch {
-  id              Int      @id @default(autoincrement())
-  batchNumber     String   @unique
-  supplierId      Int
-  purchaseDate    DateTime
-  totalQuantity   Int
-  soldQuantity    Int      @default(0)
-  totalCost       Float
-  notes           String?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  
-  supplier        Customer @relation(fields: [supplierId], references: [id], onDelete: Restrict)
-  items           Item[]
+    id            Int      @id @default(autoincrement())
+    batchNumber   String   @unique
+    supplierId    Int
+    purchaseDate  DateTime
+    totalQuantity Int
+    soldQuantity  Int      @default(0)
+    unitCost      Float // Cost per unit in this batch
+    totalCost     Float
+    notes         String?
+    createdAt     DateTime @default(now())
+    updatedAt     DateTime @updatedAt
 
-  @@map("batches")
+    supplier Customer @relation(fields: [supplierId], references: [id], onDelete: Restrict)
+
+    // Serial numbers (IMEIs) associated with this batch
+    serials Serial[]
+
+    @@map("batches")
 }
 
 model Item {
-  id              Int      @id @default(autoincrement())
-  name            String
-  categoryId      Int
-  brand           String?
-  model           String?
-  imei            String?  @unique
-  description     String?
-  conditionId     Int
-  qualityId       Int
-  stockQuantity   Int      @default(0)
-  minStockLevel   Int      @default(5)
-  unitCost        Float
-  sellingPrice    Float
-  batchId         Int?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  
-  category        Category  @relation(fields: [categoryId], references: [id], onDelete: Restrict)
-  condition       Condition @relation(fields: [conditionId], references: [id], onDelete: Restrict)
-  quality         Quality   @relation(fields: [qualityId], references: [id], onDelete: Restrict)
-  batch           Batch?    @relation(fields: [batchId], references: [id], onDelete: SetNull)
-  saleItems       SaleItem[]
-  stockUsages     StockUsage[]
+    id            Int      @id @default(autoincrement())
+    name          String
+    categoryId    Int
+    brand         String?
+    model         String?
+    // IMEI moved to Serial model to allow multiple serials per item/batch
+    description   String?
+    conditionId   Int
+    qualityId     Int
+    itemType      String   @default("other") // 'phone' or 'other' - determines if serials are required
+    stockQuantity Int      @default(0)
+    minStockLevel Int      @default(5) // Configurable low stock threshold per item
+    sellingPrice  Float
+    createdAt     DateTime @default(now())
+    updatedAt     DateTime @updatedAt
 
-  @@map("items")
+    category    Category     @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+    condition   Condition    @relation(fields: [conditionId], references: [id], onDelete: Restrict)
+    quality     Quality      @relation(fields: [qualityId], references: [id], onDelete: Restrict)
+    saleItems   SaleItem[]
+    stockUsages StockUsage[]
+    serials     Serial[] // Items have serials, serials have batches
+    barcodes    Barcode[] // Multiple barcodes for the same item
+
+    @@map("items")
+}
+
+model Barcode {
+    id        Int      @id @default(autoincrement())
+    barcode   String   @unique
+    itemId    Int
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    item Item @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+    @@map("barcodes")
 }
 
 // ==================== Repairs ====================
 
 model Repair {
-  id              Int      @id @default(autoincrement())
-  repairNumber    String   @unique
-  customerId      Int
-  deviceBrand     String
-  deviceModel     String
-  deviceImei      String?
-  password        String?
-  estimatedCost   Float?
-  finalCost       Float?
-  stateId         Int
-  extraInfo       String?
-  receivedDate    DateTime @default(now())
-  completedDate   DateTime?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  
-  customer        Customer      @relation(fields: [customerId], references: [id], onDelete: Restrict)
-  state           RepairState   @relation(fields: [stateId], references: [id], onDelete: Restrict)
-  issues          RepairIssue[]
-  images          RepairImage[]
-  stockUsages     StockUsage[]
+    id            Int       @id @default(autoincrement())
+    repairNumber  String    @unique
+    customerId    Int
+    deviceBrand   String
+    deviceModel   String
+    deviceImei    String?
+    password      String?
+    estimatedCost Float?
+    finalCost     Float?
+    stateId       Int
+    extraInfo     String?
+    receivedDate  DateTime  @default(now())
+    completedDate DateTime?
+    createdAt     DateTime  @default(now())
+    updatedAt     DateTime  @updatedAt
 
-  @@map("repairs")
+    customer    Customer      @relation(fields: [customerId], references: [id], onDelete: Restrict)
+    state       RepairState   @relation(fields: [stateId], references: [id], onDelete: Restrict)
+    issues      RepairIssue[]
+    images      RepairImage[]
+    stockUsages StockUsage[]
+
+    @@map("repairs")
 }
 
 model RepairIssue {
-  id          Int      @id @default(autoincrement())
-  repairId    Int
-  issueTypeId Int
-  description String
-  resolved    Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  repair      Repair    @relation(fields: [repairId], references: [id], onDelete: Cascade)
-  issueType   IssueType @relation(fields: [issueTypeId], references: [id], onDelete: Restrict)
+    id          Int      @id @default(autoincrement())
+    repairId    Int
+    issueTypeId Int
+    description String
+    resolved    Boolean  @default(false)
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
 
-  @@map("repair_issues")
+    repair    Repair    @relation(fields: [repairId], references: [id], onDelete: Cascade)
+    issueType IssueType @relation(fields: [issueTypeId], references: [id], onDelete: Restrict)
+
+    @@map("repair_issues")
 }
 
-model RepairImage {
-  id          Int      @id @default(autoincrement())
-  repairId    Int
-  imagePath   String
-  category    String   @default("during")
-  description String?
-  synced      Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  repair      Repair   @relation(fields: [repairId], references: [id], onDelete: Cascade)
+// Serial numbers (IMEIs) associated with this batch
 
-  @@map("repair_images")
+model RepairImage {
+    id          Int      @id @default(autoincrement())
+    repairId    Int
+    imagePath   String
+    category    String   @default("during")
+    description String?
+    synced      Boolean  @default(false)
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
+
+    repair Repair @relation(fields: [repairId], references: [id], onDelete: Cascade)
+
+    @@map("repair_images")
 }
 
 // ==================== Stock Management ====================
 
 model StockUsage {
-  id          Int      @id @default(autoincrement())
-  itemId      Int
-  repairId    Int?
-  quantity    Int
-  unitCost    Float
-  reason      String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  item        Item     @relation(fields: [itemId], references: [id], onDelete: Restrict)
-  repair      Repair?  @relation(fields: [repairId], references: [id], onDelete: SetNull)
+    id        Int      @id @default(autoincrement())
+    itemId    Int
+    repairId  Int?
+    quantity  Int
+    unitCost  Float
+    reason    String?
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
 
-  @@map("stock_usages")
+    item   Item    @relation(fields: [itemId], references: [id], onDelete: Restrict)
+    repair Repair? @relation(fields: [repairId], references: [id], onDelete: SetNull)
+
+    @@map("stock_usages")
 }
 
 // ==================== Sales & Payments ====================
 
 model Sale {
-  id              Int      @id @default(autoincrement())
-  saleNumber      String   @unique
-  customerId      Int?
-  status          String   @default("draft")
-  paymentStatus   String   @default("pending")
-  subtotal        Float
-  discountType    String?
-  discountValue   Float    @default(0.0)
-  discountAmount  Float    @default(0.0)
-  taxRate         Float    @default(0.0)
-  taxAmount       Float    @default(0.0)
-  totalAmount     Float
-  notes           String?
-  saleDate        DateTime @default(now())
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  
-  customer        Customer?  @relation(fields: [customerId], references: [id], onDelete: SetNull)
-  items           SaleItem[]
-  payments        Payment[]
+    id             Int      @id @default(autoincrement())
+    saleNumber     String   @unique
+    customerId     Int?
+    status         String   @default("draft")
+    paymentStatus  String   @default("pending")
+    subtotal       Float
+    discountType   String?
+    discountValue  Float    @default(0.0)
+    discountAmount Float    @default(0.0)
+    taxRate        Float    @default(0.0)
+    taxAmount      Float    @default(0.0)
+    totalAmount    Float
+    cogs           Float    @default(0.0) // Cost of Goods Sold
+    profit         Float    @default(0.0) // Calculated as totalAmount - cogs
+    notes          String?
+    saleDate       DateTime @default(now())
+    createdAt      DateTime @default(now())
+    updatedAt      DateTime @updatedAt
 
-  @@map("sales")
+    customer Customer?  @relation(fields: [customerId], references: [id], onDelete: SetNull)
+    items    SaleItem[]
+    payments Payment[]
+
+    @@map("sales")
 }
 
 model SaleItem {
-  id          Int      @id @default(autoincrement())
-  saleId      Int
-  itemId      Int
-  quantity    Int
-  unitPrice   Float
-  discount    Float    @default(0.0)
-  total       Float
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  sale        Sale     @relation(fields: [saleId], references: [id], onDelete: Cascade)
-  item        Item     @relation(fields: [itemId], references: [id], onDelete: Restrict)
+    id        Int      @id @default(autoincrement())
+    saleId    Int
+    itemId    Int
+    quantity  Int
+    unitPrice Float
+    discount  Float    @default(0.0)
+    total     Float
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
 
-  @@map("sale_items")
+    sale Sale @relation(fields: [saleId], references: [id], onDelete: Cascade)
+    item Item @relation(fields: [itemId], references: [id], onDelete: Restrict)
+
+    @@map("sale_items")
 }
 
 model Payment {
-  id              Int      @id @default(autoincrement())
-  saleId          Int
-  paymentMethodId Int
-  amount          Float
-  referenceNumber String?
-  status          String   @default("completed")
-  notes           String?
-  paymentDate     DateTime @default(now())
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  
-  sale            Sale          @relation(fields: [saleId], references: [id], onDelete: Cascade)
-  paymentMethod   PaymentMethod @relation(fields: [paymentMethodId], references: [id], onDelete: Restrict)
+    id              Int      @id @default(autoincrement())
+    saleId          Int
+    paymentMethodId Int
+    amount          Float
+    referenceNumber String?
+    status          String   @default("completed")
+    notes           String?
+    paymentDate     DateTime @default(now())
+    createdAt       DateTime @default(now())
+    updatedAt       DateTime @updatedAt
 
-  @@map("payments")
+    sale          Sale          @relation(fields: [saleId], references: [id], onDelete: Cascade)
+    paymentMethod PaymentMethod @relation(fields: [paymentMethodId], references: [id], onDelete: Restrict)
+
+    @@map("payments")
 }
 
 // ==================== Synchronization ====================
 
 model SyncLog {
-  id          Int      @id @default(autoincrement())
-  entityType  String
-  entityId    Int
-  operation   String
-  synced      Boolean  @default(false)
-  syncedAt    DateTime?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+    id         Int       @id @default(autoincrement())
+    entityType String
+    entityId   Int
+    operation  String
+    synced     Boolean   @default(false)
+    syncedAt   DateTime?
+    createdAt  DateTime  @default(now())
+    updatedAt  DateTime  @updatedAt
 
-  @@map("sync_logs")
+    @@map("sync_logs")
+}
+
+// Serial numbers table
+model Serial {
+    id        Int      @id @default(autoincrement())
+    imei      String   @unique
+    itemId    Int
+    batchId   Int
+    status    String   @default("available")
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    item  Item  @relation(fields: [itemId], references: [id], onDelete: Restrict)
+    batch Batch @relation(fields: [batchId], references: [id], onDelete: Restrict)
+
+    @@map("serials")
 }

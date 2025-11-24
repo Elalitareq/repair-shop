@@ -106,6 +106,27 @@ async function main() {
   console.log("✅ Admin user created (username: admin, password: admin123)");
 
   console.log("🎉 Database seeding completed!");
+
+  // Add demo serials (IMEIs) if items and batches exist
+  const itemsCount = await prisma.item.count();
+  const batchesCount = await prisma.batch.count();
+
+  if (itemsCount > 0 && batchesCount > 0) {
+    const item = await prisma.item.findFirst();
+    const batch = await prisma.batch.findFirst();
+
+    if (item && batch) {
+      // @ts-ignore - will be available after prisma generate
+      await prisma.serial.createMany({
+        data: [
+          { imei: `IMEI-${item.id}-1`, itemId: item.id, batchId: batch.id },
+          { imei: `IMEI-${item.id}-2`, itemId: item.id, batchId: batch.id },
+        ],
+        skipDuplicates: true,
+      });
+      console.log("✅ Demo serials created for item and batch");
+    }
+  }
 }
 
 main()

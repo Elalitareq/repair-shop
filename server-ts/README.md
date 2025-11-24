@@ -9,7 +9,7 @@
 
 ### Installation
 
-```bash
+````bash
 # Install dependencies
 npm install
 
@@ -23,11 +23,48 @@ npm run prisma:generate
 npm run prisma:migrate
 
 # Seed database with initial data
+## Development & Testing
+
+- Run the API locally in dev mode:
+
+```bash
+npm run dev
+````
+
+// Tests removed from this project; use scripts and tools appropriate to your workflow.
+
+- Swagger UI is available at /docs when the server is running: http://localhost:8080/docs
+
+## Backup & Restore
+
+- **Download a backup** (admin):
+
+  GET /api/backups/download
+
+  This endpoint returns the raw SQLite DB file as an attachment. Requires an admin user (`role: admin`).
+
+- **Restore a backup** (admin):
+
+  POST /api/backups/restore
+
+  Accepts a multipart form upload with `file` pointing to a `.db` or `.sqlite` file.
+  The server will disconnect Prisma, replace the configured database file, reconnect and try a no-op query to validate the restore.
+
+  Example using curl:
+
+```bash
+curl -H "Authorization: Bearer <token>" -X POST -F "file=@repair_shop_backup.db" http://localhost:8080/api/backups/restore
+```
+
+Note: Restoring a backup will overwrite your current database. Only use in development or with confirmed backups.
+
 npm run prisma:seed
 
 # Start development server
+
 npm run dev
-```
+
+````
 
 ### Production Build
 
@@ -37,7 +74,7 @@ npm run build
 
 # Start production server
 npm start
-```
+````
 
 ## 📋 API Endpoints
 

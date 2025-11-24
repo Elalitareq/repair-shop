@@ -76,8 +76,8 @@ class Repair extends BaseModel {
     this.warrantyDays,
     this.items,
     this.statusHistory,
-    required super.createdAt,
-    required super.updatedAt,
+    super.createdAt,
+    super.updatedAt,
     super.syncStatus,
   });
 
@@ -192,8 +192,8 @@ class RepairStatusHistory extends BaseModel {
     required this.status,
     this.notes,
     required this.updatedBy,
-    required super.createdAt,
-    required super.updatedAt,
+    super.createdAt,
+    super.updatedAt,
     super.syncStatus,
   });
 

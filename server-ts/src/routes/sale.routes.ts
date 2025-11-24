@@ -3,7 +3,7 @@ import { SaleController } from "../controllers/sale.controller";
 import { authenticate } from "../middleware/auth";
 import { asyncHandler } from "../middleware/errorHandler";
 
-const router = Router();
+const router: Router = Router();
 const saleController = new SaleController();
 
 router.get(

@@ -8,9 +8,16 @@ part of 'item_batch.dart';
 
 ItemBatch _$ItemBatchFromJson(Map<String, dynamic> json) => ItemBatch(
       id: (json['id'] as num).toInt(),
-      createdAt: DateTime.parse(json['created_at'] as String),
-      updatedAt: DateTime.parse(json['updated_at'] as String),
+      createdAt: json['created_at'] == null
+          ? null
+          : DateTime.parse(json['created_at'] as String),
+      updatedAt: json['updated_at'] == null
+          ? null
+          : DateTime.parse(json['updated_at'] as String),
       syncStatus: (json['sync_status'] as num?)?.toInt() ?? 0,
+      serials: (json['serials'] as List<dynamic>?)
+          ?.map((e) => Serial.fromJson(e as Map<String, dynamic>))
+          .toList(),
       batchNumber: json['batch_number'] as String,
       supplierId: (json['supplier_id'] as num).toInt(),
       supplier: json['supplier'] == null
@@ -25,14 +32,15 @@ ItemBatch _$ItemBatchFromJson(Map<String, dynamic> json) => ItemBatch(
 
 Map<String, dynamic> _$ItemBatchToJson(ItemBatch instance) => <String, dynamic>{
       'id': instance.id,
-      'created_at': instance.createdAt.toIso8601String(),
-      'updated_at': instance.updatedAt.toIso8601String(),
+      'created_at': instance.createdAt?.toIso8601String(),
+      'updated_at': instance.updatedAt?.toIso8601String(),
       'sync_status': instance.syncStatus,
       'batch_number': instance.batchNumber,
       'supplier_id': instance.supplierId,
       'supplier': instance.supplier,
       'purchase_date': instance.purchaseDate.toIso8601String(),
       'total_quantity': instance.totalQuantity,
+      'serials': instance.serials,
       'sold_quantity': instance.soldQuantity,
       'total_cost': instance.totalCost,
       'notes': instance.notes,

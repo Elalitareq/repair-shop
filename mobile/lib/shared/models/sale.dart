@@ -38,8 +38,8 @@ class Sale extends BaseModel {
 
   const Sale({
     required super.id,
-    required super.createdAt,
-    required super.updatedAt,
+    super.createdAt,
+    super.updatedAt,
     super.syncStatus,
     required this.saleNumber,
     this.customerId,

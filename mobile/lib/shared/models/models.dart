@@ -13,3 +13,4 @@ export 'sale_item.dart';
 export 'sale.dart';
 export 'repair.dart';
 export 'repair_item.dart';
+export 'serial.dart';

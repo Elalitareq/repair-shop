@@ -1,4 +1,3 @@
-
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -16,15 +15,16 @@ class ImageService {
     required String filePath,
   }) async {
     final formData = FormData.fromMap({
-      'file': await MultipartFile.fromFile(filePath, filename: filePath.split('/').last),
+      'file': await MultipartFile.fromFile(
+        filePath,
+        filename: filePath.split('/').last,
+      ),
     });
 
     final response = await _apiClient.post<Map<String, dynamic>>(
       '/items/$itemId/images',
       data: formData,
-      options: Options(
-        contentType: 'multipart/form-data',
-      ),
+      options: Options(contentType: 'multipart/form-data'),
     );
 
     return response;

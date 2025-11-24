@@ -8,8 +8,12 @@ part of 'category.dart';
 
 Category _$CategoryFromJson(Map<String, dynamic> json) => Category(
       id: (json['id'] as num).toInt(),
-      createdAt: DateTime.parse(json['created_at'] as String),
-      updatedAt: DateTime.parse(json['updated_at'] as String),
+      createdAt: json['created_at'] == null
+          ? null
+          : DateTime.parse(json['created_at'] as String),
+      updatedAt: json['updated_at'] == null
+          ? null
+          : DateTime.parse(json['updated_at'] as String),
       syncStatus: (json['sync_status'] as num?)?.toInt() ?? 0,
       name: json['name'] as String,
       description: json['description'] as String?,
@@ -24,8 +28,8 @@ Category _$CategoryFromJson(Map<String, dynamic> json) => Category(
 
 Map<String, dynamic> _$CategoryToJson(Category instance) => <String, dynamic>{
       'id': instance.id,
-      'created_at': instance.createdAt.toIso8601String(),
-      'updated_at': instance.updatedAt.toIso8601String(),
+      'created_at': instance.createdAt?.toIso8601String(),
+      'updated_at': instance.updatedAt?.toIso8601String(),
       'sync_status': instance.syncStatus,
       'name': instance.name,
       'description': instance.description,

@@ -8,8 +8,12 @@ part of 'sale_item.dart';
 
 SaleItem _$SaleItemFromJson(Map<String, dynamic> json) => SaleItem(
       id: (json['id'] as num).toInt(),
-      createdAt: DateTime.parse(json['created_at'] as String),
-      updatedAt: DateTime.parse(json['updated_at'] as String),
+      createdAt: json['created_at'] == null
+          ? null
+          : DateTime.parse(json['created_at'] as String),
+      updatedAt: json['updated_at'] == null
+          ? null
+          : DateTime.parse(json['updated_at'] as String),
       syncStatus: (json['sync_status'] as num?)?.toInt() ?? 0,
       saleId: (json['sale_id'] as num).toInt(),
       itemId: (json['item_id'] as num).toInt(),
@@ -27,8 +31,8 @@ SaleItem _$SaleItemFromJson(Map<String, dynamic> json) => SaleItem(
 
 Map<String, dynamic> _$SaleItemToJson(SaleItem instance) => <String, dynamic>{
       'id': instance.id,
-      'created_at': instance.createdAt.toIso8601String(),
-      'updated_at': instance.updatedAt.toIso8601String(),
+      'created_at': instance.createdAt?.toIso8601String(),
+      'updated_at': instance.updatedAt?.toIso8601String(),
       'sync_status': instance.syncStatus,
       'sale_id': instance.saleId,
       'item_id': instance.itemId,
