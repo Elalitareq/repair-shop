@@ -103,6 +103,14 @@ export class BatchController {
       unitCost === undefined ||
       !supplierId
     ) {
+      console.log({
+        batchNumber,
+        supplierId,
+        purchaseDate,
+        totalQuantity,
+        totalCost,
+        unitCost,
+      });
       throw new AppError(400, "Required fields missing");
     }
 
