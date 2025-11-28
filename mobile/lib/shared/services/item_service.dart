@@ -50,24 +50,29 @@ class ItemService {
       // this.sellingPrice,
       // this.barcodes,
 
-      print({"dataId": data[0]["id"]});
-      print({"dataName": data[0]["name"]});
-      print({"dataBrand": data[0]["brand"]});
-      print({"dataModel": data[0]["model"]});
-      print({"dataDescription": data[0]["description"]});
-      print({"dataItemType": data[0]["itemType"]}); // 'phone' or 'other'
-      print({"dataCategoryId": data[0]["categoryId"]});
-      print({"dataConditionId": data[0]["conditionId"]});
-      print({"dataQualityId": data[0]["qualityId"]});
-      print({"dataStockQuantity": data[0]["stockQuantity"]});
-      print({"dataMinStockLevel": data[0]["minStockLevel"]});
-      print({"dataSellingPrice": data[0]["sellingPrice"]});
-      print({"dataBarcodes": data[0]["barcodes"]});
-      print({"dataCreatedAt": data[0]["createdAt"]});
-      print({"dataUpdatedAt": data[0]["updatedAt"]});
-      print({"dataCategory": data[0]["category"]});
-      print({"dataCondition": data[0]["condition"]});
-      print({"dataQuality": data[0]["quality"]});
+      if (data.isEmpty) {
+        print({'items_data': 'empty'});
+      } else {
+        final first = data[0];
+        print({"dataId": first["id"]});
+        print({"dataName": first["name"]});
+        print({"dataBrand": first["brand"]});
+        print({"dataModel": first["model"]});
+        print({"dataDescription": first["description"]});
+        print({"dataItemType": first["itemType"]}); // 'phone' or 'other'
+        print({"dataCategoryId": first["categoryId"]});
+        print({"dataConditionId": first["conditionId"]});
+        print({"dataQualityId": first["qualityId"]});
+        print({"dataStockQuantity": first["stockQuantity"]});
+        print({"dataMinStockLevel": first["minStockLevel"]});
+        print({"dataSellingPrice": first["sellingPrice"]});
+        print({"dataBarcodes": first["barcodes"]});
+        print({"dataCreatedAt": first["createdAt"]});
+        print({"dataUpdatedAt": first["updatedAt"]});
+        print({"dataCategory": first["category"]});
+        print({"dataCondition": first["condition"]});
+        print({"dataQuality": first["quality"]});
+      }
 
       try {
         final items = data.map((json) => Item.fromJson(json)).toList();

@@ -72,7 +72,9 @@ class _BarcodeScannerPageState extends ConsumerState<BarcodeScannerPage> {
                 MobileScanner(controller: controller, onDetect: _onDetect),
                 // Overlay with scan area
                 Container(
-                  decoration: BoxDecoration(color: Colors.black.withOpacity(0.5)),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.5),
+                  ),
                   child: Center(
                     child: Container(
                       width: 250,
