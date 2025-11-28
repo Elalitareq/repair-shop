@@ -156,6 +156,29 @@ class ReferenceService {
     );
   }
 
+  Future<ApiResponse<List<RepairState>>> getRepairStates() async {
+    final response = await _apiClient.get<Map<String, dynamic>>(
+      '/reference/repair-states',
+    );
+
+    if (response.isSuccess && response.data != null) {
+      final data = response.data!['data'] as List<dynamic>;
+      final states = data
+          .map((json) => RepairState.fromJson(json as Map<String, dynamic>))
+          .toList();
+      return ApiResponse.success(
+        data: states,
+        message: response.message,
+        statusCode: response.statusCode,
+      );
+    }
+
+    return ApiResponse.error(
+      message: response.message,
+      statusCode: response.statusCode,
+    );
+  }
+
   Future<ApiResponse<PaymentMethod>> createPaymentMethod({
     required String name,
     double? feeRate,

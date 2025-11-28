@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 
 import '../../../../shared/models/repair.dart';
 import '../../../../shared/providers/repair_provider.dart';
+import '../../../../shared/services/reference_service.dart';
 
 class RepairDetailPage extends ConsumerStatefulWidget {
   final String repairId;
@@ -21,10 +22,9 @@ class _RepairDetailPageState extends ConsumerState<RepairDetailPage> {
     super.initState();
     // Load repair details when page loads
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final id = int.tryParse(widget.repairId);
-      if (id != null) {
-        ref.read(repairDetailProvider.notifier).loadRepair(id);
-      }
+      ref
+          .read(repairDetailProvider.notifier)
+          .loadRepair(int.tryParse(widget.repairId)!);
     });
   }
 
@@ -178,7 +178,24 @@ class _RepairDetailPageState extends ConsumerState<RepairDetailPage> {
                         style: TextStyle(fontSize: 12, color: Colors.grey),
                       ),
                       const SizedBox(height: 4),
-                      _StatusChip(status: repair.state.name),
+                      Row(
+                        children: [
+                          _StatusChip(status: repair.state.name),
+                          const SizedBox(width: 8),
+                          if (repair.state.name != 'Delivered')
+                            ElevatedButton.icon(
+                              onPressed: () => _showUpdateStatusDialog(repair),
+                              icon: const Icon(Icons.autorenew),
+                              label: const Text('Update Status'),
+                              style: ElevatedButton.styleFrom(
+                                minimumSize: const Size(120, 36),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
                     ],
                   ),
                 ),
@@ -200,6 +217,117 @@ class _RepairDetailPageState extends ConsumerState<RepairDetailPage> {
           ],
         ),
       ),
+    );
+  }
+
+  Future<void> _showUpdateStatusDialog(Repair repair) async {
+    final referenceService = ref.read(referenceServiceProvider);
+    final repairDetailNotifier = ref.read(repairDetailProvider.notifier);
+
+    // Load states
+    final statesResponse = await referenceService.getRepairStates();
+    if (!statesResponse.isSuccess || statesResponse.data == null) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(statesResponse.message)));
+      }
+      return;
+    }
+
+    final states = statesResponse.data!;
+    int? selectedStateId = repair.stateId;
+    final notesController = TextEditingController();
+    bool isUpdating = false;
+
+    await showDialog(
+      context: context,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Text('Update Repair Status'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ...states.map((s) {
+                    return RadioListTile<int>(
+                      title: Text(s.name),
+                      value: s.id,
+                      groupValue: selectedStateId,
+                      onChanged: (value) =>
+                          setState(() => selectedStateId = value),
+                    );
+                  }).toList(),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: notesController,
+                    decoration: const InputDecoration(
+                      labelText: 'Notes (optional)',
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('Cancel'),
+                ),
+                ElevatedButton(
+                  onPressed: isUpdating || selectedStateId == null
+                      ? null
+                      : () async {
+                          setState(() => isUpdating = true);
+                          final selectedState = states.firstWhere(
+                            (s) => s.id == selectedStateId,
+                          );
+                          final success = await repairDetailNotifier
+                              .updateStatus(
+                                status: selectedState.name,
+                                notes: notesController.text.isEmpty
+                                    ? null
+                                    : notesController.text,
+                              );
+                          setState(() => isUpdating = false);
+                          if (success) {
+                            Navigator.of(context).pop();
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Status updated successfully'),
+                                ),
+                              );
+                            }
+                            // Refresh repair details
+                            await repairDetailNotifier.loadRepair(repair.id);
+                          } else {
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    ref.read(repairDetailProvider).error ??
+                                        'Failed to update status',
+                                  ),
+                                ),
+                              );
+                            }
+                          }
+                        },
+                  child: isUpdating
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Text('Update'),
+                ),
+              ],
+            );
+          },
+        );
+      },
     );
   }
 

@@ -164,7 +164,7 @@ export class BatchController {
         throw new AppError(500, "Failed to generate unique batch number");
       }
     }
-
+    console.log({ newBatchNumber });
     // @ts-ignore
     const batch = await prisma.batch.create({
       data: {

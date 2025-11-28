@@ -8,10 +8,12 @@ class FakeApiClient extends ApiClient {
   FakeApiClient() : super();
 
   @override
-  Future<ApiResponse<T>> get<T>(String path,
-      {Map<String, dynamic>? queryParameters,
-      Options? options,
-      T Function(dynamic)? fromJson}) async {
+  Future<ApiResponse<T>> get<T>(
+    String path, {
+    Map<String, dynamic>? queryParameters,
+    Options? options,
+    T Function(dynamic)? fromJson,
+  }) async {
     // Return a Map<String, dynamic> structure for T == Map<String, dynamic>
     if (T == Map<String, dynamic>) {
       final data = <String, dynamic>{'data': <dynamic>[]};

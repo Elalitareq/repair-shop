@@ -280,6 +280,87 @@ export class RepairController {
       },
     });
 
+    // Log status change in history
+    try {
+      await prisma.repairStatusHistory.create({
+        data: {
+          repairId: repair.id,
+          status: state.name,
+          notes: null,
+          updatedBy: req.user?.username ?? null,
+        },
+      });
+    } catch (e) {
+      console.warn("Failed to create repair status history record", e);
+    }
+
     res.json({ data: updated, message: "Repair state updated successfully" });
+  }
+
+  // Update repair status by name (status string)
+  async updateStatus(req: AuthRequest, res: Response) {
+    const { id } = req.params;
+    const { status, notes } = req.body;
+
+    if (!status) {
+      throw new AppError(400, "Status is required");
+    }
+
+    const repair = await prisma.repair.findUnique({
+      where: { id: parseInt(id) },
+    });
+
+    if (!repair) {
+      throw new AppError(404, "Repair not found");
+    }
+
+    // Find state by name, case-insensitive
+    const allStates = await prisma.repairState.findMany();
+    const state = allStates.find(
+      (s) => s.name.toLowerCase() === status.toLowerCase()
+    );
+
+    if (!state) {
+      throw new AppError(404, "Repair state not found");
+    }
+
+    // Set completion date if moving to "Delivered" state
+    const completedDate =
+      state.name === "Delivered" ? new Date() : repair.completedDate;
+
+    // Update the repair state
+    const updated = await prisma.repair.update({
+      where: { id: parseInt(id) },
+      data: {
+        stateId: state.id,
+        completedDate,
+      },
+      include: {
+        customer: true,
+        state: true,
+        issues: {
+          include: {
+            issueType: true,
+          },
+        },
+      },
+    });
+
+    // Log status change in history
+    try {
+      await prisma.repairStatusHistory.create({
+        data: {
+          repairId: repair.id,
+          status: state.name,
+          notes: notes ?? null,
+          updatedBy: req.user?.username ?? null,
+        },
+      });
+    } catch (e) {
+      // Ignore history logging errors; do not fail the main update
+      console.warn("Failed to create repair status history record", e);
+    }
+
+    res.json({ data: updated, message: "Repair status updated successfully" });
   }
 }

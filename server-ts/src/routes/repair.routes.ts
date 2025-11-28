@@ -16,5 +16,10 @@ router.put(
   authenticate,
   asyncHandler(repairController.updateState)
 );
+router.put(
+  "/:id/status",
+  authenticate,
+  asyncHandler(repairController.updateStatus)
+);
 
 export default router;
