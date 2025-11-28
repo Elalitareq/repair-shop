@@ -10,6 +10,7 @@ class CustomerSearchSelector extends ConsumerStatefulWidget {
   final String? labelText;
   final String? hintText;
   final bool showAddButton;
+  final String? type; // 'dealer' | 'customer' | null
 
   const CustomerSearchSelector({
     super.key,
@@ -18,6 +19,7 @@ class CustomerSearchSelector extends ConsumerStatefulWidget {
     this.labelText = 'Customer',
     this.hintText = 'Search and select a customer',
     this.showAddButton = true,
+    this.type,
   });
 
   @override
@@ -94,8 +96,15 @@ class _CustomerSearchSelectorState
 
     try {
       final customerService = ref.read(customerServiceProvider);
-      print('Searching for customers with query: $query');
-      final response = await customerService.searchCustomers(query);
+      print('Searching for customers with query: $query type: ${widget.type}');
+      final response;
+      if (widget.type == 'dealer') {
+        response = await customerService.getDealers(search: query);
+      } else if (widget.type == 'customer') {
+        response = await customerService.getRegularCustomers(search: query);
+      } else {
+        response = await customerService.searchCustomers(query);
+      }
 
       if (response.isSuccess && response.data != null) {
         print('Search returned ${response.data!.length} results');

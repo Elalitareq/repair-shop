@@ -90,11 +90,7 @@ class SettingsPage extends ConsumerWidget {
                   description: 'Manage repair workflow statuses',
                   icon: Icons.build_circle,
                   color: Colors.blue,
-                  onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Coming soon')),
-                    );
-                  },
+                  onTap: () => context.push('/settings/repair-states'),
                 ),
                 const SizedBox(height: 32),
 

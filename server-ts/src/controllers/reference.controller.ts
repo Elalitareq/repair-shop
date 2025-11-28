@@ -98,6 +98,40 @@ export class ReferenceController {
     res.json({ data: repairStates });
   }
 
+  async createRepairState(req: AuthRequest, res: Response) {
+    const { name, description, order } = req.body;
+    const repairState = await prisma.repairState.create({
+      data: {
+        name,
+        description: description || null,
+        order: order ?? 0,
+      },
+    });
+    res.status(201).json({ data: repairState });
+  }
+
+  async updateRepairState(req: AuthRequest, res: Response) {
+    const { id } = req.params;
+    const { name, description, order } = req.body;
+
+    const repairState = await prisma.repairState.update({
+      where: { id: parseInt(id) },
+      data: {
+        name,
+        description: description ?? undefined,
+        order: order ?? undefined,
+      },
+    });
+
+    res.json({ data: repairState });
+  }
+
+  async deleteRepairState(req: AuthRequest, res: Response) {
+    const { id } = req.params;
+    await prisma.repairState.delete({ where: { id: parseInt(id) } });
+    res.json({ message: "Repair state deleted successfully" });
+  }
+
   async getPaymentMethods(_req: AuthRequest, res: Response) {
     const paymentMethods = await prisma.paymentMethod.findMany({
       orderBy: { name: "asc" },

@@ -179,6 +179,72 @@ class ReferenceService {
     );
   }
 
+  Future<ApiResponse<RepairState>> createRepairState({
+    required String name,
+    String? description,
+    int? order,
+  }) async {
+    final response = await _apiClient.post<Map<String, dynamic>>(
+      '/reference/repair-states',
+      data: {
+        'name': name,
+        if (description != null) 'description': description,
+        if (order != null) 'order': order,
+      },
+    );
+
+    if (response.isSuccess && response.data != null) {
+      final state = RepairState.fromJson(response.data!['data']);
+      return ApiResponse.success(data: state, message: response.message);
+    }
+
+    return ApiResponse.error(
+      message: response.message,
+      statusCode: response.statusCode,
+    );
+  }
+
+  Future<ApiResponse<RepairState>> updateRepairState({
+    required int id,
+    required String name,
+    String? description,
+    int? order,
+  }) async {
+    final response = await _apiClient.put<Map<String, dynamic>>(
+      '/reference/repair-states/$id',
+      data: {
+        'name': name,
+        if (description != null) 'description': description,
+        if (order != null) 'order': order,
+      },
+    );
+
+    if (response.isSuccess && response.data != null) {
+      final state = RepairState.fromJson(response.data!['data']);
+      return ApiResponse.success(data: state, message: response.message);
+    }
+
+    return ApiResponse.error(
+      message: response.message,
+      statusCode: response.statusCode,
+    );
+  }
+
+  Future<ApiResponse<void>> deleteRepairState(int id) async {
+    final response = await _apiClient.delete<Map<String, dynamic>>(
+      '/reference/repair-states/$id',
+    );
+
+    if (response.isSuccess) {
+      return ApiResponse.success(data: null, message: response.message);
+    }
+
+    return ApiResponse.error(
+      message: response.message,
+      statusCode: response.statusCode,
+    );
+  }
+
   Future<ApiResponse<PaymentMethod>> createPaymentMethod({
     required String name,
     double? feeRate,

@@ -207,16 +207,16 @@ class CustomerDetailNotifier extends StateNotifier<CustomerDetailState> {
 
   Future<bool> createCustomer(Map<String, dynamic> data) async {
     state = state.copyWith(isLoading: true, error: null);
-
+    print({'createCustomerData': data});
     try {
       final response = await _customerService.createCustomer(
         name: data['name'],
-        companyName: data['company_name'],
+        companyName: data['companyName'],
         type: data['type'],
-        phone: data['phone_number'],
+        phone: data['phone'],
         address: data['address'],
-        taxNumber: data['tax_number'],
-        locationLink: data['location_link'],
+        taxNumber: data['taxNumber'],
+        locationLink: data['locationLink'],
       );
 
       if (response.isSuccess && response.data != null) {

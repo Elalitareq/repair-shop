@@ -562,6 +562,13 @@ final qualitiesProvider = FutureProvider<List<Quality>>((ref) async {
   return response.dataOrThrow;
 });
 
+// Repair states provider
+final repairStatesProvider = FutureProvider<List<RepairState>>((ref) async {
+  final refService = ref.watch(referenceServiceProvider);
+  final response = await refService.getRepairStates();
+  return response.dataOrThrow;
+});
+
 // Payment Methods Provider
 final paymentMethodsProvider = FutureProvider<List<PaymentMethod>>((ref) async {
   final refService = ref.watch(referenceServiceProvider);

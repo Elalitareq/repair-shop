@@ -4,6 +4,9 @@ import 'package:intl/intl.dart';
 
 import '../../../../shared/providers/item_provider.dart';
 import '../../../../shared/services/serial_service.dart';
+import '../../../../shared/widgets/customer_search_selector.dart';
+import '../../../../shared/models/customer.dart';
+import '../../../../shared/services/customer_service.dart';
 
 class BatchFormPage extends ConsumerStatefulWidget {
   final int? itemId; // null when editing existing batch
@@ -19,6 +22,7 @@ class _BatchFormPageState extends ConsumerState<BatchFormPage> {
   final _formKey = GlobalKey<FormState>();
   final _batchNumberController = TextEditingController();
   final _supplierIdController = TextEditingController();
+  Customer? _selectedSupplier;
   final _totalQuantityController = TextEditingController();
   final _unitCostController = TextEditingController();
   final _notesController = TextEditingController();
@@ -116,7 +120,10 @@ class _BatchFormPageState extends ConsumerState<BatchFormPage> {
     final totalCost = totalQuantity * unitCost;
 
     final data = {
-      'supplierId': int.tryParse(_supplierIdController.text) ?? 1,
+      'supplierId':
+          _selectedSupplier?.id ??
+          int.tryParse(_supplierIdController.text) ??
+          1,
       'purchaseDate': _purchaseDate.toIso8601String(),
       'totalQuantity': totalQuantity,
       'unitCost': unitCost,
@@ -240,6 +247,18 @@ class _BatchFormPageState extends ConsumerState<BatchFormPage> {
         setState(() {
           _batchNumberController.text = batch.batch.batchNumber;
           _supplierIdController.text = batch.batch.supplierId.toString();
+          // Load supplier details for nicer UI
+          final customerService = ref.read(customerServiceProvider);
+          customerService
+              .getCustomer(batch.batch.supplierId)
+              .then((resp) {
+                if (resp.isSuccess && resp.data != null) {
+                  setState(() {
+                    _selectedSupplier = resp.data;
+                  });
+                }
+              })
+              .catchError((_) {});
           _purchaseDate = batch.batch.purchaseDate;
           _totalQuantityController.text = batch.batch.totalQuantity.toString();
           _unitCostController.text = batch.batch.costPerUnit.toStringAsFixed(2);
@@ -306,16 +325,19 @@ class _BatchFormPageState extends ConsumerState<BatchFormPage> {
                         enabled: false,
                       ),
                     const SizedBox(height: 16),
-                    TextFormField(
-                      controller: _supplierIdController,
-                      decoration: const InputDecoration(
-                        labelText: 'Supplier ID',
-                        hintText: 'Enter supplier ID',
-                      ),
-                      keyboardType: TextInputType.number,
-                      validator: (v) => (v == null || v.isEmpty)
-                          ? 'Supplier ID is required'
-                          : null,
+                    CustomerSearchSelector(
+                      selectedCustomer: _selectedSupplier,
+                      onCustomerSelected: (customer) {
+                        setState(() {
+                          _selectedSupplier = customer;
+                          _supplierIdController.text =
+                              customer?.id.toString() ?? '';
+                        });
+                      },
+                      labelText: 'Supplier',
+                      hintText: 'Search and select a supplier',
+                      showAddButton: true,
+                      type: 'dealer',
                     ),
                     const SizedBox(height: 16),
                     ListTile(

@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import '../../../../shared/models/repair.dart';
 import '../../../../shared/models/customer.dart';
 import '../../../../shared/providers/repair_provider.dart';
+import '../../../../shared/providers/item_provider.dart';
 import '../../../../shared/widgets/customer_search_selector.dart';
 
 class RepairFormPage extends ConsumerStatefulWidget {
@@ -331,65 +332,10 @@ class _RepairFormPageState extends ConsumerState<RepairFormPage> {
   }
 
   Widget _buildStatusSection() {
-    // For now, hardcode the states - in a real app, this would come from a provider
-    final states = [
-      RepairState(
-        id: 1,
-        name: 'Received',
-        description: 'Repair received',
-        order: 1,
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
-      ),
-      RepairState(
-        id: 2,
-        name: 'Diagnosed',
-        description: 'Issue diagnosed',
-        order: 2,
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
-      ),
-      RepairState(
-        id: 3,
-        name: 'In Progress',
-        description: 'Being repaired',
-        order: 3,
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
-      ),
-      RepairState(
-        id: 4,
-        name: 'Waiting Parts',
-        description: 'Waiting for parts',
-        order: 4,
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
-      ),
-      RepairState(
-        id: 5,
-        name: 'Completed',
-        description: 'Repair completed',
-        order: 5,
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
-      ),
-      RepairState(
-        id: 6,
-        name: 'Ready for Pickup',
-        description: 'Ready for customer',
-        order: 6,
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
-      ),
-      RepairState(
-        id: 7,
-        name: 'Delivered',
-        description: 'Delivered to customer',
-        order: 7,
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
-      ),
-    ];
+    final statesAsync = ref.watch(repairStatesProvider);
+
+    // For now, fallback to an empty list while loading/error
+    // fallback empty list if needed
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -401,19 +347,28 @@ class _RepairFormPageState extends ConsumerState<RepairFormPage> {
           ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 16),
-        DropdownButtonFormField<int>(
-          value: _selectedStateId,
-          decoration: const InputDecoration(
-            labelText: 'Repair Status',
-            border: OutlineInputBorder(),
+        statesAsync.when(
+          data: (dataStates) => DropdownButtonFormField<int>(
+            value: _selectedStateId,
+            decoration: const InputDecoration(
+              labelText: 'Repair Status',
+              border: OutlineInputBorder(),
+            ),
+            items: dataStates
+                .map((s) => DropdownMenuItem(value: s.id, child: Text(s.name)))
+                .toList(),
+            onChanged: (value) => setState(() => _selectedStateId = value),
           ),
-          items: states
-              .map(
-                (state) =>
-                    DropdownMenuItem(value: state.id, child: Text(state.name)),
-              )
-              .toList(),
-          onChanged: (value) => setState(() => _selectedStateId = value),
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (_, __) => DropdownButtonFormField<int>(
+            value: _selectedStateId,
+            decoration: const InputDecoration(
+              labelText: 'Repair Status',
+              border: OutlineInputBorder(),
+            ),
+            items: const [],
+            onChanged: null,
+          ),
         ),
       ],
     );

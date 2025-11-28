@@ -62,6 +62,22 @@ router.get(
   authenticate,
   asyncHandler(referenceController.getRepairStates.bind(referenceController))
 );
+router.post(
+  "/repair-states",
+  authenticate,
+  [body("name").notEmpty().withMessage("Name is required")],
+  asyncHandler(referenceController.createRepairState.bind(referenceController))
+);
+router.put(
+  "/repair-states/:id",
+  authenticate,
+  asyncHandler(referenceController.updateRepairState.bind(referenceController))
+);
+router.delete(
+  "/repair-states/:id",
+  authenticate,
+  asyncHandler(referenceController.deleteRepairState.bind(referenceController))
+);
 router.get(
   "/payment-methods",
   authenticate,
