@@ -33,7 +33,7 @@ class ApiClient {
       LogInterceptor(
         requestBody: true,
         responseBody: true,
-        logPrint: (obj) => _logger.d(obj),
+        // logPrint: (obj) => _logger.d(obj),
       ),
     ]);
   }

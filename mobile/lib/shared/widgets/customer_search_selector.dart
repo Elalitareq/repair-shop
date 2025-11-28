@@ -29,19 +29,11 @@ class CustomerSearchSelector extends ConsumerStatefulWidget {
 
 class _CustomerSearchSelectorState
     extends ConsumerState<CustomerSearchSelector> {
-  final TextEditingController _searchController = TextEditingController();
-  final FocusNode _searchFocusNode = FocusNode();
-  List<Customer> _searchResults = [];
-  bool _isSearching = false;
-  OverlayEntry? _overlayEntry;
+  final SearchController _searchController = SearchController();
 
   @override
   void initState() {
     super.initState();
-    _searchController.addListener(_onSearchChanged);
-    _searchFocusNode.addListener(_onFocusChanged);
-
-    // Initialize with selected customer name
     if (widget.selectedCustomer != null) {
       _searchController.text = widget.selectedCustomer!.name;
     }
@@ -50,15 +42,12 @@ class _CustomerSearchSelectorState
   @override
   void dispose() {
     _searchController.dispose();
-    _searchFocusNode.dispose();
-    _removeOverlay();
     super.dispose();
   }
 
   @override
   void didUpdateWidget(CustomerSearchSelector oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // Update text when selected customer changes externally
     if (widget.selectedCustomer != oldWidget.selectedCustomer) {
       if (widget.selectedCustomer != null) {
         _searchController.text = widget.selectedCustomer!.name;
@@ -68,35 +57,11 @@ class _CustomerSearchSelectorState
     }
   }
 
-  void _onSearchChanged() {
-    final query = _searchController.text.trim();
-    if (query.isEmpty) {
-      setState(() {
-        _searchResults = [];
-      });
-      _removeOverlay();
-      return;
-    }
-
-    _performSearch(query);
-  }
-
-  void _onFocusChanged() {
-    if (_searchFocusNode.hasFocus && _searchController.text.isNotEmpty) {
-      _showSearchResults();
-    } else {
-      _removeOverlay();
-    }
-  }
-
-  Future<void> _performSearch(String query) async {
-    if (query.length < 2) return; // Minimum 2 characters
-
-    setState(() => _isSearching = true);
+  Future<List<Customer>> _searchCustomers(String query) async {
+    if (query.length < 2) return [];
 
     try {
       final customerService = ref.read(customerServiceProvider);
-      print('Searching for customers with query: $query type: ${widget.type}');
       final response;
       if (widget.type == 'dealer') {
         response = await customerService.getDealers(search: query);
@@ -107,149 +72,33 @@ class _CustomerSearchSelectorState
       }
 
       if (response.isSuccess && response.data != null) {
-        print('Search returned ${response.data!.length} results');
-        setState(() {
-          _searchResults = response.data!;
-          _isSearching = false;
-        });
-
-        if (_searchResults.isNotEmpty) {
-          _showSearchResults();
-        } else {
-          _removeOverlay();
-        }
-      } else {
-        print('Search failed: ${response.message}');
-        setState(() => _isSearching = false);
-        _removeOverlay();
+        return response.data!;
       }
     } catch (e) {
       print('Search error: $e');
-      setState(() => _isSearching = false);
-      _removeOverlay();
     }
-  }
-
-  void _showSearchResults() {
-    _removeOverlay();
-
-    final renderBox = context.findRenderObject() as RenderBox?;
-    if (renderBox == null) return;
-
-    final size = renderBox.size;
-    final offset = renderBox.localToGlobal(Offset.zero);
-
-    _overlayEntry = OverlayEntry(
-      builder: (context) => Positioned(
-        left: offset.dx,
-        top: offset.dy + size.height + 5,
-        width: size.width,
-        child: Material(
-          elevation: 4,
-          borderRadius: BorderRadius.circular(8),
-          child: Container(
-            constraints: const BoxConstraints(maxHeight: 200),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(8),
-              color: Theme.of(context).colorScheme.surface,
-            ),
-            child: _isSearching
-                ? const Padding(
-                    padding: EdgeInsets.all(16),
-                    child: Center(child: CircularProgressIndicator()),
-                  )
-                : _searchResults.isEmpty
-                ? Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Text('No customers found'),
-                        if (widget.showAddButton) ...[
-                          const SizedBox(height: 8),
-                          TextButton.icon(
-                            onPressed: _showAddCustomerDialog,
-                            icon: const Icon(Icons.add),
-                            label: const Text('Add New Customer'),
-                          ),
-                        ],
-                      ],
-                    ),
-                  )
-                : ListView.builder(
-                    shrinkWrap: true,
-                    itemCount:
-                        _searchResults.length + (widget.showAddButton ? 1 : 0),
-                    itemBuilder: (context, index) {
-                      if (index == _searchResults.length) {
-                        // Add new customer button
-                        return ListTile(
-                          leading: const Icon(Icons.add),
-                          title: const Text('Add New Customer'),
-                          onTap: _showAddCustomerDialog,
-                        );
-                      }
-
-                      final customer = _searchResults[index];
-                      return ListTile(
-                        leading: Icon(
-                          customer.isDealer ? Icons.business : Icons.person,
-                        ),
-                        title: Text(customer.name),
-                        subtitle: Text(customer.phone),
-                        onTap: () {
-                          _selectCustomer(customer);
-                        },
-                      );
-                    },
-                  ),
-          ),
-        ),
-      ),
-    );
-
-    Overlay.of(context).insert(_overlayEntry!);
-  }
-
-  void _removeOverlay() {
-    _overlayEntry?.remove();
-    _overlayEntry = null;
-  }
-
-  void _selectCustomer(Customer customer) {
-    _searchController.text = customer.name;
-    widget.onCustomerSelected(customer);
-    _removeOverlay();
-    _searchFocusNode.unfocus();
-  }
-
-  void _clearSelection() {
-    _searchController.clear();
-    widget.onCustomerSelected(null);
-    _removeOverlay();
+    return [];
   }
 
   Future<void> _showAddCustomerDialog() async {
-    _removeOverlay();
-
     final result = await showDialog<Customer>(
       context: context,
-      builder: (context) => AddCustomerDialog(),
+      builder: (context) => const AddCustomerDialog(),
     );
 
     if (result != null) {
-      _selectCustomer(result);
+      widget.onCustomerSelected(result);
+      _searchController.text = result.name;
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        TextFormField(
-          controller: _searchController,
-          focusNode: _searchFocusNode,
+    return SearchAnchor(
+      searchController: _searchController,
+      builder: (BuildContext context, SearchController controller) {
+        return TextFormField(
+          controller: controller,
           decoration: InputDecoration(
             labelText: widget.labelText,
             hintText: widget.hintText,
@@ -257,10 +106,13 @@ class _CustomerSearchSelectorState
             suffixIcon: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                if (_searchController.text.isNotEmpty)
+                if (controller.text.isNotEmpty)
                   IconButton(
                     icon: const Icon(Icons.clear),
-                    onPressed: _clearSelection,
+                    onPressed: () {
+                      controller.clear();
+                      widget.onCustomerSelected(null);
+                    },
                     tooltip: 'Clear selection',
                   ),
                 if (widget.showAddButton)
@@ -272,14 +124,51 @@ class _CustomerSearchSelectorState
               ],
             ),
           ),
+          onTap: () {
+            controller.openView();
+          },
+          onChanged: (_) {
+            controller.openView();
+          },
           validator: (value) {
             if (widget.selectedCustomer == null) {
               return 'Please select a customer';
             }
             return null;
           },
-        ),
-      ],
+        );
+      },
+      suggestionsBuilder:
+          (BuildContext context, SearchController controller) async {
+        final query = controller.text;
+        final customers = await _searchCustomers(query);
+
+        return [
+          if (customers.isEmpty && query.length >= 2)
+            const ListTile(title: Text('No customers found')),
+          ...customers.map(
+            (customer) => ListTile(
+              leading: Icon(customer.isDealer ? Icons.business : Icons.person),
+              title: Text(customer.name),
+              subtitle: Text(customer.phone),
+              onTap: () {
+                widget.onCustomerSelected(customer);
+                controller.closeView(customer.name);
+              },
+            ),
+          ),
+          if (widget.showAddButton)
+            ListTile(
+              leading: const Icon(Icons.add),
+              title: const Text('Add New Customer'),
+              onTap: () {
+                // Close the search view first
+                controller.closeView(controller.text);
+                _showAddCustomerDialog();
+              },
+            ),
+        ];
+      },
     );
   }
 }
