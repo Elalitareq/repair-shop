@@ -36,9 +36,7 @@ class _RepairDetailPageState extends ConsumerState<RepairDetailPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          'Repair #${repairDetailState.repair?.repairNumber ?? widget.repairId}',
-        ),
+        title: Text('Case #${repairDetailState.repair?.id ?? widget.repairId}'),
         backgroundColor: colorScheme.primary,
         foregroundColor: Colors.white,
         leading: IconButton(

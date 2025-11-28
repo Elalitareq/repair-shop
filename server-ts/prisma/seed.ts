@@ -99,16 +99,27 @@ async function main() {
   console.log("✅ Payment methods seeded");
 
   // Create default admin user
-  const hashedPassword = await bcrypt.hash("admin123", 10);
+  const hashedPassword = await bcrypt.hash("myshop99", 10);
+  const tech1HashedPassword = await bcrypt.hash("66897197aA@", 10);
   await prisma.user.create({
     data: {
-      username: "admin",
-      email: "admin@repairshop.com",
+      username: "khaled",
+      email: "khaled@repairshop.com",
       password: hashedPassword,
       role: "admin",
     },
   });
-  console.log("✅ Admin user created (username: admin, password: admin123)");
+
+  await prisma.user.create({
+    data: {
+      username: "admin",
+      email: "tech1@repairshop.com",
+      password: tech1HashedPassword,
+      role: "technician",
+    },
+  });
+
+  console.log("✅ Admin user created (username: khaled, password: myshop99)");
 
   // Seed demo customer
   const demoCustomer = await prisma.customer.create({

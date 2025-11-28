@@ -4,14 +4,14 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../shared/providers/auth_provider.dart';
 
-class _StatData {
-  final String title;
-  final String value;
-  final IconData icon;
-  final Color color;
+// class _StatData {
+//   final String title;
+//   final String value;
+//   final IconData icon;
+//   final Color color;
 
-  _StatData(this.title, this.value, this.icon, this.color);
-}
+//   _StatData(this.title, this.value, this.icon, this.color);
+// }
 
 class _ActionData {
   final String title;
@@ -36,7 +36,7 @@ class DashboardPage extends ConsumerWidget {
 
     // Calculate responsive values
     final horizontalPadding = isDesktop ? 48.0 : (isTablet ? 32.0 : 16.0);
-    final statCardsPerRow = isDesktop ? 4 : (isTablet ? 2 : 2);
+    // final statCardsPerRow = isDesktop ? 4 : (isTablet ? 2 : 2);
     final actionCardsPerRow = isDesktop ? 4 : (isTablet ? 3 : 2);
     final maxContentWidth = isDesktop ? 1400.0 : double.infinity;
 
@@ -75,18 +75,18 @@ class DashboardPage extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Stats Section
-                Text(
-                  'Overview',
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                SizedBox(height: isDesktop ? 24 : 16),
-                _buildStatsGrid(
-                  context,
-                  crossAxisCount: statCardsPerRow,
-                  childAspectRatio: isDesktop ? 2.5 : (isTablet ? 2.0 : 1.5),
-                ),
+                // Text(
+                //   'Overview',
+                //   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                //     fontWeight: FontWeight.bold,
+                //   ),
+                // ),
+                // SizedBox(height: isDesktop ? 24 : 16),
+                // _buildStatsGrid(
+                //   context,
+                //   crossAxisCount: statCardsPerRow,
+                //   childAspectRatio: isDesktop ? 2.5 : (isTablet ? 2.0 : 1.5),
+                // ),
                 SizedBox(height: isDesktop ? 48 : 32),
 
                 // Quick Actions Section
@@ -111,40 +111,40 @@ class DashboardPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildStatsGrid(
-    BuildContext context, {
-    required int crossAxisCount,
-    required double childAspectRatio,
-  }) {
-    final stats = [
-      _StatData('Pending Repairs', '15', Icons.build, Colors.orange),
-      _StatData('Completed Today', '8', Icons.check_circle, Colors.green),
-      _StatData('Low Stock Items', '3', Icons.inventory, Colors.red),
-      _StatData('Total Customers', '247', Icons.people, Colors.blue),
-    ];
+  // Widget _buildStatsGrid(
+  //   BuildContext context, {
+  //   required int crossAxisCount,
+  //   required double childAspectRatio,
+  // }) {
+  //   final stats = [
+  //     _StatData('Pending Repairs', '15', Icons.build, Colors.orange),
+  //     _StatData('Completed Today', '8', Icons.check_circle, Colors.green),
+  //     _StatData('Low Stock Items', '3', Icons.inventory, Colors.red),
+  //     _StatData('Total Customers', '247', Icons.people, Colors.blue),
+  //   ];
 
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: crossAxisCount,
-        crossAxisSpacing: 16,
-        mainAxisSpacing: 16,
-        childAspectRatio: childAspectRatio,
-      ),
-      itemCount: stats.length,
-      itemBuilder: (context, index) {
-        final stat = stats[index];
-        return _buildStatCard(
-          context,
-          stat.title,
-          stat.value,
-          stat.icon,
-          stat.color,
-        );
-      },
-    );
-  }
+  //   return GridView.builder(
+  //     shrinkWrap: true,
+  //     physics: const NeverScrollableScrollPhysics(),
+  //     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+  //       crossAxisCount: crossAxisCount,
+  //       crossAxisSpacing: 16,
+  //       mainAxisSpacing: 16,
+  //       childAspectRatio: childAspectRatio,
+  //     ),
+  //     itemCount: stats.length,
+  //     itemBuilder: (context, index) {
+  //       final stat = stats[index];
+  //       return _buildStatCard(
+  //         context,
+  //         stat.title,
+  //         stat.value,
+  //         stat.icon,
+  //         stat.color,
+  //       );
+  //     },
+  //   );
+  // }
 
   Widget _buildActionsGrid(
     BuildContext context, {
@@ -206,39 +206,39 @@ class DashboardPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildStatCard(
-    BuildContext context,
-    String title,
-    String value,
-    IconData icon,
-    Color color,
-  ) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Icon(icon, color: color, size: 32),
-                Text(
-                  value,
-                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    color: color,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Text(title, style: Theme.of(context).textTheme.bodyMedium),
-          ],
-        ),
-      ),
-    );
-  }
+  // Widget _buildStatCard(
+  //   BuildContext context,
+  //   String title,
+  //   String value,
+  //   IconData icon,
+  //   Color color,
+  // ) {
+  //   return Card(
+  //     child: Padding(
+  //       padding: const EdgeInsets.all(16.0),
+  //       child: Column(
+  //         crossAxisAlignment: CrossAxisAlignment.start,
+  //         children: [
+  //           Row(
+  //             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //             children: [
+  //               Icon(icon, color: color, size: 32),
+  //               Text(
+  //                 value,
+  //                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+  //                   color: color,
+  //                   fontWeight: FontWeight.bold,
+  //                 ),
+  //               ),
+  //             ],
+  //           ),
+  //           const SizedBox(height: 8),
+  //           Text(title, style: Theme.of(context).textTheme.bodyMedium),
+  //         ],
+  //       ),
+  //     ),
+  //   );
+  // }
 
   Widget _buildActionCard(
     BuildContext context,

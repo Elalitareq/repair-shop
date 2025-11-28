@@ -9,6 +9,7 @@ class CategoryService {
   CategoryService(this._apiClient);
 
   Future<ApiResponse<List<Category>>> getCategories({
+    bool forceRefresh = false,
     int page = 1,
     int limit = 50,
   }) async {
