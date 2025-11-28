@@ -5,12 +5,22 @@ import { prisma } from "../utils/prisma";
 
 export class CustomerController {
   async getAll(req: AuthRequest, res: Response) {
-    const { page = "1", limit = "50", type } = req.query;
+    const { page = "1", limit = "50", type, search } = req.query;
+    console.log("getAll query params:", req.query);
     const skip = (parseInt(page as string) - 1) * parseInt(limit as string);
 
     const where: any = {};
     if (type) {
       where.type = type;
+    }
+    if (search) {
+      console.log("Searching for:", search);
+      where.OR = [
+        { name: { contains: search as string } },
+        { phone: { contains: search as string } },
+        { email: { contains: search as string } },
+        { companyName: { contains: search as string } },
+      ];
     }
 
     const [customers, total] = await Promise.all([
@@ -23,8 +33,25 @@ export class CustomerController {
       prisma.customer.count({ where }),
     ]);
 
+    console.log(`Found ${customers.length} customers out of ${total} total`);
+
+    // Transform to camelCase
+    const transformedCustomers = customers.map((customer) => ({
+      id: customer.id,
+      name: customer.name,
+      phone: customer.phone,
+      email: customer.email,
+      address: customer.address,
+      companyName: customer.companyName,
+      type: customer.type,
+      locationLink: customer.locationLink,
+      taxNumber: customer.taxNumber,
+      createdAt: customer.createdAt.toISOString(),
+      updatedAt: customer.updatedAt.toISOString(),
+    }));
+
     res.json({
-      data: customers,
+      data: transformedCustomers,
       pagination: {
         page: parseInt(page as string),
         limit: parseInt(limit as string),
@@ -53,7 +80,22 @@ export class CustomerController {
       take: 50,
     });
 
-    res.json({ data: customers });
+    // Transform to camelCase
+    const transformedCustomers = customers.map((customer) => ({
+      id: customer.id,
+      name: customer.name,
+      phone: customer.phone,
+      email: customer.email,
+      address: customer.address,
+      companyName: customer.companyName,
+      type: customer.type,
+      locationLink: customer.locationLink,
+      taxNumber: customer.taxNumber,
+      createdAt: customer.createdAt.toISOString(),
+      updatedAt: customer.updatedAt.toISOString(),
+    }));
+
+    res.json({ data: transformedCustomers });
   }
 
   async getById(req: AuthRequest, res: Response) {
@@ -77,13 +119,36 @@ export class CustomerController {
       throw new AppError(404, "Customer not found");
     }
 
-    res.json({ data: customer });
+    // Transform to camelCase
+    const responseData = {
+      id: customer.id,
+      name: customer.name,
+      phone: customer.phone,
+      email: customer.email,
+      address: customer.address,
+      companyName: customer.companyName,
+      type: customer.type,
+      locationLink: customer.locationLink,
+      createdAt: customer.createdAt.toISOString(),
+      updatedAt: customer.updatedAt.toISOString(),
+    };
+
+    res.json({ data: responseData });
   }
 
   async create(req: AuthRequest, res: Response) {
-    const { name, phone, email, address, companyName, type, locationLink } =
-      req.body;
-
+    console.log("Creating customer with body:", req.body);
+    const {
+      name,
+      phone,
+      email,
+      address,
+      companyName,
+      type,
+      locationLink,
+      taxNumber,
+    } = req.body;
+    console.log("Extracted name:", name, "phone:", phone);
     if (!name || !phone) {
       throw new AppError(400, "Name and phone are required");
     }
@@ -106,12 +171,30 @@ export class CustomerController {
         companyName,
         type: type || "customer",
         locationLink,
+        taxNumber,
       },
     });
 
+    console.log("Created customer:", customer.name);
+
+    // Transform to camelCase for response
+    const responseData = {
+      id: customer.id,
+      name: customer.name,
+      phone: customer.phone,
+      email: customer.email,
+      address: customer.address,
+      companyName: customer.companyName,
+      type: customer.type,
+      locationLink: customer.locationLink,
+      taxNumber: customer.taxNumber,
+      createdAt: customer.createdAt.toISOString(),
+      updatedAt: customer.updatedAt.toISOString(),
+    };
+
     res
       .status(201)
-      .json({ data: customer, message: "Customer created successfully" });
+      .json({ data: responseData, message: "Customer created successfully" });
   }
 
   async update(req: AuthRequest, res: Response) {
@@ -140,17 +223,31 @@ export class CustomerController {
     const updated = await prisma.customer.update({
       where: { id: parseInt(id) },
       data: {
-        name,
-        phone,
-        email,
-        address,
-        companyName,
-        type,
-        locationLink,
+        ...(name !== undefined && { name }),
+        ...(phone !== undefined && { phone }),
+        ...(email !== undefined && { email }),
+        ...(address !== undefined && { address }),
+        ...(companyName !== undefined && { companyName }),
+        ...(type !== undefined && { type }),
+        ...(locationLink !== undefined && { locationLink }),
       },
     });
 
-    res.json({ data: updated, message: "Customer updated successfully" });
+    // Transform to camelCase
+    const responseData = {
+      id: updated.id,
+      name: updated.name,
+      phone: updated.phone,
+      email: updated.email,
+      address: updated.address,
+      companyName: updated.companyName,
+      type: updated.type,
+      locationLink: updated.locationLink,
+      createdAt: updated.createdAt.toISOString(),
+      updatedAt: updated.updatedAt.toISOString(),
+    };
+
+    res.json({ data: responseData, message: "Customer updated successfully" });
   }
 
   async delete(req: AuthRequest, res: Response) {

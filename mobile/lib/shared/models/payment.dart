@@ -1,21 +1,22 @@
 import 'package:json_annotation/json_annotation.dart';
 import 'base_model.dart';
+import 'payment_method.dart';
 
 part 'payment.g.dart';
 
 /// Payment represents payment transactions
 @JsonSerializable()
 class Payment extends BaseModel {
-  @JsonKey(name: 'sale_id')
+  @JsonKey(name: 'saleId')
   final int saleId;
 
-  @JsonKey(name: 'payment_method')
-  final String paymentMethod;
+  @JsonKey(name: 'paymentMethod')
+  final PaymentMethod? paymentMethod;
 
   @JsonKey(name: 'amount')
   final double amount;
 
-  @JsonKey(name: 'reference_number')
+  @JsonKey(name: 'referenceNumber')
   final String? referenceNumber;
 
   @JsonKey(name: 'payment_date')
@@ -24,7 +25,7 @@ class Payment extends BaseModel {
   @JsonKey(name: 'status')
   final String status; // pending, completed, failed, refunded
 
-  @JsonKey(name: 'processed_by_id')
+  @JsonKey(name: 'processedById')
   final int? processedById;
 
   @JsonKey(name: 'notes')
@@ -32,8 +33,8 @@ class Payment extends BaseModel {
 
   const Payment({
     required super.id,
-    super.createdAt,
-    super.updatedAt,
+    required super.createdAt,
+    required super.updatedAt,
     super.syncStatus,
     required this.saleId,
     required this.paymentMethod,
@@ -64,23 +65,10 @@ class Payment extends BaseModel {
   bool get isRefunded => status == 'refunded';
 
   /// Get payment method display name
-  String get paymentMethodDisplay {
-    switch (paymentMethod.toLowerCase()) {
-      case 'cash':
-        return 'Cash';
-      case 'card':
-        return 'Card';
-      case 'bank_transfer':
-        return 'Bank Transfer';
-      case 'mixed':
-        return 'Mixed';
-      default:
-        return paymentMethod;
-    }
-  }
+  String get paymentMethodDisplay => paymentMethod?.name ?? 'Unknown Method';
 
   @override
   String toString() {
-    return 'Payment{id: $id, saleId: $saleId, method: $paymentMethod, amount: $amount, status: $status}';
+    return 'Payment{id: $id, saleId: $saleId, method: ${paymentMethod?.name ?? 'Unknown'}, amount: $amount, status: $status}';
   }
 }

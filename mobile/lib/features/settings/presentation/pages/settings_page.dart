@@ -72,6 +72,17 @@ class SettingsPage extends ConsumerWidget {
                 ),
                 const SizedBox(height: 16),
 
+                // Payment Methods Section
+                _buildSettingsSection(
+                  context,
+                  title: 'Payment Methods',
+                  description: 'Manage available payment methods',
+                  icon: Icons.payment,
+                  color: Colors.indigo,
+                  onTap: () => context.push('/settings/payment-methods'),
+                ),
+                const SizedBox(height: 16),
+
                 // Repair Status Section
                 _buildSettingsSection(
                   context,

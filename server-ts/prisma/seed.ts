@@ -79,6 +79,11 @@ async function main() {
   // Seed Payment Methods
   const paymentMethods = [
     { name: "Cash", description: "Cash payment", feeRate: 0.0 },
+    {
+      name: "Whish Money",
+      description: "Whish money (wallet) payment",
+      feeRate: 0.0,
+    },
     { name: "Card", description: "Credit/Debit card", feeRate: 0.025 },
     { name: "Bank Transfer", description: "Bank transfer", feeRate: 0.0 },
     {
@@ -105,6 +110,45 @@ async function main() {
   });
   console.log("✅ Admin user created (username: admin, password: admin123)");
 
+  // Seed demo customer
+  const demoCustomer = await prisma.customer.create({
+    data: {
+      name: "John Doe",
+      phone: "+1234567890",
+      email: "john.doe@example.com",
+      address: "123 Main St, City, Country",
+    },
+  });
+  console.log("✅ Demo customer created");
+
+  // Seed demo repair
+  const receivedState = await prisma.repairState.findFirst({
+    where: { name: "Received" },
+  });
+
+  if (receivedState) {
+    await prisma.repair.create({
+      data: {
+        repairNumber: "REP-2025-0001",
+        customerId: demoCustomer.id,
+        deviceBrand: "Apple",
+        deviceModel: "iPhone 14 Pro",
+        deviceImei: "123456789012345",
+        password: "1234",
+        problemDescription: "Screen is cracked and not responding to touch",
+        diagnosisNotes: "Screen damage detected, digitizer needs replacement",
+        priority: "high",
+        estimatedCost: 150.0,
+        estimatedCompletion: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
+        warrantyProvided: true,
+        warrantyDays: 90,
+        stateId: receivedState.id,
+        extraInfo: "Customer wants quick repair",
+      },
+    });
+    console.log("✅ Demo repair created");
+  }
+
   console.log("🎉 Database seeding completed!");
 
   // Add demo serials (IMEIs) if items and batches exist
@@ -116,15 +160,25 @@ async function main() {
     const batch = await prisma.batch.findFirst();
 
     if (item && batch) {
-      // @ts-ignore - will be available after prisma generate
-      await prisma.serial.createMany({
-        data: [
-          { imei: `IMEI-${item.id}-1`, itemId: item.id, batchId: batch.id },
-          { imei: `IMEI-${item.id}-2`, itemId: item.id, batchId: batch.id },
-        ],
-        skipDuplicates: true,
-      });
-      console.log("✅ Demo serials created for item and batch");
+      try {
+        await prisma.serial.create({
+          data: {
+            imei: `IMEI-${item.id}-1`,
+            itemId: item.id,
+            batchId: batch.id,
+          },
+        });
+        await prisma.serial.create({
+          data: {
+            imei: `IMEI-${item.id}-2`,
+            itemId: item.id,
+            batchId: batch.id,
+          },
+        });
+        console.log("✅ Demo serials created for item and batch");
+      } catch (error) {
+        console.log("ℹ️  Demo serials already exist or failed to create");
+      }
     }
   }
 }

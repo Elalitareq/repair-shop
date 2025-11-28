@@ -61,6 +61,9 @@ class SaleListNotifier extends StateNotifier<SaleListState> {
     state = state.copyWith(isLoading: true, error: null);
 
     try {
+      print(
+        '🔍 SaleListNotifier.loadSales - Starting load, refresh: $refresh, page: ${refresh ? 1 : state.currentPage}',
+      );
       final response = await _saleService.getSales(
         customerId: customerId,
         status: status,
@@ -68,10 +71,24 @@ class SaleListNotifier extends StateNotifier<SaleListState> {
         limit: 50,
       );
 
+      print(
+        '🔍 SaleListNotifier.loadSales - Response received: ${response.isSuccess}, data length: ${response.data?.length ?? 0}',
+      );
+
       if (response.isSuccess && response.data != null) {
         final newSales = refresh
             ? response.data!
             : [...state.sales, ...response.data!];
+
+        print(
+          '🔍 SaleListNotifier.loadSales - New sales count: ${newSales.length}',
+        );
+        if (newSales.isNotEmpty) {
+          print(
+            '🔍 SaleListNotifier.loadSales - First sale sample: ${newSales.first.toString()}',
+          );
+        }
+
         state = state.copyWith(
           sales: newSales,
           isLoading: false,
@@ -138,6 +155,36 @@ class SaleDetailNotifier extends StateNotifier<SaleDetailState> {
 
       if (response.isSuccess && response.data != null) {
         state = state.copyWith(sale: response.data);
+        return true;
+      }
+      return false;
+    } catch (e) {
+      state = state.copyWith(error: e.toString());
+      return false;
+    }
+  }
+
+  Future<bool> addPayment(
+    int saleId, {
+    required int paymentMethodId,
+    required double amount,
+    String? referenceNumber,
+    DateTime? paymentDate,
+    String? notes,
+  }) async {
+    try {
+      final response = await _saleService.createPayment(
+        saleId,
+        paymentMethodId: paymentMethodId,
+        amount: amount,
+        referenceNumber: referenceNumber,
+        paymentDate: paymentDate,
+        notes: notes,
+      );
+
+      if (response.isSuccess && response.data != null) {
+        // After successful payment, reload sale to refresh payments and totals
+        await loadSale(saleId);
         return true;
       }
       return false;

@@ -19,7 +19,9 @@
     "prisma"
   ],
   "author": "",
-  "license": "ISC",
+  "prisma": {
+    "seed": "ts-node prisma/seed.ts"
+  },
   "dependencies": {
     "@prisma/client": "^5.7.0",
     "@types/swagger-jsdoc": "^6.0.4",

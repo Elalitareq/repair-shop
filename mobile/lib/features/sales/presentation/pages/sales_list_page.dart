@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../shared/providers/sale_provider.dart';
 
@@ -22,10 +23,17 @@ class _SalesListPageState extends ConsumerState<SalesListPage> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(saleListProvider);
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Sales'),
+        backgroundColor: colorScheme.primary,
+        foregroundColor: Colors.white,
+        leading: IconButton(
+          onPressed: () => context.go('/dashboard'),
+          icon: const Icon(Icons.arrow_back),
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.filter_list),
@@ -51,7 +59,9 @@ class _SalesListPageState extends ConsumerState<SalesListPage> {
                   if (index == state.sales.length) {
                     // Load more indicator
                     if (!state.isLoading) {
-                      ref.read(saleListProvider.notifier).loadSales();
+                      Future.microtask(
+                        () => ref.read(saleListProvider.notifier).loadSales(),
+                      );
                     }
                     return const Center(
                       child: Padding(
@@ -62,13 +72,20 @@ class _SalesListPageState extends ConsumerState<SalesListPage> {
                   }
 
                   final sale = state.sales[index];
+                  print(
+                    '🔍 SalesListPage - Building sale item $index: ${sale.toString()}',
+                  );
+                  print(
+                    '🔍 SalesListPage - Sale ID: ${sale.id}, saleNumber: ${sale.saleNumber}, customer: ${sale.customer?.name ?? 'null'}',
+                  );
+
                   return Card(
                     margin: const EdgeInsets.symmetric(
                       horizontal: 16,
                       vertical: 8,
                     ),
                     child: ListTile(
-                      title: Text('Sale #${sale.saleNumber}'),
+                      title: Text('Sale #${sale.saleNumber ?? 'N/A'}'),
                       subtitle: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -91,21 +108,21 @@ class _SalesListPageState extends ConsumerState<SalesListPage> {
                         _getStatusIcon(sale.status),
                         color: _getStatusColor(sale.status),
                       ),
-                      onTap: () =>
-                          Navigator.of(context).pushNamed('/sales/${sale.id}'),
+                      onTap: () => context.go('/sales/${sale.id}'),
                     ),
                   );
                 },
               ),
             ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => Navigator.of(context).pushNamed('/sales/new'),
+        onPressed: () => context.go('/sales/new'),
         child: const Icon(Icons.add),
       ),
     );
   }
 
   Color _getStatusColor(String status) {
+    print('🔍 SalesListPage._getStatusColor - status: $status');
     switch (status.toLowerCase()) {
       case 'draft':
         return Colors.orange;
@@ -121,6 +138,7 @@ class _SalesListPageState extends ConsumerState<SalesListPage> {
   }
 
   IconData _getStatusIcon(String status) {
+    print('🔍 SalesListPage._getStatusIcon - status: $status');
     switch (status.toLowerCase()) {
       case 'draft':
         return Icons.edit;

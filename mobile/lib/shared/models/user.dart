@@ -15,13 +15,13 @@ class User extends BaseModel {
   @JsonKey(name: 'role')
   final String role;
 
-  @JsonKey(name: 'is_active')
+  @JsonKey(name: 'isActive')
   final bool isActive;
 
   const User({
     required super.id,
-    super.createdAt,
-    super.updatedAt,
+    required super.createdAt,
+    required super.updatedAt,
     super.syncStatus,
     required this.username,
     required this.email,

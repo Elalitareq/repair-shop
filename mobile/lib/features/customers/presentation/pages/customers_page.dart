@@ -174,9 +174,13 @@ class _CustomersPageState extends ConsumerState<CustomersPage> {
                 itemCount: state.customers.length + (state.hasMore ? 1 : 0),
                 itemBuilder: (context, index) {
                   if (index == state.customers.length) {
-                    // Load more indicator
+                    // Load more indicator - schedule the request after build to avoid modifying providers during build
                     if (!state.isLoading) {
-                      ref.read(customerListProvider.notifier).loadCustomers();
+                      Future.microtask(
+                        () => ref
+                            .read(customerListProvider.notifier)
+                            .loadCustomers(),
+                      );
                     }
                     return const Padding(
                       padding: EdgeInsets.all(16),
@@ -201,13 +205,13 @@ class _CustomersPageState extends ConsumerState<CustomersPage> {
                         ),
                       ),
                       title: Text(
-                        customer.displayName,
+                        customer.name,
                         style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                       subtitle: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(customer.phoneNumber),
+                          Text(customer.phone),
                           if (customer.address != null &&
                               customer.address!.isNotEmpty)
                             Text(

@@ -120,6 +120,116 @@ class ReferenceService {
     );
   }
 
+  Future<ApiResponse<List<PaymentMethod>>> getPaymentMethods() async {
+    final response = await _apiClient.get<Map<String, dynamic>>(
+      '/reference/payment-methods',
+    );
+
+    if (response.isSuccess && response.data != null) {
+      final data = response.data!['data'] as List<dynamic>;
+      final methods = <PaymentMethod>[];
+      for (final json in data) {
+        try {
+          final method = PaymentMethod.fromJson(json as Map<String, dynamic>);
+          methods.add(method);
+        } catch (e) {
+          // Log and skip problematic entries
+          print(
+            '❌ ReferenceService.getPaymentMethods - Failed to parse method: $e',
+          );
+          print(
+            '❌ ReferenceService.getPaymentMethods - Problematic JSON: $json',
+          );
+          continue;
+        }
+      }
+      return ApiResponse.success(
+        data: methods,
+        message: response.message,
+        statusCode: response.statusCode,
+      );
+    }
+
+    return ApiResponse.error(
+      message: response.message,
+      statusCode: response.statusCode,
+    );
+  }
+
+  Future<ApiResponse<PaymentMethod>> createPaymentMethod({
+    required String name,
+    double? feeRate,
+    String? description,
+  }) async {
+    final response = await _apiClient.post<Map<String, dynamic>>(
+      '/reference/payment-methods',
+      data: {
+        'name': name,
+        if (feeRate != null) 'feeRate': feeRate,
+        if (description != null) 'description': description,
+      },
+    );
+
+    if (response.isSuccess && response.data != null) {
+      final method = PaymentMethod.fromJson(response.data!['data']);
+      return ApiResponse.success(
+        data: method,
+        message: response.message,
+        statusCode: response.statusCode,
+      );
+    }
+
+    return ApiResponse.error(
+      message: response.message,
+      statusCode: response.statusCode,
+    );
+  }
+
+  Future<ApiResponse<PaymentMethod>> updatePaymentMethod({
+    required int id,
+    required String name,
+    double? feeRate,
+    String? description,
+  }) async {
+    final response = await _apiClient.put<Map<String, dynamic>>(
+      '/reference/payment-methods/$id',
+      data: {
+        'name': name,
+        if (feeRate != null) 'feeRate': feeRate,
+        if (description != null) 'description': description,
+      },
+    );
+
+    if (response.isSuccess && response.data != null) {
+      final method = PaymentMethod.fromJson(response.data!['data']);
+      return ApiResponse.success(
+        data: method,
+        message: response.message,
+        statusCode: response.statusCode,
+      );
+    }
+
+    return ApiResponse.error(
+      message: response.message,
+      statusCode: response.statusCode,
+    );
+  }
+
+  Future<ApiResponse<void>> deletePaymentMethod(int id) async {
+    final response = await _apiClient.delete<Map<String, dynamic>>(
+      '/reference/payment-methods/$id',
+    );
+
+    if (response.isSuccess) {
+      return ApiResponse.success(data: null, message: response.message);
+    }
+
+    return ApiResponse.error(
+      message: response.message,
+      statusCode: response.statusCode,
+    );
+  }
+
   Future<ApiResponse<Quality>> createQuality({
     required String name,
     String? description,

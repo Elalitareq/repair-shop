@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../shared/providers/sale_provider.dart';
+import '../../../../shared/widgets/customer_search_selector.dart';
 import '../../../../shared/providers/item_provider.dart';
 import '../../../../shared/models/models.dart';
 
@@ -15,6 +17,7 @@ class SaleFormPage extends ConsumerStatefulWidget {
 class _SaleFormPageState extends ConsumerState<SaleFormPage> {
   final _formKey = GlobalKey<FormState>();
   final List<SaleItemData> _saleItems = [];
+  Customer? _selectedCustomer;
   String? _discountType;
   double? _discountValue;
   double? _taxRate;
@@ -38,10 +41,17 @@ class _SaleFormPageState extends ConsumerState<SaleFormPage> {
   Widget build(BuildContext context) {
     final itemState = ref.watch(itemListProvider);
     final formState = ref.watch(saleFormProvider);
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('New Sale'),
+        backgroundColor: colorScheme.primary,
+        foregroundColor: Colors.white,
+        leading: IconButton(
+          onPressed: () => context.go('/sales'),
+          icon: const Icon(Icons.arrow_back),
+        ),
         actions: [
           if (formState.isLoading)
             const Center(
@@ -63,6 +73,19 @@ class _SaleFormPageState extends ConsumerState<SaleFormPage> {
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
+            // Customer selection
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: CustomerSearchSelector(
+                  selectedCustomer: _selectedCustomer,
+                  onCustomerSelected: (c) =>
+                      setState(() => _selectedCustomer = c),
+                  showAddButton: true,
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
             // Items Section
             Card(
               child: Padding(
@@ -243,7 +266,7 @@ class _SaleFormPageState extends ConsumerState<SaleFormPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    item.item.name,
+                    item.item.name ?? 'Unknown Item',
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                   Text(
@@ -314,9 +337,9 @@ class _SaleFormPageState extends ConsumerState<SaleFormPage> {
             itemBuilder: (context, index) {
               final item = availableItems[index];
               return ListTile(
-                title: Text(item.name),
+                title: Text(item.name ?? 'Unknown Item'),
                 subtitle: Text(
-                  'Stock: ${item.stockQuantity} • Price: \$${item.sellingPrice}',
+                  'Stock: ${item.stockQuantity} • Price: \$${item.sellingPrice?.toStringAsFixed(2) ?? 'N/A'}',
                 ),
                 onTap: () {
                   _addItem(item);
@@ -413,9 +436,9 @@ class _SaleFormPageState extends ConsumerState<SaleFormPage> {
     final items = _saleItems
         .map(
           (item) => {
-            'item_id': item.item.id,
+            'itemId': item.item.id,
             'quantity': item.quantity,
-            'unit_price': item.unitPrice,
+            'unitPrice': item.unitPrice,
             'discount': item.discount,
           },
         )
@@ -431,14 +454,17 @@ class _SaleFormPageState extends ConsumerState<SaleFormPage> {
           notes: _notesController.text.isNotEmpty
               ? _notesController.text
               : null,
+          customerId: _selectedCustomer?.id,
         );
 
     if (sale != null) {
       if (mounted) {
-        Navigator.of(context).pop(); // Go back to sales list
+        context.go('/sales'); // Go back to sales list
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Sale ${sale.saleNumber} created successfully'),
+            content: Text(
+              'Sale ${sale.saleNumber ?? 'N/A'} created successfully',
+            ),
           ),
         );
       }

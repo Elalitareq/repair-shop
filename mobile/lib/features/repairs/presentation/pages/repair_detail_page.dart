@@ -37,7 +37,7 @@ class _RepairDetailPageState extends ConsumerState<RepairDetailPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Repair #${repairDetailState.repair?.ticketNumber ?? widget.repairId}',
+          'Repair #${repairDetailState.repair?.repairNumber ?? widget.repairId}',
         ),
         backgroundColor: colorScheme.primary,
         foregroundColor: Colors.white,
@@ -47,7 +47,7 @@ class _RepairDetailPageState extends ConsumerState<RepairDetailPage> {
         ),
         actions: [
           if (repairDetailState.repair != null &&
-              repairDetailState.repair!.canBeEdited)
+              repairDetailState.repair!.state.name != 'Delivered')
             IconButton(
               onPressed: () => context.go('/repairs/${widget.repairId}/edit'),
               icon: const Icon(Icons.edit),
@@ -86,16 +86,7 @@ class _RepairDetailPageState extends ConsumerState<RepairDetailPage> {
           : repairDetailState.repair == null
           ? const Center(child: Text('Repair not found'))
           : _buildRepairDetails(repairDetailState.repair!),
-      floatingActionButton:
-          repairDetailState.repair != null &&
-              !repairDetailState.repair!.isCompleted
-          ? FloatingActionButton.extended(
-              onPressed: () =>
-                  _showStatusUpdateDialog(repairDetailState.repair!),
-              icon: const Icon(Icons.update),
-              label: const Text('Update Status'),
-            )
-          : null,
+      floatingActionButton: null,
     );
   }
 
@@ -114,20 +105,14 @@ class _RepairDetailPageState extends ConsumerState<RepairDetailPage> {
           const SizedBox(height: 16),
 
           // Customer Information Card
-          if (repair.customer != null) ...[
-            _buildCustomerCard(repair.customer!),
-            const SizedBox(height: 16),
-          ],
+          ...[_buildCustomerCard(repair.customer), const SizedBox(height: 16)],
 
           // Problem Description Card
           _buildProblemCard(repair),
           const SizedBox(height: 16),
 
           // Notes Cards
-          if (repair.diagnosisNotes != null || repair.repairNotes != null) ...[
-            _buildNotesCard(repair),
-            const SizedBox(height: 16),
-          ],
+          ...[_buildNotesCard(repair), const SizedBox(height: 16)],
 
           // Cost Information Card
           _buildCostCard(repair),
@@ -138,8 +123,8 @@ class _RepairDetailPageState extends ConsumerState<RepairDetailPage> {
           const SizedBox(height: 16),
 
           // Items/Parts Card
-          if (repair.items != null && repair.items!.isNotEmpty) ...[
-            _buildItemsCard(repair.items!),
+          if (repair.items.isNotEmpty) ...[
+            _buildItemsCard(repair.items),
             const SizedBox(height: 16),
           ],
 
@@ -150,9 +135,8 @@ class _RepairDetailPageState extends ConsumerState<RepairDetailPage> {
           ],
 
           // Status History Card
-          if (repair.statusHistory != null &&
-              repair.statusHistory!.isNotEmpty) ...[
-            _buildStatusHistoryCard(repair.statusHistory!),
+          if (repair.statusHistory.isNotEmpty) ...[
+            _buildStatusHistoryCard(repair.statusHistory),
             const SizedBox(height: 16),
           ],
         ],
@@ -194,7 +178,7 @@ class _RepairDetailPageState extends ConsumerState<RepairDetailPage> {
                         style: TextStyle(fontSize: 12, color: Colors.grey),
                       ),
                       const SizedBox(height: 4),
-                      _StatusChip(status: repair.status),
+                      _StatusChip(status: repair.state.name),
                     ],
                   ),
                 ),
@@ -242,10 +226,10 @@ class _RepairDetailPageState extends ConsumerState<RepairDetailPage> {
               ],
             ),
             const SizedBox(height: 16),
-            _buildInfoRow('Type', repair.deviceType),
+            _buildInfoRow('Type', repair.deviceBrand),
             _buildInfoRow('Model', repair.deviceModel),
-            if (repair.deviceSerial.isNotEmpty)
-              _buildInfoRow('Serial Number', repair.deviceSerial),
+            if (repair.deviceImei != null && repair.deviceImei!.isNotEmpty)
+              _buildInfoRow('Serial Number', repair.deviceImei!),
           ],
         ),
       ),
@@ -276,8 +260,7 @@ class _RepairDetailPageState extends ConsumerState<RepairDetailPage> {
             ),
             const SizedBox(height: 16),
             _buildInfoRow('Name', customer.name),
-            if (customer.phoneNumber != null)
-              _buildInfoRow('Phone', customer.phoneNumber!),
+            if (customer.phone != null) _buildInfoRow('Phone', customer.phone!),
             if (customer.address != null)
               _buildInfoRow('Address', customer.address!),
           ],
@@ -339,7 +322,7 @@ class _RepairDetailPageState extends ConsumerState<RepairDetailPage> {
               ],
             ),
             const SizedBox(height: 16),
-            if (repair.diagnosisNotes != null) ...[
+            ...[
               const Text(
                 'Diagnosis Notes',
                 style: TextStyle(
@@ -349,7 +332,7 @@ class _RepairDetailPageState extends ConsumerState<RepairDetailPage> {
                 ),
               ),
               const SizedBox(height: 4),
-              Text(repair.diagnosisNotes!),
+              Text(repair.diagnosisNotes ?? ""),
               const SizedBox(height: 12),
             ],
             if (repair.repairNotes != null) ...[
@@ -395,7 +378,7 @@ class _RepairDetailPageState extends ConsumerState<RepairDetailPage> {
             const SizedBox(height: 16),
             _buildInfoRow(
               'Estimated Cost',
-              '\$${repair.estimatedCost.toStringAsFixed(2)}',
+              '\$${repair.estimatedCost?.toStringAsFixed(2) ?? '0.00'}',
             ),
             if (repair.finalCost != null)
               _buildInfoRow(
@@ -449,10 +432,7 @@ class _RepairDetailPageState extends ConsumerState<RepairDetailPage> {
               ],
             ),
             const SizedBox(height: 16),
-            _buildInfoRow(
-              'Created',
-              dateFormat.format(repair.createdAt ?? DateTime.now()),
-            ),
+            _buildInfoRow('Created', dateFormat.format(repair.createdAt)),
             if (repair.estimatedCompletion != null)
               _buildInfoRow(
                 'Estimated Completion',
@@ -462,11 +442,6 @@ class _RepairDetailPageState extends ConsumerState<RepairDetailPage> {
               _buildInfoRow(
                 'Actual Completion',
                 dateFormat.format(repair.actualCompletion!),
-              ),
-            if (repair.deliveredAt != null)
-              _buildInfoRow(
-                'Delivered',
-                dateFormat.format(repair.deliveredAt!),
               ),
           ],
         ),
@@ -522,7 +497,7 @@ class _RepairDetailPageState extends ConsumerState<RepairDetailPage> {
                               vertical: 2,
                             ),
                             decoration: BoxDecoration(
-                              color: Colors.blue.withOpacity(0.1),
+                              color: Colors.blue.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: const Text(
@@ -689,110 +664,11 @@ class _RepairDetailPageState extends ConsumerState<RepairDetailPage> {
       ),
     );
   }
-
-  void _showStatusUpdateDialog(Repair repair) {
-    RepairStatus? selectedStatus = repair.status;
-    final notesController = TextEditingController();
-
-    showDialog(
-      context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setState) => AlertDialog(
-          title: const Text('Update Status'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text('Status:'),
-              const SizedBox(height: 8),
-              DropdownButtonFormField<RepairStatus>(
-                value: selectedStatus,
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                  isDense: true,
-                ),
-                items: RepairStatus.values
-                    .map(
-                      (status) => DropdownMenuItem(
-                        value: status,
-                        child: Text(status.name),
-                      ),
-                    )
-                    .toList(),
-                onChanged: (value) => setState(() => selectedStatus = value),
-              ),
-              const SizedBox(height: 16),
-              const Text('Notes (optional):'),
-              const SizedBox(height: 8),
-              TextField(
-                controller: notesController,
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                  hintText: 'Add notes about this status change...',
-                ),
-                maxLines: 3,
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: selectedStatus != null
-                  ? () async {
-                      final success = await ref
-                          .read(repairDetailProvider.notifier)
-                          .updateStatus(
-                            status: selectedStatus!,
-                            notes: notesController.text.isEmpty
-                                ? null
-                                : notesController.text,
-                          );
-
-                      if (context.mounted) {
-                        Navigator.of(context).pop();
-                        if (success) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Status updated successfully'),
-                            ),
-                          );
-                          // Update the repair list as well
-                          final updatedRepair = ref
-                              .read(repairDetailProvider)
-                              .repair;
-                          if (updatedRepair != null) {
-                            ref
-                                .read(repairListProvider.notifier)
-                                .updateRepairInList(updatedRepair);
-                          }
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                ref.read(repairDetailProvider).error ??
-                                    'Failed to update status',
-                              ),
-                            ),
-                          );
-                        }
-                      }
-                    }
-                  : null,
-              child: const Text('Update'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 }
 
 // Reuse the status chip and priority indicator from the repairs page
 class _StatusChip extends StatelessWidget {
-  final RepairStatus status;
+  final String status;
 
   const _StatusChip({required this.status});
 
@@ -802,24 +678,29 @@ class _StatusChip extends StatelessWidget {
     Color textColor = Colors.white;
 
     switch (status) {
-      case RepairStatus.pending:
+      case 'Received':
         backgroundColor = Colors.orange;
         break;
-      case RepairStatus.inProgress:
+      case 'Diagnosed':
+        backgroundColor = Colors.yellow;
+        break;
+      case 'In Progress':
         backgroundColor = Colors.blue;
         break;
-      case RepairStatus.waitingParts:
+      case 'Waiting Parts':
         backgroundColor = Colors.purple;
         break;
-      case RepairStatus.completed:
+      case 'Completed':
         backgroundColor = Colors.green;
         break;
-      case RepairStatus.delivered:
+      case 'Ready for Pickup':
         backgroundColor = Colors.teal;
         break;
-      case RepairStatus.cancelled:
-        backgroundColor = Colors.red;
+      case 'Delivered':
+        backgroundColor = Colors.grey;
         break;
+      default:
+        backgroundColor = Colors.grey;
     }
 
     return Container(
@@ -829,7 +710,7 @@ class _StatusChip extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
       ),
       child: Text(
-        status.name.toUpperCase(),
+        status.toUpperCase(),
         style: TextStyle(
           color: textColor,
           fontSize: 12,
@@ -841,7 +722,7 @@ class _StatusChip extends StatelessWidget {
 }
 
 class _PriorityIndicator extends StatelessWidget {
-  final RepairPriority priority;
+  final String priority;
 
   const _PriorityIndicator({required this.priority});
 
@@ -851,22 +732,25 @@ class _PriorityIndicator extends StatelessWidget {
     IconData icon;
 
     switch (priority) {
-      case RepairPriority.low:
+      case 'low':
         color = Colors.green;
         icon = Icons.keyboard_arrow_down;
         break;
-      case RepairPriority.normal:
+      case 'normal':
         color = Colors.blue;
         icon = Icons.remove;
         break;
-      case RepairPriority.high:
+      case 'high':
         color = Colors.orange;
         icon = Icons.keyboard_arrow_up;
         break;
-      case RepairPriority.urgent:
+      case 'urgent':
         color = Colors.red;
         icon = Icons.priority_high;
         break;
+      default:
+        color = Colors.grey;
+        icon = Icons.help;
     }
 
     return Row(
@@ -875,7 +759,7 @@ class _PriorityIndicator extends StatelessWidget {
         Icon(icon, color: color, size: 16),
         const SizedBox(width: 2),
         Text(
-          priority.name.toUpperCase(),
+          priority.toUpperCase(),
           style: TextStyle(
             color: color,
             fontSize: 12,

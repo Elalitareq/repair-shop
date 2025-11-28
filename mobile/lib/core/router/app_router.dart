@@ -15,11 +15,16 @@ import '../../features/customers/presentation/pages/customer_form_page.dart';
 import '../../features/repairs/presentation/pages/repairs_page.dart';
 import '../../features/repairs/presentation/pages/repair_detail_page.dart';
 import '../../features/repairs/presentation/pages/repair_form_page.dart';
+import '../../features/sales/presentation/pages/sales_list_page.dart';
+import '../../features/sales/presentation/pages/sale_form_page.dart';
+import '../../features/sales/presentation/pages/sale_detail_page.dart';
+import '../../features/sales/presentation/pages/barcode_scanner_page.dart';
 import '../../features/settings/presentation/pages/settings_page.dart';
 import '../../features/settings/presentation/pages/backup_page.dart';
 import '../../features/settings/presentation/pages/categories_settings_page.dart';
 import '../../features/settings/presentation/pages/conditions_settings_page.dart';
 import '../../features/settings/presentation/pages/qualities_settings_page.dart';
+import '../../features/settings/presentation/pages/payment_methods_settings_page.dart';
 import '../../shared/providers/auth_provider.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
@@ -184,6 +189,32 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
 
       GoRoute(
+        path: '/sales',
+        name: 'sales',
+        builder: (context, state) => const SalesListPage(),
+        routes: [
+          GoRoute(
+            path: 'new',
+            name: 'sale-create',
+            builder: (context, state) => const SaleFormPage(),
+          ),
+          GoRoute(
+            path: ':id',
+            name: 'sale-detail',
+            builder: (context, state) {
+              final id = int.parse(state.pathParameters['id']!);
+              return SaleDetailPage(saleId: id);
+            },
+          ),
+          GoRoute(
+            path: 'scan',
+            name: 'barcode-scan',
+            builder: (context, state) => const BarcodeScannerPage(),
+          ),
+        ],
+      ),
+
+      GoRoute(
         path: '/settings',
         name: 'settings',
         builder: (context, state) => const SettingsPage(),
@@ -203,6 +234,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             name: 'settings-qualities',
             builder: (context, state) => const QualitiesSettingsPage(),
           ),
+          GoRoute(
+            path: 'payment-methods',
+            name: 'settings-payment-methods',
+            builder: (context, state) => const PaymentMethodsSettingsPage(),
+          ),
+          // Duplicate "payment-methods" route removed to avoid name collision.
           GoRoute(
             path: 'backup',
             name: 'settings-backup',

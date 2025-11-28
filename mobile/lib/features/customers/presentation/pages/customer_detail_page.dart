@@ -174,19 +174,17 @@ class _CustomerDetailPageState extends ConsumerState<CustomerDetailPage> {
                           ListTile(
                             leading: const Icon(Icons.phone),
                             title: const Text('Phone Number'),
-                            subtitle: Text(customer.phoneNumber),
+                            subtitle: Text(customer.phone),
                             trailing: IconButton(
                               icon: const Icon(Icons.call),
-                              onPressed: () =>
-                                  _launchPhone(customer.phoneNumber),
+                              onPressed: () => _launchPhone(customer.phone),
                             ),
                           ),
-                          if (customer.address != null &&
-                              customer.address!.isNotEmpty)
+                          if (customer.address.isNotEmpty)
                             ListTile(
                               leading: const Icon(Icons.location_on),
                               title: const Text('Address'),
-                              subtitle: Text(customer.address!),
+                              subtitle: Text(customer.address),
                               trailing:
                                   customer.locationLink != null &&
                                       customer.locationLink!.isNotEmpty
@@ -311,7 +309,7 @@ class _CustomerDetailPageState extends ConsumerState<CustomerDetailPage> {
                                 return ListTile(
                                   contentPadding: EdgeInsets.zero,
                                   title: Text(
-                                    'Ticket #${repair.ticketNumber} - ${repair.deviceModel}',
+                                    'Ticket #${repair.repairNumber} - ${repair.deviceModel}',
                                   ),
                                   subtitle: Text(repair.problemDescription),
                                   trailing: Text(
@@ -378,8 +376,8 @@ class _CustomerDetailPageState extends ConsumerState<CustomerDetailPage> {
     );
   }
 
-  Future<void> _launchPhone(String phoneNumber) async {
-    final url = Uri.parse('tel:$phoneNumber');
+  Future<void> _launchPhone(String phone) async {
+    final url = Uri.parse('tel:$phone');
     if (await canLaunchUrl(url)) {
       await launchUrl(url);
     }

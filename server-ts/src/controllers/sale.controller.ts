@@ -368,6 +368,61 @@ export class SaleController {
     res.json({ data: updated, message: "Sale status updated successfully" });
   }
 
+  async createPayment(req: AuthRequest, res: Response) {
+    const { id } = req.params;
+    const { paymentMethodId, amount, referenceNumber, paymentDate, notes } =
+      req.body;
+
+    if (!paymentMethodId || !amount) {
+      throw new AppError(400, "paymentMethodId and amount are required");
+    }
+
+    const sale = await prisma.sale.findUnique({ where: { id: parseInt(id) } });
+    if (!sale) {
+      throw new AppError(404, "Sale not found");
+    }
+
+    const payment = await prisma.payment.create({
+      data: {
+        saleId: parseInt(id),
+        paymentMethodId: paymentMethodId,
+        amount: amount,
+        referenceNumber: referenceNumber || null,
+        notes: notes || null,
+        paymentDate: paymentDate ? new Date(paymentDate) : new Date(),
+      },
+      include: { paymentMethod: true },
+    });
+
+    // Update sale payment status
+    const totalPaidResult = await prisma.payment.aggregate({
+      where: { saleId: parseInt(id) },
+      _sum: { amount: true },
+    });
+    const totalPaid = totalPaidResult._sum.amount || 0;
+    const saleRecord = await prisma.sale.findUnique({
+      where: { id: parseInt(id) },
+    });
+    if (saleRecord) {
+      const paymentStatus =
+        totalPaid >= saleRecord.totalAmount
+          ? "paid"
+          : totalPaid > 0
+          ? "partial"
+          : "pending";
+
+      await prisma.sale.update({
+        where: { id: parseInt(id) },
+        data: { paymentStatus },
+      });
+    }
+
+    // Return the created payment (including paymentMethod)
+    res
+      .status(201)
+      .json({ data: payment, message: "Payment added successfully" });
+  }
+
   async getDailyReport(req: AuthRequest, res: Response) {
     const { date } = req.query;
     const targetDate = date ? new Date(date as string) : new Date();

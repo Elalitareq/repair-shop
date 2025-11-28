@@ -6,37 +6,24 @@ part 'customer.g.dart';
 /// Customer represents both dealers and customers
 @JsonSerializable()
 class Customer extends BaseModel {
-  @JsonKey(name: 'name')
   final String name;
-
-  @JsonKey(name: 'company_name')
   final String? companyName;
-
-  @JsonKey(name: 'type')
   final String type; // dealer, customer
-
-  @JsonKey(name: 'phone_number')
-  final String phoneNumber;
-
-  @JsonKey(name: 'address')
-  final String? address;
-
-  @JsonKey(name: 'tax_number')
+  final String phone;
+  final String address;
   final String? taxNumber;
-
-  @JsonKey(name: 'location_link')
   final String? locationLink;
 
   const Customer({
     required super.id,
-    super.createdAt,
-    super.updatedAt,
+    required super.createdAt,
+    required super.updatedAt,
     super.syncStatus,
     required this.name,
     this.companyName,
     required this.type,
-    required this.phoneNumber,
-    this.address,
+    required this.phone,
+    required this.address,
     this.taxNumber,
     this.locationLink,
   });
@@ -55,10 +42,9 @@ class Customer extends BaseModel {
 
   /// Get display name (company name if available, otherwise name)
   String get displayName =>
-      companyName?.isNotEmpty == true ? companyName! : name;
-
+      (companyName?.isNotEmpty ?? false) ? companyName! : name;
   @override
   String toString() {
-    return 'Customer{id: $id, name: $name, type: $type, phoneNumber: $phoneNumber}';
+    return 'Customer{id: $id, name: $name, type: $type, phone: $phone, address: $address}';
   }
 }

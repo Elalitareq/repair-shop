@@ -14,8 +14,8 @@ class RepairService {
   /// Get all repairs with optional filtering
   Future<ApiResponse<List<Repair>>> getRepairs({
     String? search,
-    RepairStatus? status,
-    RepairPriority? priority,
+    String? status,
+    String? priority,
     int? customerId,
     int page = 1,
     int limit = 20,
@@ -27,15 +27,15 @@ class RepairService {
     }
 
     if (status != null) {
-      queryParams['status'] = status.name;
+      queryParams['status'] = status;
     }
 
     if (priority != null) {
-      queryParams['priority'] = priority.name;
+      queryParams['priority'] = priority;
     }
 
     if (customerId != null) {
-      queryParams['customer_id'] = customerId;
+      queryParams['customerId'] = customerId;
     }
 
     final response = await _apiClient.get<Map<String, dynamic>>(
@@ -54,9 +54,11 @@ class RepairService {
       }
 
       final data = dataList as List<dynamic>;
+      print(data);
       final repairs = data
           .map((json) => Repair.fromJson(json as Map<String, dynamic>))
           .toList();
+      print(repairs);
 
       return ApiResponse.success(
         data: repairs,
@@ -104,12 +106,12 @@ class RepairService {
   /// Create new repair
   Future<ApiResponse<Repair>> createRepair({
     required int customerId,
-    required String deviceType,
+    required String deviceBrand,
     required String deviceModel,
-    String? deviceSerial,
+    String? deviceImei,
     required String problemDescription,
     String? diagnosisNotes,
-    RepairPriority priority = RepairPriority.normal,
+    String priority = 'Normal',
     double estimatedCost = 0.0,
     DateTime? estimatedCompletion,
     bool warrantyProvided = false,
@@ -119,17 +121,17 @@ class RepairService {
     final response = await _apiClient.post<Map<String, dynamic>>(
       '/repairs',
       data: {
-        'customer_id': customerId,
-        'device_type': deviceType,
-        'device_model': deviceModel,
-        'device_serial': deviceSerial,
-        'problem_description': problemDescription,
-        'diagnosis_notes': diagnosisNotes,
-        'priority': priority.name,
-        'estimated_cost': estimatedCost,
-        'estimated_completion': estimatedCompletion?.toIso8601String(),
-        'warranty_provided': warrantyProvided,
-        'warranty_days': warrantyDays,
+        'customerId': customerId,
+        'deviceBrand': deviceBrand,
+        'deviceModel': deviceModel,
+        'deviceImei': deviceImei,
+        'problemDescription': problemDescription,
+        'diagnosisNotes': diagnosisNotes,
+        'priority': priority,
+        'estimatedCost': estimatedCost,
+        'estimatedCompletion': estimatedCompletion?.toIso8601String(),
+        'warrantyProvided': warrantyProvided,
+        'warrantyDays': warrantyDays,
         'items': items?.map((item) => item.toJson()).toList(),
       },
     );
@@ -163,14 +165,14 @@ class RepairService {
   Future<ApiResponse<Repair>> updateRepair({
     required int id,
     int? customerId,
-    String? deviceType,
+    String? deviceBrand,
     String? deviceModel,
-    String? deviceSerial,
+    String? deviceImei,
     String? problemDescription,
     String? diagnosisNotes,
     String? repairNotes,
-    RepairStatus? status,
-    RepairPriority? priority,
+    String? status,
+    String? priority,
     double? estimatedCost,
     double? finalCost,
     DateTime? estimatedCompletion,
@@ -181,27 +183,27 @@ class RepairService {
   }) async {
     final data = <String, dynamic>{};
 
-    if (customerId != null) data['customer_id'] = customerId;
-    if (deviceType != null) data['device_type'] = deviceType;
-    if (deviceModel != null) data['device_model'] = deviceModel;
-    if (deviceSerial != null) data['device_serial'] = deviceSerial;
+    if (customerId != null) data['customerId'] = customerId;
+    if (deviceBrand != null) data['deviceBrand'] = deviceBrand;
+    if (deviceModel != null) data['deviceModel'] = deviceModel;
+    if (deviceImei != null) data['deviceImei'] = deviceImei;
     if (problemDescription != null) {
-      data['problem_description'] = problemDescription;
+      data['problemDescription'] = problemDescription;
     }
-    if (diagnosisNotes != null) data['diagnosis_notes'] = diagnosisNotes;
-    if (repairNotes != null) data['repair_notes'] = repairNotes;
-    if (status != null) data['status'] = status.name;
-    if (priority != null) data['priority'] = priority.name;
-    if (estimatedCost != null) data['estimated_cost'] = estimatedCost;
-    if (finalCost != null) data['final_cost'] = finalCost;
+    if (diagnosisNotes != null) data['diagnosisNotes'] = diagnosisNotes;
+    if (repairNotes != null) data['repairNotes'] = repairNotes;
+    if (status != null) data['status'] = status;
+    if (priority != null) data['priority'] = priority;
+    if (estimatedCost != null) data['estimatedCost'] = estimatedCost;
+    if (finalCost != null) data['finalCost'] = finalCost;
     if (estimatedCompletion != null) {
-      data['estimated_completion'] = estimatedCompletion.toIso8601String();
+      data['estimatedCompletion'] = estimatedCompletion.toIso8601String();
     }
     if (actualCompletion != null) {
-      data['actual_completion'] = actualCompletion.toIso8601String();
+      data['actualCompletion'] = actualCompletion.toIso8601String();
     }
-    if (warrantyProvided != null) data['warranty_provided'] = warrantyProvided;
-    if (warrantyDays != null) data['warranty_days'] = warrantyDays;
+    if (warrantyProvided != null) data['warrantyProvided'] = warrantyProvided;
+    if (warrantyDays != null) data['warrantyDays'] = warrantyDays;
     if (items != null) {
       data['items'] = items.map((item) => item.toJson()).toList();
     }
@@ -239,12 +241,12 @@ class RepairService {
   /// Update repair status
   Future<ApiResponse<Repair>> updateRepairStatus({
     required int id,
-    required RepairStatus status,
+    required String status,
     String? notes,
   }) async {
     final response = await _apiClient.put<Map<String, dynamic>>(
       '/repairs/$id/status',
-      data: {'status': status.name, 'notes': notes},
+      data: {'status': status, 'notes': notes},
     );
 
     if (response.isSuccess && response.data != null) {
@@ -277,11 +279,7 @@ class RepairService {
     required int id,
     String? notes,
   }) async {
-    return updateRepairStatus(
-      id: id,
-      status: RepairStatus.delivered,
-      notes: notes,
-    );
+    return updateRepairStatus(id: id, status: 'Delivered', notes: notes);
   }
 
   /// Cancel repair
@@ -289,11 +287,7 @@ class RepairService {
     required int id,
     required String reason,
   }) async {
-    return updateRepairStatus(
-      id: id,
-      status: RepairStatus.cancelled,
-      notes: reason,
-    );
+    return updateRepairStatus(id: id, status: 'Cancelled', notes: reason);
   }
 
   /// Delete repair
@@ -324,7 +318,7 @@ class RepairService {
     int page = 1,
     int limit = 20,
   }) async {
-    return getRepairs(status: RepairStatus.pending, page: page, limit: limit);
+    return getRepairs(status: 'Received', page: page, limit: limit);
   }
 
   /// Get in-progress repairs
@@ -332,11 +326,7 @@ class RepairService {
     int page = 1,
     int limit = 20,
   }) async {
-    return getRepairs(
-      status: RepairStatus.inProgress,
-      page: page,
-      limit: limit,
-    );
+    return getRepairs(status: 'In Progress', page: page, limit: limit);
   }
 
   /// Get completed repairs
@@ -344,7 +334,7 @@ class RepairService {
     int page = 1,
     int limit = 20,
   }) async {
-    return getRepairs(status: RepairStatus.completed, page: page, limit: limit);
+    return getRepairs(status: 'Completed', page: page, limit: limit);
   }
 
   /// Get overdue repairs (past estimated completion date)
@@ -489,8 +479,8 @@ class RepairService {
           final currentItem = RepairItem.fromJson(
             currentItemData as Map<String, dynamic>,
           );
-          final newQuantity = quantity ?? currentItem.quantity;
-          final newUnitPrice = unitPrice ?? currentItem.unitPrice;
+          final newQuantity = quantity ?? currentItem.quantity ?? 0.0;
+          final newUnitPrice = unitPrice ?? currentItem.unitPrice ?? 0.0;
           data['total_price'] = newQuantity * newUnitPrice;
         }
       }

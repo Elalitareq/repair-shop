@@ -12,7 +12,7 @@ class Category extends BaseModel {
   @JsonKey(name: 'description')
   final String? description;
 
-  @JsonKey(name: 'parent_id')
+  @JsonKey(name: 'parentId')
   final int? parentId;
 
   @JsonKey(name: 'parent')
@@ -23,8 +23,8 @@ class Category extends BaseModel {
 
   const Category({
     required super.id,
-    super.createdAt,
-    super.updatedAt,
+    required super.createdAt,
+    required super.updatedAt,
     super.syncStatus,
     required this.name,
     this.description,

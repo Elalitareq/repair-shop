@@ -63,7 +63,7 @@ class CategoryService {
       data: {
         'name': name,
         if (description != null) 'description': description,
-        if (parentId != null) 'parent_id': parentId,
+        if (parentId != null) 'parentId': parentId,
       },
     );
 
@@ -93,7 +93,7 @@ class CategoryService {
       data: {
         'name': name,
         if (description != null) 'description': description,
-        if (parentId != null) 'parent_id': parentId,
+        if (parentId != null) 'parentId': parentId,
       },
     );
 

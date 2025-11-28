@@ -119,8 +119,8 @@ class SerialFormNotifier extends StateNotifier<SerialFormState> {
     try {
       final response = await _serialService.createSerial({
         'imei': imei,
-        'item_id': itemId,
-        'batch_id': batchId,
+        'itemId': itemId,
+        'batchId': batchId,
       });
 
       if (response.isSuccess && response.data != null) {

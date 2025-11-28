@@ -18,8 +18,8 @@ class ItemService {
     final queryParams = <String, dynamic>{
       'page': page,
       'limit': limit,
-      if (categoryId != null) 'category_id': categoryId,
-      if (batchId != null) 'batch_id': batchId,
+      if (categoryId != null) 'categoryId': categoryId,
+      if (batchId != null) 'batchId': batchId,
       if (lowStock != null) 'low_stock': lowStock,
     };
 
@@ -29,12 +29,58 @@ class ItemService {
     );
 
     if (response.isSuccess && response.data != null) {
+      print({"response": response.data});
       final data = response.data!['data'] as List<dynamic>;
-      final items = data.map((json) => Item.fromJson(json)).toList();
-      return ApiResponse.success(
-        data: items,
-        message: response.data!['message'] ?? response.message,
-      );
+      //    required super.id,
+      // required super.createdAt,
+      // required super.updatedAt,
+      // required this.name,
+      // required this.categoryId,
+      // required this.category,
+      // required this.brand,
+      // required this.model,
+      // this.description,
+      // required this.conditionId,
+      // required this.condition,
+      // required this.qualityId,
+      // required this.quality,
+      // this.itemType = 'other',
+      // this.stockQuantity = 0,
+      // this.minStockLevel = 5,
+      // this.sellingPrice,
+      // this.barcodes,
+
+      print({"dataId": data[0]["id"]});
+      print({"dataName": data[0]["name"]});
+      print({"dataBrand": data[0]["brand"]});
+      print({"dataModel": data[0]["model"]});
+      print({"dataDescription": data[0]["description"]});
+      print({"dataItemType": data[0]["itemType"]}); // 'phone' or 'other'
+      print({"dataCategoryId": data[0]["categoryId"]});
+      print({"dataConditionId": data[0]["conditionId"]});
+      print({"dataQualityId": data[0]["qualityId"]});
+      print({"dataStockQuantity": data[0]["stockQuantity"]});
+      print({"dataMinStockLevel": data[0]["minStockLevel"]});
+      print({"dataSellingPrice": data[0]["sellingPrice"]});
+      print({"dataBarcodes": data[0]["barcodes"]});
+      print({"dataCreatedAt": data[0]["createdAt"]});
+      print({"dataUpdatedAt": data[0]["updatedAt"]});
+      print({"dataCategory": data[0]["category"]});
+      print({"dataCondition": data[0]["condition"]});
+      print({"dataQuality": data[0]["quality"]});
+
+      try {
+        final items = data.map((json) => Item.fromJson(json)).toList();
+
+        print({"items": items});
+        return ApiResponse.success(
+          data: items,
+          message: response.data!['message'] ?? response.message,
+        );
+      } catch (e) {
+        print({"parsing_error": e.toString()});
+        throw e;
+      }
     }
 
     return ApiResponse.error(
@@ -48,7 +94,9 @@ class ItemService {
     final response = await _apiClient.get<Map<String, dynamic>>('/items/$id');
 
     if (response.isSuccess && response.data != null) {
+      print({"response": response.data});
       final item = Item.fromJson(response.data!['data']);
+      print({"item2": item});
       return ApiResponse.success(
         data: item,
         message: response.data!['message'] ?? response.message,
@@ -173,7 +221,7 @@ class ItemService {
     final response = await _apiClient.put<Map<String, dynamic>>(
       '/stock/adjust',
       data: {
-        'item_id': itemId,
+        'itemId': itemId,
         'quantity': quantity,
         if (reason != null) 'reason': reason,
       },

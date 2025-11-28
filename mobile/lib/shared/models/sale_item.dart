@@ -1,19 +1,20 @@
 import 'package:json_annotation/json_annotation.dart';
 import 'base_model.dart';
 import 'item_batch.dart';
+import 'item.dart';
 
 part 'sale_item.g.dart';
 
 /// SaleItem represents items in a sale
 @JsonSerializable()
 class SaleItem extends BaseModel {
-  @JsonKey(name: 'sale_id')
+  @JsonKey(name: 'saleId')
   final int saleId;
 
-  @JsonKey(name: 'item_id')
+  @JsonKey(name: 'itemId')
   final int itemId;
 
-  @JsonKey(name: 'batch_id')
+  @JsonKey(name: 'batchId')
   final int? batchId;
 
   @JsonKey(name: 'batch')
@@ -22,7 +23,7 @@ class SaleItem extends BaseModel {
   @JsonKey(name: 'quantity')
   final int quantity;
 
-  @JsonKey(name: 'unit_price')
+  @JsonKey(name: 'unitPrice')
   final double unitPrice;
 
   @JsonKey(name: 'discount')
@@ -34,14 +35,13 @@ class SaleItem extends BaseModel {
   @JsonKey(name: 'notes')
   final String? notes;
 
-  // Item name for display (from Item relationship)
-  @JsonKey(name: 'item_name')
-  final String? itemName;
+  @JsonKey(name: 'item')
+  final Item? item;
 
   const SaleItem({
     required super.id,
-    super.createdAt,
-    super.updatedAt,
+    required super.createdAt,
+    required super.updatedAt,
     super.syncStatus,
     required this.saleId,
     required this.itemId,
@@ -52,7 +52,7 @@ class SaleItem extends BaseModel {
     this.discount = 0.0,
     required this.total,
     this.notes,
-    this.itemName,
+    this.item,
   });
 
   factory SaleItem.fromJson(Map<String, dynamic> json) =>
@@ -74,7 +74,7 @@ class SaleItem extends BaseModel {
   bool get hasDiscount => discount > 0;
 
   /// Get display name for the item
-  String get displayName => itemName ?? 'Item #$itemId';
+  String get displayName => item?.name ?? 'Item #$itemId';
 
   /// Check if this sale item has a batch assigned
   bool get hasBatch => batchId != null;

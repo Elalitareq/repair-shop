@@ -9,10 +9,10 @@ part 'sale.g.dart';
 /// Sale represents sales transactions
 @JsonSerializable()
 class Sale extends BaseModel {
-  @JsonKey(name: 'sale_number')
-  final String saleNumber;
+  @JsonKey(name: 'saleNumber')
+  final String? saleNumber;
 
-  @JsonKey(name: 'customer_id')
+  @JsonKey(name: 'customerId')
   final int? customerId;
 
   @JsonKey(name: 'customer')
@@ -21,13 +21,13 @@ class Sale extends BaseModel {
   @JsonKey(name: 'status')
   final String status; // draft, confirmed, paid, cancelled, refunded
 
-  @JsonKey(name: 'payment_status')
+  @JsonKey(name: 'paymentStatus')
   final String paymentStatus; // pending, partial, paid
 
-  @JsonKey(name: 'total_amount')
+  @JsonKey(name: 'totalAmount')
   final double totalAmount;
 
-  @JsonKey(name: 'sale_items')
+  @JsonKey(name: 'items')
   final List<SaleItem>? saleItems;
 
   @JsonKey(name: 'payments')
@@ -38,10 +38,10 @@ class Sale extends BaseModel {
 
   const Sale({
     required super.id,
-    super.createdAt,
-    super.updatedAt,
+    required super.createdAt,
+    required super.updatedAt,
     super.syncStatus,
-    required this.saleNumber,
+    this.saleNumber,
     this.customerId,
     this.customer,
     this.status = 'draft',
@@ -114,6 +114,6 @@ class Sale extends BaseModel {
 
   @override
   String toString() {
-    return 'Sale{id: $id, saleNumber: $saleNumber, status: $status, total: $totalAmount}';
+    return 'Sale{id: $id, saleNumber: ${saleNumber ?? 'N/A'}, status: $status, total: $totalAmount}';
   }
 }

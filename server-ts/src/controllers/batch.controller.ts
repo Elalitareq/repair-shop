@@ -21,22 +21,34 @@ export class BatchController {
     ]);
 
     const mapped = batches.map((b: any) => ({
-      batch: b,
-      remaining_stock: Math.max(
+      batch: {
+        id: b.id,
+        batchNumber: b.batchNumber,
+        supplierId: b.supplierId,
+        purchaseDate: b.purchaseDate.toISOString(),
+        totalQuantity: b.totalQuantity,
+        soldQuantity: b.soldQuantity,
+        unitCost: b.unitCost,
+        totalCost: b.totalCost,
+        notes: b.notes,
+        createdAt: b.createdAt.toISOString(),
+        updatedAt: b.updatedAt.toISOString(),
+      },
+      remainingStock: Math.max(
         0,
         (b.totalQuantity || 0) - (b.soldQuantity || 0)
       ),
-      stock_percentage:
+      stockPercentage:
         b.totalQuantity && b.totalQuantity > 0
           ? ((b.totalQuantity - (b.soldQuantity || 0)) / b.totalQuantity) * 100
           : 0,
-      is_low_stock:
+      isLowStock:
         b.totalQuantity && b.totalQuantity > 0
           ? ((b.totalQuantity - (b.soldQuantity || 0)) / b.totalQuantity) *
               100 <
             20
           : false,
-      is_out_of_stock: (b.totalQuantity || 0) - (b.soldQuantity || 0) <= 0,
+      isOutOfStock: (b.totalQuantity || 0) - (b.soldQuantity || 0) <= 0,
     }));
 
     res.json({
@@ -60,26 +72,37 @@ export class BatchController {
     if (!batch) throw new AppError(404, "Batch not found");
 
     const response = {
-      batch,
-      remaining_stock: Math.max(
+      batch: {
+        id: batch.id,
+        batchNumber: batch.batchNumber,
+        supplierId: batch.supplierId,
+        purchaseDate: batch.purchaseDate.toISOString(),
+        totalQuantity: batch.totalQuantity,
+        soldQuantity: batch.soldQuantity,
+        unitCost: batch.unitCost,
+        totalCost: batch.totalCost,
+        notes: batch.notes,
+        createdAt: batch.createdAt.toISOString(),
+        updatedAt: batch.updatedAt.toISOString(),
+      },
+      remainingStock: Math.max(
         0,
         (batch.totalQuantity || 0) - (batch.soldQuantity || 0)
       ),
-      stock_percentage:
+      stockPercentage:
         batch.totalQuantity && batch.totalQuantity > 0
           ? ((batch.totalQuantity - (batch.soldQuantity || 0)) /
               batch.totalQuantity) *
             100
           : 0,
-      is_low_stock:
+      isLowStock:
         batch.totalQuantity && batch.totalQuantity > 0
           ? ((batch.totalQuantity - (batch.soldQuantity || 0)) /
               batch.totalQuantity) *
               100 <
             20
           : false,
-      is_out_of_stock:
-        (batch.totalQuantity || 0) - (batch.soldQuantity || 0) <= 0,
+      isOutOfStock: (batch.totalQuantity || 0) - (batch.soldQuantity || 0) <= 0,
     };
 
     res.json({ data: response });
@@ -94,10 +117,9 @@ export class BatchController {
       totalCost,
       unitCost,
       notes,
+      itemId, // Optional: if provided, update item stock
     } = req.body;
-
     if (
-      !batchNumber ||
       totalQuantity === undefined ||
       totalCost === undefined ||
       unitCost === undefined ||
@@ -114,10 +136,39 @@ export class BatchController {
       throw new AppError(400, "Required fields missing");
     }
 
+    // Generate a batch number when not provided
+    let newBatchNumber = batchNumber;
+    if (!newBatchNumber) {
+      // Helper to create a simple unique batch number
+      const generate = async () => {
+        const date = new Date();
+        const yyyymmdd = date.toISOString().slice(0, 10).replace(/-/g, "");
+        const suffix = Math.floor(Math.random() * 90000) + 10000; // 5 digits
+        return `BATCH-${yyyymmdd}-${suffix}`;
+      };
+
+      let attempts = 0;
+      while (attempts < 10) {
+        const candidate = await generate();
+        // @ts-ignore
+        const exists = await prisma.batch.findUnique({
+          where: { batchNumber: candidate },
+        });
+        if (!exists) {
+          newBatchNumber = candidate;
+          break;
+        }
+        attempts++;
+      }
+      if (!newBatchNumber) {
+        throw new AppError(500, "Failed to generate unique batch number");
+      }
+    }
+
     // @ts-ignore
     const batch = await prisma.batch.create({
       data: {
-        batchNumber,
+        batchNumber: newBatchNumber,
         supplierId,
         purchaseDate: purchaseDate ? new Date(purchaseDate) : new Date(),
         totalQuantity,
@@ -128,27 +179,50 @@ export class BatchController {
       include: { supplier: true, serials: true },
     });
 
+    // Update item stock if itemId is provided
+    if (itemId) {
+      await prisma.item.update({
+        where: { id: parseInt(itemId) },
+        data: {
+          stockQuantity: {
+            increment: totalQuantity,
+          },
+        },
+      });
+    }
+
     const response = {
-      batch,
-      remaining_stock: Math.max(
+      batch: {
+        id: batch.id,
+        batchNumber: batch.batchNumber,
+        supplierId: batch.supplierId,
+        purchaseDate: batch.purchaseDate.toISOString(),
+        totalQuantity: batch.totalQuantity,
+        soldQuantity: batch.soldQuantity,
+        unitCost: batch.unitCost,
+        totalCost: batch.totalCost,
+        notes: batch.notes,
+        createdAt: batch.createdAt.toISOString(),
+        updatedAt: batch.updatedAt.toISOString(),
+      },
+      remainingStock: Math.max(
         0,
         (batch.totalQuantity || 0) - (batch.soldQuantity || 0)
       ),
-      stock_percentage:
+      stockPercentage:
         batch.totalQuantity && batch.totalQuantity > 0
           ? ((batch.totalQuantity - (batch.soldQuantity || 0)) /
               batch.totalQuantity) *
             100
           : 0,
-      is_low_stock:
+      isLowStock:
         batch.totalQuantity && batch.totalQuantity > 0
           ? ((batch.totalQuantity - (batch.soldQuantity || 0)) /
               batch.totalQuantity) *
               100 <
             20
           : false,
-      is_out_of_stock:
-        (batch.totalQuantity || 0) - (batch.soldQuantity || 0) <= 0,
+      isOutOfStock: (batch.totalQuantity || 0) - (batch.soldQuantity || 0) <= 0,
     };
 
     res.status(201).json({ data: response, message: "Batch created" });
@@ -157,13 +231,13 @@ export class BatchController {
   async update(req: AuthRequest, res: Response) {
     const { id } = req.params;
     const {
-      batchNumber,
       supplierId,
       purchaseDate,
       totalQuantity,
       totalCost,
       unitCost,
       notes,
+      itemId, // Optional: if provided and quantity changed, adjust item stock
     } = req.body;
 
     // @ts-ignore
@@ -188,7 +262,7 @@ export class BatchController {
     const batch = await prisma.batch.update({
       where: { id: parseInt(id) },
       data: {
-        ...(batchNumber !== undefined && { batchNumber }),
+        // We intentionally do not allow updating the batchNumber once created
         ...(supplierId !== undefined && { supplierId }),
         ...(purchaseDate !== undefined && {
           purchaseDate: new Date(purchaseDate),
@@ -201,27 +275,55 @@ export class BatchController {
       include: { supplier: true, serials: true },
     });
 
+    // Adjust item stock if itemId is provided and quantity changed
+    if (
+      itemId &&
+      totalQuantity !== undefined &&
+      totalQuantity !== existingBatch.totalQuantity
+    ) {
+      const quantityDifference = totalQuantity - existingBatch.totalQuantity;
+      await prisma.item.update({
+        where: { id: parseInt(itemId) },
+        data: {
+          stockQuantity: {
+            increment: quantityDifference,
+          },
+        },
+      });
+    }
+
     const response = {
-      batch,
-      remaining_stock: Math.max(
+      batch: {
+        id: batch.id,
+        batchNumber: batch.batchNumber,
+        supplierId: batch.supplierId,
+        purchaseDate: batch.purchaseDate.toISOString(),
+        totalQuantity: batch.totalQuantity,
+        soldQuantity: batch.soldQuantity,
+        unitCost: batch.unitCost,
+        totalCost: batch.totalCost,
+        notes: batch.notes,
+        createdAt: batch.createdAt.toISOString(),
+        updatedAt: batch.updatedAt.toISOString(),
+      },
+      remainingStock: Math.max(
         0,
         (batch.totalQuantity || 0) - (batch.soldQuantity || 0)
       ),
-      stock_percentage:
+      stockPercentage:
         batch.totalQuantity && batch.totalQuantity > 0
           ? ((batch.totalQuantity - (batch.soldQuantity || 0)) /
               batch.totalQuantity) *
             100
           : 0,
-      is_low_stock:
+      isLowStock:
         batch.totalQuantity && batch.totalQuantity > 0
           ? ((batch.totalQuantity - (batch.soldQuantity || 0)) /
               batch.totalQuantity) *
               100 <
             20
           : false,
-      is_out_of_stock:
-        (batch.totalQuantity || 0) - (batch.soldQuantity || 0) <= 0,
+      isOutOfStock: (batch.totalQuantity || 0) - (batch.soldQuantity || 0) <= 0,
     };
 
     res.json({ data: response, message: "Batch updated" });
@@ -229,6 +331,7 @@ export class BatchController {
 
   async delete(req: AuthRequest, res: Response) {
     const { id } = req.params;
+    const { itemId } = req.query; // Optional: if provided, adjust item stock
 
     // @ts-ignore
     const existingBatch = await prisma.batch.findUnique({
@@ -248,6 +351,22 @@ export class BatchController {
         400,
         "Cannot delete batch that has associated serials"
       );
+    }
+
+    // Adjust item stock if itemId is provided (subtract remaining quantity)
+    if (itemId) {
+      const remainingQuantity =
+        existingBatch.totalQuantity - (existingBatch.soldQuantity || 0);
+      if (remainingQuantity > 0) {
+        await prisma.item.update({
+          where: { id: parseInt(itemId) },
+          data: {
+            stockQuantity: {
+              decrement: remainingQuantity,
+            },
+          },
+        });
+      }
     }
 
     // @ts-ignore
@@ -270,22 +389,34 @@ export class BatchController {
     });
 
     const mapped = batches.map((b: any) => ({
-      batch: b,
-      remaining_stock: Math.max(
+      batch: {
+        id: b.id,
+        batchNumber: b.batchNumber,
+        supplierId: b.supplierId,
+        purchaseDate: b.purchaseDate.toISOString(),
+        totalQuantity: b.totalQuantity,
+        soldQuantity: b.soldQuantity,
+        unitCost: b.unitCost,
+        totalCost: b.totalCost,
+        notes: b.notes,
+        createdAt: b.createdAt.toISOString(),
+        updatedAt: b.updatedAt.toISOString(),
+      },
+      remainingStock: Math.max(
         0,
         (b.totalQuantity || 0) - (b.soldQuantity || 0)
       ),
-      stock_percentage:
+      stockPercentage:
         b.totalQuantity && b.totalQuantity > 0
           ? ((b.totalQuantity - (b.soldQuantity || 0)) / b.totalQuantity) * 100
           : 0,
-      is_low_stock:
+      isLowStock:
         b.totalQuantity && b.totalQuantity > 0
           ? ((b.totalQuantity - (b.soldQuantity || 0)) / b.totalQuantity) *
               100 <
             20
           : false,
-      is_out_of_stock: (b.totalQuantity || 0) - (b.soldQuantity || 0) <= 0,
+      isOutOfStock: (b.totalQuantity || 0) - (b.soldQuantity || 0) <= 0,
     }));
 
     res.json({ data: mapped });

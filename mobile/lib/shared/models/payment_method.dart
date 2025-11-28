@@ -9,13 +9,7 @@ class PaymentMethod extends BaseModel {
   @JsonKey(name: 'name')
   final String name;
 
-  @JsonKey(name: 'code')
-  final String code;
-
-  @JsonKey(name: 'is_active')
-  final bool isActive;
-
-  @JsonKey(name: 'fee_rate')
+  @JsonKey(name: 'feeRate')
   final double feeRate;
 
   @JsonKey(name: 'description')
@@ -23,14 +17,12 @@ class PaymentMethod extends BaseModel {
 
   const PaymentMethod({
     required super.id,
-    super.createdAt,
-    super.updatedAt,
-    super.syncStatus,
     required this.name,
-    required this.code,
-    this.isActive = true,
-    this.feeRate = 0.0,
     this.description,
+    required super.createdAt,
+    required super.updatedAt,
+    super.syncStatus,
+    this.feeRate = 0.0,
   });
 
   factory PaymentMethod.fromJson(Map<String, dynamic> json) =>
@@ -51,6 +43,6 @@ class PaymentMethod extends BaseModel {
 
   @override
   String toString() {
-    return 'PaymentMethod{id: $id, name: $name, code: $code, isActive: $isActive}';
+    return 'PaymentMethod{id: $id, name: $name}';
   }
 }

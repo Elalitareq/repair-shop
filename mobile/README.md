@@ -64,7 +64,7 @@ If web support is not enabled, run:
 ````bash
 flutter config --enable-web
 
-Note: In this project the web build intentionally does not initialize a local SQLite database (sqflite). The web client uses backend APIs for all persistence. If you need to enable local DB on web for testing, you'll need to configure `sqflite_common_ffi_web` or `sqflite_web` and adapt `DatabaseHelper` accordingly.
+Note: This project uses a backend-first architecture — the mobile frontend no longer initializes or uses a local SQLite database. All persistence and data operations are performed via the backend APIs. If you need local DB for a specific platform in the future, we recommend adding a platform-specific implementation, but do so deliberately and keep server sync logic separate.
 
 ## Deployment
 

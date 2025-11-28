@@ -6,120 +6,153 @@ part of 'repair.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-Repair _$RepairFromJson(Map<String, dynamic> json) => Repair(
-      id: (json['id'] as num).toInt(),
-      ticketNumber: json['ticketNumber'] as String,
-      customerId: (json['customerId'] as num).toInt(),
-      customer: json['customer'] == null
-          ? null
-          : Customer.fromJson(json['customer'] as Map<String, dynamic>),
-      deviceType: json['deviceType'] as String,
-      deviceModel: json['deviceModel'] as String,
-      deviceSerial: json['deviceSerial'] as String? ?? '',
-      problemDescription: json['problemDescription'] as String,
-      diagnosisNotes: json['diagnosisNotes'] as String?,
-      repairNotes: json['repairNotes'] as String?,
-      status: $enumDecodeNullable(_$RepairStatusEnumMap, json['status']) ??
-          RepairStatus.pending,
-      priority:
-          $enumDecodeNullable(_$RepairPriorityEnumMap, json['priority']) ??
-              RepairPriority.normal,
-      estimatedCost: (json['estimatedCost'] as num?)?.toDouble() ?? 0.0,
-      finalCost: (json['finalCost'] as num?)?.toDouble(),
-      estimatedCompletion: json['estimatedCompletion'] == null
-          ? null
-          : DateTime.parse(json['estimatedCompletion'] as String),
-      actualCompletion: json['actualCompletion'] == null
-          ? null
-          : DateTime.parse(json['actualCompletion'] as String),
-      deliveredAt: json['deliveredAt'] == null
-          ? null
-          : DateTime.parse(json['deliveredAt'] as String),
-      warrantyProvided: json['warrantyProvided'] as bool? ?? false,
-      warrantyDays: (json['warrantyDays'] as num?)?.toInt(),
-      items: (json['items'] as List<dynamic>?)
-          ?.map((e) => RepairItem.fromJson(e as Map<String, dynamic>))
-          .toList(),
-      statusHistory: (json['statusHistory'] as List<dynamic>?)
-          ?.map((e) => RepairStatusHistory.fromJson(e as Map<String, dynamic>))
-          .toList(),
-      createdAt: json['created_at'] == null
-          ? null
-          : DateTime.parse(json['created_at'] as String),
-      updatedAt: json['updated_at'] == null
-          ? null
-          : DateTime.parse(json['updated_at'] as String),
-      syncStatus: (json['sync_status'] as num?)?.toInt() ?? 0,
-    );
+RepairState _$RepairStateFromJson(Map<String, dynamic> json) => RepairState(
+  id: (json['id'] as num).toInt(),
+  name: json['name'] as String,
+  description: json['description'] as String?,
+  order: (json['order'] as num).toInt(),
+  createdAt: DateTime.parse(json['createdAt'] as String),
+  updatedAt: DateTime.parse(json['updatedAt'] as String),
+  syncStatus: (json['syncStatus'] as num?)?.toInt() ?? 0,
+);
 
-Map<String, dynamic> _$RepairToJson(Repair instance) => <String, dynamic>{
+Map<String, dynamic> _$RepairStateToJson(RepairState instance) =>
+    <String, dynamic>{
       'id': instance.id,
-      'created_at': instance.createdAt?.toIso8601String(),
-      'updated_at': instance.updatedAt?.toIso8601String(),
-      'sync_status': instance.syncStatus,
-      'ticketNumber': instance.ticketNumber,
-      'customerId': instance.customerId,
-      'customer': instance.customer,
-      'deviceType': instance.deviceType,
-      'deviceModel': instance.deviceModel,
-      'deviceSerial': instance.deviceSerial,
-      'problemDescription': instance.problemDescription,
-      'diagnosisNotes': instance.diagnosisNotes,
-      'repairNotes': instance.repairNotes,
-      'status': _$RepairStatusEnumMap[instance.status]!,
-      'priority': _$RepairPriorityEnumMap[instance.priority]!,
-      'estimatedCost': instance.estimatedCost,
-      'finalCost': instance.finalCost,
-      'estimatedCompletion': instance.estimatedCompletion?.toIso8601String(),
-      'actualCompletion': instance.actualCompletion?.toIso8601String(),
-      'deliveredAt': instance.deliveredAt?.toIso8601String(),
-      'warrantyProvided': instance.warrantyProvided,
-      'warrantyDays': instance.warrantyDays,
-      'items': instance.items,
-      'statusHistory': instance.statusHistory,
+      'createdAt': instance.createdAt.toIso8601String(),
+      'updatedAt': instance.updatedAt.toIso8601String(),
+      'syncStatus': instance.syncStatus,
+      'name': instance.name,
+      'description': instance.description,
+      'order': instance.order,
     };
 
-const _$RepairStatusEnumMap = {
-  RepairStatus.pending: 'pending',
-  RepairStatus.inProgress: 'in_progress',
-  RepairStatus.waitingParts: 'waiting_parts',
-  RepairStatus.completed: 'completed',
-  RepairStatus.delivered: 'delivered',
-  RepairStatus.cancelled: 'cancelled',
-};
+RepairIssue _$RepairIssueFromJson(Map<String, dynamic> json) => RepairIssue(
+  id: (json['id'] as num).toInt(),
+  repairId: (json['repairId'] as num).toInt(),
+  issueTypeId: (json['issueTypeId'] as num).toInt(),
+  description: json['description'] as String,
+  resolved: json['resolved'] as bool? ?? false,
+  createdAt: DateTime.parse(json['createdAt'] as String),
+  updatedAt: DateTime.parse(json['updatedAt'] as String),
+  syncStatus: (json['syncStatus'] as num?)?.toInt() ?? 0,
+);
 
-const _$RepairPriorityEnumMap = {
-  RepairPriority.low: 'low',
-  RepairPriority.normal: 'normal',
-  RepairPriority.high: 'high',
-  RepairPriority.urgent: 'urgent',
+Map<String, dynamic> _$RepairIssueToJson(RepairIssue instance) =>
+    <String, dynamic>{
+      'id': instance.id,
+      'createdAt': instance.createdAt.toIso8601String(),
+      'updatedAt': instance.updatedAt.toIso8601String(),
+      'syncStatus': instance.syncStatus,
+      'repairId': instance.repairId,
+      'issueTypeId': instance.issueTypeId,
+      'description': instance.description,
+      'resolved': instance.resolved,
+    };
+
+Repair _$RepairFromJson(Map<String, dynamic> json) => Repair(
+  id: (json['id'] as num).toInt(),
+  repairNumber: json['repairNumber'] as String,
+  customerId: (json['customerId'] as num).toInt(),
+  customer: Customer.fromJson(json['customer'] as Map<String, dynamic>),
+  deviceBrand: json['deviceBrand'] as String,
+  deviceModel: json['deviceModel'] as String,
+  problemDescription: json['problemDescription'] as String,
+  deviceImei: json['deviceImei'] as String?,
+  password: json['password'] as String?,
+  diagnosisNotes: json['diagnosisNotes'] as String?,
+  repairNotes: json['repairNotes'] as String?,
+  priority: json['priority'] as String? ?? 'normal',
+  estimatedCost: (json['estimatedCost'] as num?)?.toDouble(),
+  finalCost: (json['finalCost'] as num?)?.toDouble(),
+  estimatedCompletion: json['estimatedCompletion'] == null
+      ? null
+      : DateTime.parse(json['estimatedCompletion'] as String),
+  actualCompletion: json['actualCompletion'] == null
+      ? null
+      : DateTime.parse(json['actualCompletion'] as String),
+  warrantyProvided: json['warrantyProvided'] as bool? ?? false,
+  warrantyDays: (json['warrantyDays'] as num?)?.toInt(),
+  stateId: (json['stateId'] as num).toInt(),
+  state: RepairState.fromJson(json['state'] as Map<String, dynamic>),
+  extraInfo: json['extraInfo'] as String?,
+  receivedDate: DateTime.parse(json['receivedDate'] as String),
+  completedDate: json['completedDate'] == null
+      ? null
+      : DateTime.parse(json['completedDate'] as String),
+  issues:
+      (json['issues'] as List<dynamic>?)
+          ?.map((e) => RepairIssue.fromJson(e as Map<String, dynamic>))
+          .toList() ??
+      const [],
+  items:
+      (json['items'] as List<dynamic>?)
+          ?.map((e) => RepairItem.fromJson(e as Map<String, dynamic>))
+          .toList() ??
+      const [],
+  statusHistory:
+      (json['statusHistory'] as List<dynamic>?)
+          ?.map((e) => RepairStatusHistory.fromJson(e as Map<String, dynamic>))
+          .toList() ??
+      const [],
+  createdAt: DateTime.parse(json['createdAt'] as String),
+  updatedAt: DateTime.parse(json['updatedAt'] as String),
+  syncStatus: (json['syncStatus'] as num?)?.toInt() ?? 0,
+);
+
+Map<String, dynamic> _$RepairToJson(Repair instance) => <String, dynamic>{
+  'id': instance.id,
+  'createdAt': instance.createdAt.toIso8601String(),
+  'updatedAt': instance.updatedAt.toIso8601String(),
+  'syncStatus': instance.syncStatus,
+  'repairNumber': instance.repairNumber,
+  'customerId': instance.customerId,
+  'customer': instance.customer,
+  'deviceBrand': instance.deviceBrand,
+  'deviceModel': instance.deviceModel,
+  'deviceImei': instance.deviceImei,
+  'password': instance.password,
+  'problemDescription': instance.problemDescription,
+  'diagnosisNotes': instance.diagnosisNotes,
+  'repairNotes': instance.repairNotes,
+  'priority': instance.priority,
+  'estimatedCost': instance.estimatedCost,
+  'finalCost': instance.finalCost,
+  'estimatedCompletion': instance.estimatedCompletion?.toIso8601String(),
+  'actualCompletion': instance.actualCompletion?.toIso8601String(),
+  'warrantyProvided': instance.warrantyProvided,
+  'warrantyDays': instance.warrantyDays,
+  'stateId': instance.stateId,
+  'state': instance.state,
+  'extraInfo': instance.extraInfo,
+  'receivedDate': instance.receivedDate.toIso8601String(),
+  'completedDate': instance.completedDate?.toIso8601String(),
+  'issues': instance.issues,
+  'items': instance.items,
+  'statusHistory': instance.statusHistory,
 };
 
 RepairStatusHistory _$RepairStatusHistoryFromJson(Map<String, dynamic> json) =>
     RepairStatusHistory(
       id: (json['id'] as num).toInt(),
-      repairId: (json['repairId'] as num).toInt(),
-      status: $enumDecode(_$RepairStatusEnumMap, json['status']),
+      repairId: (json['repairId'] as num?)?.toInt(),
+      status: json['status'] as String?,
       notes: json['notes'] as String?,
-      updatedBy: json['updatedBy'] as String,
-      createdAt: json['created_at'] == null
-          ? null
-          : DateTime.parse(json['created_at'] as String),
-      updatedAt: json['updated_at'] == null
-          ? null
-          : DateTime.parse(json['updated_at'] as String),
-      syncStatus: (json['sync_status'] as num?)?.toInt() ?? 0,
+      updatedBy: json['updatedBy'] as String?,
+      createdAt: DateTime.parse(json['createdAt'] as String),
+      updatedAt: DateTime.parse(json['updatedAt'] as String),
+      syncStatus: (json['syncStatus'] as num?)?.toInt() ?? 0,
     );
 
 Map<String, dynamic> _$RepairStatusHistoryToJson(
-        RepairStatusHistory instance) =>
-    <String, dynamic>{
-      'id': instance.id,
-      'created_at': instance.createdAt?.toIso8601String(),
-      'updated_at': instance.updatedAt?.toIso8601String(),
-      'sync_status': instance.syncStatus,
-      'repairId': instance.repairId,
-      'status': _$RepairStatusEnumMap[instance.status]!,
-      'notes': instance.notes,
-      'updatedBy': instance.updatedBy,
-    };
+  RepairStatusHistory instance,
+) => <String, dynamic>{
+  'id': instance.id,
+  'createdAt': instance.createdAt.toIso8601String(),
+  'updatedAt': instance.updatedAt.toIso8601String(),
+  'syncStatus': instance.syncStatus,
+  'repairId': instance.repairId,
+  'status': instance.status,
+  'notes': instance.notes,
+  'updatedBy': instance.updatedBy,
+};

@@ -85,13 +85,13 @@ class _ItemFormPageState extends ConsumerState<ItemFormPage> {
       'name': _nameController.text,
       'brand': _brandController.text.isEmpty ? null : _brandController.text,
       'model': _modelController.text.isEmpty ? null : _modelController.text,
-      'selling_price': double.tryParse(_sellingPriceController.text) ?? 0.0,
-      'stock_quantity': int.tryParse(_stockController.text) ?? 0,
-      'min_stock_level': int.tryParse(_minStockLevelController.text) ?? 5,
-      'item_type': _itemType,
-      'category_id': _categoryId,
-      'quality_id': _qualityId,
-      'condition_id': _conditionId,
+      'sellingPrice': double.tryParse(_sellingPriceController.text) ?? 0.0,
+      'stockQuantity': int.tryParse(_stockController.text) ?? 0,
+      'minStockLevel': int.tryParse(_minStockLevelController.text) ?? 5,
+      'itemType': _itemType,
+      'qualityId': _qualityId,
+      'conditionId': _conditionId,
+      'categoryId': _categoryId,
     }..removeWhere((key, value) => value == null);
 
     final success = widget.itemId == null
@@ -112,6 +112,12 @@ class _ItemFormPageState extends ConsumerState<ItemFormPage> {
     }
 
     setState(() => _isSubmitting = false);
+
+    // Refetch item list so calling pages show the newly created/updated item
+    if (success) {
+      // Refresh the list explicitly to update UI immediately
+      ref.read(itemListProvider.notifier).loadItems(refresh: true);
+    }
 
     if (success) {
       if (mounted) Navigator.of(context).pop(true);
@@ -144,8 +150,8 @@ class _ItemFormPageState extends ConsumerState<ItemFormPage> {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         setState(() {
           _nameController.text = item.name;
-          _brandController.text = item.brand ?? '';
-          _modelController.text = item.model ?? '';
+          _brandController.text = item.brand;
+          _modelController.text = item.model;
           _sellingPriceController.text = item.sellingPrice.toString();
           _stockController.text = item.stockQuantity.toString();
           _minStockLevelController.text = item.minStockLevel.toString();

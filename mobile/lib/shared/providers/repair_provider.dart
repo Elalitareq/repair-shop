@@ -11,8 +11,8 @@ class RepairListState {
   final String? error;
   final bool hasMore;
   final int currentPage;
-  final RepairStatus? statusFilter;
-  final RepairPriority? priorityFilter;
+  final String? statusFilter;
+  final String? priorityFilter;
   final String? searchQuery;
 
   const RepairListState({
@@ -32,8 +32,8 @@ class RepairListState {
     String? error,
     bool? hasMore,
     int? currentPage,
-    RepairStatus? statusFilter,
-    RepairPriority? priorityFilter,
+    String? statusFilter,
+    String? priorityFilter,
     String? searchQuery,
   }) {
     return RepairListState(
@@ -58,8 +58,8 @@ class RepairListNotifier extends StateNotifier<RepairListState> {
   /// Load repairs with filters
   Future<void> loadRepairs({
     bool refresh = false,
-    RepairStatus? status,
-    RepairPriority? priority,
+    String? status,
+    String? priority,
     String? search,
   }) async {
     if (refresh) {
@@ -121,12 +121,12 @@ class RepairListNotifier extends StateNotifier<RepairListState> {
   }
 
   /// Filter by status
-  Future<void> filterByStatus(RepairStatus? status) async {
+  Future<void> filterByStatus(String? status) async {
     await loadRepairs(refresh: true, status: status);
   }
 
   /// Filter by priority
-  Future<void> filterByPriority(RepairPriority? priority) async {
+  Future<void> filterByPriority(String? priority) async {
     await loadRepairs(refresh: true, priority: priority);
   }
 
@@ -208,10 +208,7 @@ class RepairDetailNotifier extends StateNotifier<RepairDetailState> {
   }
 
   /// Update repair status
-  Future<bool> updateStatus({
-    required RepairStatus status,
-    String? notes,
-  }) async {
+  Future<bool> updateStatus({required String status, String? notes}) async {
     if (state.repair == null) return false;
 
     try {
@@ -242,13 +239,13 @@ class RepairDetailNotifier extends StateNotifier<RepairDetailState> {
       final response = await _repairService.updateRepair(
         id: updatedRepair.id,
         customerId: updatedRepair.customerId,
-        deviceType: updatedRepair.deviceType,
+        deviceBrand: updatedRepair.deviceBrand,
         deviceModel: updatedRepair.deviceModel,
-        deviceSerial: updatedRepair.deviceSerial,
+        deviceImei: updatedRepair.deviceImei,
         problemDescription: updatedRepair.problemDescription,
         diagnosisNotes: updatedRepair.diagnosisNotes,
         repairNotes: updatedRepair.repairNotes,
-        status: updatedRepair.status,
+        status: updatedRepair.state.name,
         priority: updatedRepair.priority,
         estimatedCost: updatedRepair.estimatedCost,
         finalCost: updatedRepair.finalCost,
@@ -339,12 +336,12 @@ class RepairFormNotifier extends StateNotifier<RepairFormState> {
   /// Create new repair
   Future<Repair?> createRepair({
     required int customerId,
-    required String deviceType,
+    required String deviceBrand,
     required String deviceModel,
-    String? deviceSerial,
+    String? deviceImei,
     required String problemDescription,
     String? diagnosisNotes,
-    RepairPriority priority = RepairPriority.normal,
+    String priority = 'Normal',
     double estimatedCost = 0.0,
     DateTime? estimatedCompletion,
     bool warrantyProvided = false,
@@ -356,9 +353,9 @@ class RepairFormNotifier extends StateNotifier<RepairFormState> {
     try {
       final response = await _repairService.createRepair(
         customerId: customerId,
-        deviceType: deviceType,
+        deviceBrand: deviceBrand,
         deviceModel: deviceModel,
-        deviceSerial: deviceSerial,
+        deviceImei: deviceImei,
         problemDescription: problemDescription,
         diagnosisNotes: diagnosisNotes,
         priority: priority,
@@ -395,13 +392,13 @@ class RepairFormNotifier extends StateNotifier<RepairFormState> {
       final response = await _repairService.updateRepair(
         id: updatedRepair.id,
         customerId: updatedRepair.customerId,
-        deviceType: updatedRepair.deviceType,
+        deviceBrand: updatedRepair.deviceBrand,
         deviceModel: updatedRepair.deviceModel,
-        deviceSerial: updatedRepair.deviceSerial,
+        deviceImei: updatedRepair.deviceImei,
         problemDescription: updatedRepair.problemDescription,
         diagnosisNotes: updatedRepair.diagnosisNotes,
         repairNotes: updatedRepair.repairNotes,
-        status: updatedRepair.status,
+        status: updatedRepair.state.name,
         priority: updatedRepair.priority,
         estimatedCost: updatedRepair.estimatedCost,
         finalCost: updatedRepair.finalCost,
@@ -527,16 +524,12 @@ final repairsProvider = Provider<List<Repair>>((ref) {
 
 final pendingRepairsProvider = Provider<List<Repair>>((ref) {
   final repairs = ref.watch(repairsProvider);
-  return repairs
-      .where((repair) => repair.status == RepairStatus.pending)
-      .toList();
+  return repairs.where((repair) => repair.state.name == 'Received').toList();
 });
 
 final inProgressRepairsProvider = Provider<List<Repair>>((ref) {
   final repairs = ref.watch(repairsProvider);
-  return repairs
-      .where((repair) => repair.status == RepairStatus.inProgress)
-      .toList();
+  return repairs.where((repair) => repair.state.name == 'In Progress').toList();
 });
 
 final completedRepairsProvider = Provider<List<Repair>>((ref) {

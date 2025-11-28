@@ -17,7 +17,7 @@ class SaleService {
     final queryParams = <String, dynamic>{
       'page': page,
       'limit': limit,
-      if (customerId != null) 'customer_id': customerId,
+      if (customerId != null) 'customerId': customerId,
       if (status != null) 'status': status,
     };
 
@@ -26,9 +26,47 @@ class SaleService {
       queryParameters: queryParams,
     );
 
+    print('🔍 SaleService.getSales - Raw response: ${response.toString()}');
+    print('🔍 SaleService.getSales - Response data: ${response.data}');
+    print('🔍 SaleService.getSales - Response success: ${response.isSuccess}');
+
     if (response.isSuccess && response.data != null) {
-      final data = response.data!['data'] as List<dynamic>;
-      final sales = data.map((json) => Sale.fromJson(json)).toList();
+      final rawData = response.data!['data'];
+      List<dynamic> data;
+      if (rawData is List<dynamic>) {
+        data = rawData;
+      } else if (rawData is Map<String, dynamic>) {
+        data = [rawData];
+      } else {
+        // If data is null or unexpected type, return empty list
+        data = [];
+      }
+      print('🔍 SaleService.getSales - Data array length: ${data.length}');
+      print(
+        '🔍 SaleService.getSales - First item sample: ${data.isNotEmpty ? data.first : 'empty'}',
+      );
+
+      final sales = <Sale>[];
+      for (final json in data) {
+        try {
+          if (json == null) {
+            print('❌ SaleService.getSales - Skipping null sale JSON');
+            continue;
+          }
+          final sale = Sale.fromJson(json as Map<String, dynamic>);
+          print(
+            '🔍 SaleService.getSales - Successfully parsed sale: ${sale.id}',
+          );
+          sales.add(sale);
+        } catch (e) {
+          print('❌ SaleService.getSales - Failed to parse sale: $e');
+          print('❌ SaleService.getSales - Problematic JSON: $json');
+          // Skip problematic entry and continue parsing
+          continue;
+        }
+      }
+
+      print('🔍 SaleService.getSales - Total sales parsed: ${sales.length}');
       return ApiResponse.success(
         data: sales,
         message: response.data!['message'] ?? response.message,
@@ -69,11 +107,11 @@ class SaleService {
     String? notes,
   }) async {
     final body = <String, dynamic>{
-      if (customerId != null) 'customer_id': customerId,
+      if (customerId != null) 'customerId': customerId,
       'items': items,
-      if (discountType != null) 'discount_type': discountType,
-      if (discountValue != null) 'discount_value': discountValue,
-      if (taxRate != null) 'tax_rate': taxRate,
+      if (discountType != null) 'discountType': discountType,
+      if (discountValue != null) 'discountValue': discountValue,
+      if (taxRate != null) 'taxRate': taxRate,
       if (notes != null) 'notes': notes,
     };
 
@@ -151,6 +189,42 @@ class SaleService {
       final sale = Sale.fromJson(response.data!['data']);
       return ApiResponse.success(
         data: sale,
+        message: response.data!['message'] ?? response.message,
+      );
+    }
+
+    return ApiResponse.error(
+      message: response.message,
+      statusCode: response.statusCode,
+    );
+  }
+
+  // Create payment for a sale
+  Future<ApiResponse<Payment>> createPayment(
+    int saleId, {
+    required int paymentMethodId,
+    required double amount,
+    String? referenceNumber,
+    DateTime? paymentDate,
+    String? notes,
+  }) async {
+    final body = <String, dynamic>{
+      'paymentMethodId': paymentMethodId,
+      'amount': amount,
+      if (referenceNumber != null) 'referenceNumber': referenceNumber,
+      if (paymentDate != null) 'paymentDate': paymentDate.toIso8601String(),
+      if (notes != null) 'notes': notes,
+    };
+
+    final response = await _apiClient.post<Map<String, dynamic>>(
+      '/sales/$saleId/payments',
+      data: body,
+    );
+
+    if (response.isSuccess && response.data != null) {
+      final payment = Payment.fromJson(response.data!['data']);
+      return ApiResponse.success(
+        data: payment,
         message: response.data!['message'] ?? response.message,
       );
     }

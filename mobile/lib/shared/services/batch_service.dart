@@ -61,9 +61,10 @@ class BatchService {
     }
   }
 
-  Future<void> deleteBatch(int id) async {
+  Future<void> deleteBatch(int id, {int? itemId}) async {
     try {
-      await _apiClient.delete('/batches/$id');
+      final queryParams = itemId != null ? {'itemId': itemId} : null;
+      await _apiClient.delete('/batches/$id', queryParameters: queryParams);
     } catch (e) {
       if (e is DioException && e.response != null) {
         throw Exception(e.response!.data['error'] ?? 'Failed to delete batch');

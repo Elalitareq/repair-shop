@@ -4,19 +4,19 @@ import { AuthRequest } from "../middleware/auth";
 import { prisma } from "../utils/prisma";
 import type { Item } from "@prisma/client";
 
-// Transform Prisma item to snake_case for mobile client
-function transformItemToSnakeCase(item: any) {
+// Transform Prisma item to camelCase for mobile client
+function transformItemToCamelCase(item: any) {
   return {
     ...item,
-    category_id: item.categoryId,
-    condition_id: item.conditionId,
-    quality_id: item.qualityId,
-    item_type: item.itemType,
-    stock_quantity: item.stockQuantity,
-    min_stock_level: item.minStockLevel,
-    selling_price: item.sellingPrice,
-    created_at: item.createdAt,
-    updated_at: item.updatedAt,
+    categoryId: item.categoryId,
+    conditionId: item.conditionId,
+    qualityId: item.qualityId,
+    itemType: item.itemType,
+    stockQuantity: item.stockQuantity,
+    minStockLevel: item.minStockLevel,
+    sellingPrice: item.sellingPrice,
+    createdAt: item.createdAt,
+    updatedAt: item.updatedAt,
   };
 }
 
@@ -76,7 +76,7 @@ export class ItemController {
     }
 
     res.json({
-      data: items.map(transformItemToSnakeCase),
+      data: items.map(transformItemToCamelCase),
       pagination: {
         page: parseInt(page as string),
         limit: parseInt(limit as string),
@@ -157,57 +157,37 @@ export class ItemController {
       throw new AppError(404, "Item not found");
     }
 
-    res.json({ data: transformItemToSnakeCase(item) });
+    res.json({ data: transformItemToCamelCase(item) });
   }
 
   async create(req: AuthRequest, res: Response) {
-    // Support both camelCase and snake_case from client
     const {
       name,
       categoryId,
-      category_id,
       brand,
       model,
       description,
       conditionId,
-      condition_id,
       qualityId,
-      quality_id,
       itemType,
-      item_type,
       stockQuantity,
-      stock_quantity,
       minStockLevel,
-      min_stock_level,
       sellingPrice,
-      selling_price,
     } = req.body;
-
-    // Use snake_case first (mobile convention), fallback to camelCase
-    const finalCategoryId = category_id || categoryId;
-    const finalConditionId = condition_id || conditionId;
-    const finalQualityId = quality_id || qualityId;
-    const finalItemType = item_type || itemType || "other";
-    const finalStockQuantity =
-      stock_quantity !== undefined ? stock_quantity : stockQuantity;
-    const finalMinStockLevel =
-      min_stock_level !== undefined ? min_stock_level : minStockLevel;
-    const finalSellingPrice =
-      selling_price !== undefined ? selling_price : sellingPrice;
 
     if (
       !name ||
-      !finalCategoryId ||
-      !finalConditionId ||
-      !finalQualityId ||
-      finalSellingPrice === undefined
+      !categoryId ||
+      !conditionId ||
+      !qualityId ||
+      sellingPrice === undefined
     ) {
       console.log({
         name,
-        categoryId: finalCategoryId,
-        conditionId: finalConditionId,
-        qualityId: finalQualityId,
-        sellingPrice: finalSellingPrice,
+        categoryId,
+        conditionId,
+        qualityId,
+        sellingPrice,
       });
       throw new AppError(400, "Required fields missing");
     }
@@ -215,16 +195,16 @@ export class ItemController {
     const item = await prisma.item.create({
       data: {
         name,
-        categoryId: finalCategoryId,
+        categoryId,
         brand,
         model,
         description,
-        conditionId: finalConditionId,
-        qualityId: finalQualityId,
-        itemType: finalItemType,
-        stockQuantity: finalStockQuantity || 0,
-        minStockLevel: finalMinStockLevel || 5,
-        sellingPrice: finalSellingPrice,
+        conditionId,
+        qualityId,
+        itemType: itemType || "other",
+        stockQuantity: stockQuantity || 0,
+        minStockLevel: minStockLevel || 5,
+        sellingPrice,
       },
       include: {
         category: true,
@@ -234,7 +214,7 @@ export class ItemController {
     });
 
     res.status(201).json({
-      data: transformItemToSnakeCase(item),
+      data: transformItemToCamelCase(item),
       message: "Item created successfully",
     });
   }

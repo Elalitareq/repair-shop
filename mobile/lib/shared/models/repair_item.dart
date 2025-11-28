@@ -5,12 +5,12 @@ part 'repair_item.g.dart';
 
 @JsonSerializable()
 class RepairItem extends BaseModel {
-  final int repairId;
-  final String itemName;
+  final int? repairId;
+  final String? itemName;
   final String? description;
-  final double quantity;
-  final double unitPrice;
-  final double totalPrice;
+  final double? quantity;
+  final double? unitPrice;
+  final double? totalPrice;
   final bool isLabor;
 
   const RepairItem({
@@ -22,8 +22,8 @@ class RepairItem extends BaseModel {
     required this.unitPrice,
     required this.totalPrice,
     this.isLabor = false,
-    super.createdAt,
-    super.updatedAt,
+    required super.createdAt,
+    required super.updatedAt,
     super.syncStatus,
   });
 

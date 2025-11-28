@@ -187,11 +187,10 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              '${item.category?.name ?? 'No Category'} • ${item.condition?.name ?? 'No Condition'}',
+              '${item.category?.name ?? 'Unknown Category'}  • ${item.condition?.name ?? ''}',
             ),
-            Text('Quality: ${item.quality?.name ?? 'No Quality'}'),
-            if (item.brand != null || item.model != null)
-              Text('${item.brand ?? ''} ${item.model ?? ''}'.trim()),
+            Text('Quality: ${item.quality?.name ?? 'N/A'}'),
+            Text('${item.brand} ${item.model}'.trim()),
             // IMEI moved to Serial model - we display serials on item details
             Text(
               'Stock: ${item.stockQuantity} • Price: \$${item.sellingPrice?.toStringAsFixed(2) ?? "N/A"}',

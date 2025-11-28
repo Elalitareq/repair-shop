@@ -165,6 +165,12 @@ class DashboardPage extends ConsumerWidget {
         () => context.go('/repairs'),
       ),
       _ActionData(
+        'Sales',
+        Icons.point_of_sale,
+        Colors.green,
+        () => context.go('/sales'),
+      ),
+      _ActionData(
         'Customers',
         Icons.people,
         Colors.blue,

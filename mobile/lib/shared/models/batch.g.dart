@@ -7,33 +7,29 @@ part of 'batch.dart';
 // **************************************************************************
 
 Batch _$BatchFromJson(Map<String, dynamic> json) => Batch(
-      id: (json['id'] as num).toInt(),
-      createdAt: json['created_at'] == null
-          ? null
-          : DateTime.parse(json['created_at'] as String),
-      updatedAt: json['updated_at'] == null
-          ? null
-          : DateTime.parse(json['updated_at'] as String),
-      batchNumber: json['batch_number'] as String,
-      supplierId: (json['supplier_id'] as num).toInt(),
-      purchaseDate: json['purchase_date'] as String,
-      totalQuantity: (json['total_quantity'] as num).toInt(),
-      soldQuantity: (json['sold_quantity'] as num?)?.toInt() ?? 0,
-      unitCost: (json['unit_cost'] as num).toDouble(),
-      totalCost: (json['total_cost'] as num).toDouble(),
-      notes: json['notes'] as String?,
-    );
+  id: (json['id'] as num).toInt(),
+  createdAt: DateTime.parse(json['createdAt'] as String),
+  updatedAt: DateTime.parse(json['updatedAt'] as String),
+  batchNumber: json['batchNumber'] as String,
+  supplierId: (json['supplierId'] as num).toInt(),
+  purchaseDate: json['purchaseDate'] as String,
+  totalQuantity: (json['totalQuantity'] as num).toInt(),
+  soldQuantity: (json['soldQuantity'] as num?)?.toInt() ?? 0,
+  unitCost: (json['unitCost'] as num).toDouble(),
+  totalCost: (json['totalCost'] as num).toDouble(),
+  notes: json['notes'] as String?,
+);
 
 Map<String, dynamic> _$BatchToJson(Batch instance) => <String, dynamic>{
-      'id': instance.id,
-      'created_at': instance.createdAt?.toIso8601String(),
-      'updated_at': instance.updatedAt?.toIso8601String(),
-      'batch_number': instance.batchNumber,
-      'supplier_id': instance.supplierId,
-      'purchase_date': instance.purchaseDate,
-      'total_quantity': instance.totalQuantity,
-      'sold_quantity': instance.soldQuantity,
-      'unit_cost': instance.unitCost,
-      'total_cost': instance.totalCost,
-      'notes': instance.notes,
-    };
+  'id': instance.id,
+  'createdAt': instance.createdAt.toIso8601String(),
+  'updatedAt': instance.updatedAt.toIso8601String(),
+  'batchNumber': instance.batchNumber,
+  'supplierId': instance.supplierId,
+  'purchaseDate': instance.purchaseDate,
+  'totalQuantity': instance.totalQuantity,
+  'soldQuantity': instance.soldQuantity,
+  'unitCost': instance.unitCost,
+  'totalCost': instance.totalCost,
+  'notes': instance.notes,
+};

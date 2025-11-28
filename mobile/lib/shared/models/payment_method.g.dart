@@ -9,29 +9,21 @@ part of 'payment_method.dart';
 PaymentMethod _$PaymentMethodFromJson(Map<String, dynamic> json) =>
     PaymentMethod(
       id: (json['id'] as num).toInt(),
-      createdAt: json['created_at'] == null
-          ? null
-          : DateTime.parse(json['created_at'] as String),
-      updatedAt: json['updated_at'] == null
-          ? null
-          : DateTime.parse(json['updated_at'] as String),
-      syncStatus: (json['sync_status'] as num?)?.toInt() ?? 0,
       name: json['name'] as String,
-      code: json['code'] as String,
-      isActive: json['is_active'] as bool? ?? true,
-      feeRate: (json['fee_rate'] as num?)?.toDouble() ?? 0.0,
       description: json['description'] as String?,
+      createdAt: DateTime.parse(json['createdAt'] as String),
+      updatedAt: DateTime.parse(json['updatedAt'] as String),
+      syncStatus: (json['syncStatus'] as num?)?.toInt() ?? 0,
+      feeRate: (json['feeRate'] as num?)?.toDouble() ?? 0.0,
     );
 
 Map<String, dynamic> _$PaymentMethodToJson(PaymentMethod instance) =>
     <String, dynamic>{
       'id': instance.id,
-      'created_at': instance.createdAt?.toIso8601String(),
-      'updated_at': instance.updatedAt?.toIso8601String(),
-      'sync_status': instance.syncStatus,
+      'createdAt': instance.createdAt.toIso8601String(),
+      'updatedAt': instance.updatedAt.toIso8601String(),
+      'syncStatus': instance.syncStatus,
       'name': instance.name,
-      'code': instance.code,
-      'is_active': instance.isActive,
-      'fee_rate': instance.feeRate,
+      'feeRate': instance.feeRate,
       'description': instance.description,
     };

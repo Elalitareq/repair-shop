@@ -67,5 +67,26 @@ router.get(
   authenticate,
   asyncHandler(referenceController.getPaymentMethods.bind(referenceController))
 );
+router.post(
+  "/payment-methods",
+  authenticate,
+  asyncHandler(
+    referenceController.createPaymentMethod.bind(referenceController)
+  )
+);
+router.put(
+  "/payment-methods/:id",
+  authenticate,
+  asyncHandler(
+    referenceController.updatePaymentMethod.bind(referenceController)
+  )
+);
+router.delete(
+  "/payment-methods/:id",
+  authenticate,
+  asyncHandler(
+    referenceController.deletePaymentMethod.bind(referenceController)
+  )
+);
 
 export default router;

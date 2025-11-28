@@ -61,8 +61,8 @@ class _CustomerFormPageState extends ConsumerState<CustomerFormPage> {
         setState(() {
           _nameController.text = customer.name;
           _companyNameController.text = customer.companyName ?? '';
-          _phoneController.text = customer.phoneNumber;
-          _addressController.text = customer.address ?? '';
+          _phoneController.text = customer.phone;
+          _addressController.text = customer.address;
           _taxNumberController.text = customer.taxNumber ?? '';
           _locationLinkController.text = customer.locationLink ?? '';
           _type = customer.type;
@@ -277,18 +277,18 @@ class _CustomerFormPageState extends ConsumerState<CustomerFormPage> {
 
     final data = {
       'name': _nameController.text,
-      'company_name': _companyNameController.text.isEmpty
+      'companyName': _companyNameController.text.isEmpty
           ? null
           : _companyNameController.text,
       'type': _type,
-      'phone_number': _phoneController.text,
+      'phone': _phoneController.text,
       'address': _addressController.text.isEmpty
           ? null
           : _addressController.text,
-      'tax_number': _taxNumberController.text.isEmpty
+      'taxNumber': _taxNumberController.text.isEmpty
           ? null
           : _taxNumberController.text,
-      'location_link': _locationLinkController.text.isEmpty
+      'locationLink': _locationLinkController.text.isEmpty
           ? null
           : _locationLinkController.text,
     };

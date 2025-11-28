@@ -15,8 +15,8 @@ class RepairsPage extends ConsumerStatefulWidget {
 
 class _RepairsPageState extends ConsumerState<RepairsPage> {
   final _searchController = TextEditingController();
-  RepairStatus? _selectedStatus;
-  RepairPriority? _selectedPriority;
+  String? _selectedStatus;
+  String? _selectedPriority;
 
   @override
   void initState() {
@@ -96,7 +96,7 @@ class _RepairsPageState extends ConsumerState<RepairsPage> {
                     Padding(
                       padding: const EdgeInsets.only(right: 8),
                       child: Chip(
-                        label: Text('Status: ${_selectedStatus!.name}'),
+                        label: Text('Status: ${_selectedStatus!}'),
                         deleteIcon: const Icon(Icons.close, size: 18),
                         onDeleted: () {
                           setState(() => _selectedStatus = null);
@@ -110,7 +110,7 @@ class _RepairsPageState extends ConsumerState<RepairsPage> {
                     Padding(
                       padding: const EdgeInsets.only(right: 8),
                       child: Chip(
-                        label: Text('Priority: ${_selectedPriority!.name}'),
+                        label: Text('Priority: ${_selectedPriority!}'),
                         deleteIcon: const Icon(Icons.close, size: 18),
                         onDeleted: () {
                           setState(() => _selectedPriority = null);
@@ -234,20 +234,44 @@ class _RepairsPageState extends ConsumerState<RepairsPage> {
           children: [
             const Text('Status:'),
             const SizedBox(height: 8),
-            DropdownButtonFormField<RepairStatus?>(
+            DropdownButtonFormField<String?>(
               value: _selectedStatus,
               decoration: const InputDecoration(
                 border: OutlineInputBorder(),
                 isDense: true,
               ),
               items: [
-                const DropdownMenuItem<RepairStatus?>(
+                const DropdownMenuItem<String?>(
                   value: null,
                   child: Text('All'),
                 ),
-                ...RepairStatus.values.map(
-                  (status) =>
-                      DropdownMenuItem(value: status, child: Text(status.name)),
+                const DropdownMenuItem(
+                  value: 'Received',
+                  child: Text('Received'),
+                ),
+                const DropdownMenuItem(
+                  value: 'Diagnosed',
+                  child: Text('Diagnosed'),
+                ),
+                const DropdownMenuItem(
+                  value: 'In Progress',
+                  child: Text('In Progress'),
+                ),
+                const DropdownMenuItem(
+                  value: 'Waiting Parts',
+                  child: Text('Waiting Parts'),
+                ),
+                const DropdownMenuItem(
+                  value: 'Completed',
+                  child: Text('Completed'),
+                ),
+                const DropdownMenuItem(
+                  value: 'Ready for Pickup',
+                  child: Text('Ready for Pickup'),
+                ),
+                const DropdownMenuItem(
+                  value: 'Delivered',
+                  child: Text('Delivered'),
                 ),
               ],
               onChanged: (value) => setState(() => _selectedStatus = value),
@@ -255,23 +279,21 @@ class _RepairsPageState extends ConsumerState<RepairsPage> {
             const SizedBox(height: 16),
             const Text('Priority:'),
             const SizedBox(height: 8),
-            DropdownButtonFormField<RepairPriority?>(
+            DropdownButtonFormField<String?>(
               value: _selectedPriority,
               decoration: const InputDecoration(
                 border: OutlineInputBorder(),
                 isDense: true,
               ),
               items: [
-                const DropdownMenuItem<RepairPriority?>(
+                const DropdownMenuItem<String?>(
                   value: null,
                   child: Text('All'),
                 ),
-                ...RepairPriority.values.map(
-                  (priority) => DropdownMenuItem(
-                    value: priority,
-                    child: Text(priority.name),
-                  ),
-                ),
+                const DropdownMenuItem(value: 'Low', child: Text('Low')),
+                const DropdownMenuItem(value: 'Normal', child: Text('Normal')),
+                const DropdownMenuItem(value: 'High', child: Text('High')),
+                const DropdownMenuItem(value: 'Urgent', child: Text('Urgent')),
               ],
               onChanged: (value) => setState(() => _selectedPriority = value),
             ),
@@ -332,32 +354,29 @@ class _RepairCard extends StatelessWidget {
               // Header row
               Row(
                 children: [
-                  Expanded(
-                    child: Text(
-                      'Ticket #${repair.ticketNumber}',
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                  Text(
+                    'Ticket #${repair.repairNumber}',
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
-                  _StatusChip(status: repair.status),
+                  _StatusChip(status: repair.state.name),
                 ],
               ),
               const SizedBox(height: 8),
 
               // Device info
               Text(
-                '${repair.deviceType} - ${repair.deviceModel}',
+                '${repair.deviceBrand} - ${repair.deviceModel}',
                 style: theme.textTheme.titleSmall,
               ),
               const SizedBox(height: 4),
 
               // Customer info
-              if (repair.customer != null)
-                Text(
-                  'Customer: ${repair.customer!.name}',
-                  style: theme.textTheme.bodyMedium,
-                ),
+              Text(
+                'Customer: ${repair.customer.name}',
+                style: theme.textTheme.bodyMedium,
+              ),
               const SizedBox(height: 8),
 
               // Problem description
@@ -388,9 +407,7 @@ class _RepairCard extends StatelessWidget {
 
                   // Date
                   Text(
-                    DateFormat(
-                      'MMM dd, yyyy',
-                    ).format(repair.createdAt ?? DateTime.now()),
+                    DateFormat('MMM dd, yyyy').format(repair.createdAt),
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: theme.textTheme.bodySmall?.color?.withOpacity(0.7),
                     ),
@@ -406,7 +423,7 @@ class _RepairCard extends StatelessWidget {
 }
 
 class _StatusChip extends StatelessWidget {
-  final RepairStatus status;
+  final String status;
 
   const _StatusChip({required this.status});
 
@@ -416,24 +433,29 @@ class _StatusChip extends StatelessWidget {
     Color textColor = Colors.white;
 
     switch (status) {
-      case RepairStatus.pending:
+      case 'Received':
         backgroundColor = Colors.orange;
         break;
-      case RepairStatus.inProgress:
+      case 'Diagnosed':
+        backgroundColor = Colors.yellow;
+        break;
+      case 'In Progress':
         backgroundColor = Colors.blue;
         break;
-      case RepairStatus.waitingParts:
+      case 'Waiting Parts':
         backgroundColor = Colors.purple;
         break;
-      case RepairStatus.completed:
+      case 'Completed':
         backgroundColor = Colors.green;
         break;
-      case RepairStatus.delivered:
+      case 'Ready for Pickup':
         backgroundColor = Colors.teal;
         break;
-      case RepairStatus.cancelled:
-        backgroundColor = Colors.red;
+      case 'Delivered':
+        backgroundColor = Colors.grey;
         break;
+      default:
+        backgroundColor = Colors.grey;
     }
 
     return Container(
@@ -443,7 +465,7 @@ class _StatusChip extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
       ),
       child: Text(
-        status.name.toUpperCase(),
+        status.toUpperCase(),
         style: TextStyle(
           color: textColor,
           fontSize: 12,
@@ -455,7 +477,7 @@ class _StatusChip extends StatelessWidget {
 }
 
 class _PriorityIndicator extends StatelessWidget {
-  final RepairPriority priority;
+  final String priority;
 
   const _PriorityIndicator({required this.priority});
 
@@ -465,22 +487,25 @@ class _PriorityIndicator extends StatelessWidget {
     IconData icon;
 
     switch (priority) {
-      case RepairPriority.low:
+      case 'Low':
         color = Colors.green;
         icon = Icons.keyboard_arrow_down;
         break;
-      case RepairPriority.normal:
+      case 'Normal':
         color = Colors.blue;
         icon = Icons.remove;
         break;
-      case RepairPriority.high:
+      case 'High':
         color = Colors.orange;
         icon = Icons.keyboard_arrow_up;
         break;
-      case RepairPriority.urgent:
+      case 'Urgent':
         color = Colors.red;
         icon = Icons.priority_high;
         break;
+      default:
+        color = Colors.grey;
+        icon = Icons.help_outline;
     }
 
     return Row(
@@ -489,7 +514,7 @@ class _PriorityIndicator extends StatelessWidget {
         Icon(icon, color: color, size: 16),
         const SizedBox(width: 2),
         Text(
-          priority.name.toUpperCase(),
+          priority.toUpperCase(),
           style: TextStyle(
             color: color,
             fontSize: 12,

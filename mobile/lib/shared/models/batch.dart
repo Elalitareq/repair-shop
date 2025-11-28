@@ -5,26 +5,26 @@ part 'batch.g.dart';
 
 @JsonSerializable(explicitToJson: true)
 class Batch extends BaseModel {
-  @JsonKey(name: 'batch_number')
+  @JsonKey(name: 'batchNumber')
   final String batchNumber;
-  @JsonKey(name: 'supplier_id')
+  @JsonKey(name: 'supplierId')
   final int supplierId;
-  @JsonKey(name: 'purchase_date')
+  @JsonKey(name: 'purchaseDate')
   final String purchaseDate;
-  @JsonKey(name: 'total_quantity')
+  @JsonKey(name: 'totalQuantity')
   final int totalQuantity;
-  @JsonKey(name: 'sold_quantity')
+  @JsonKey(name: 'soldQuantity')
   final int soldQuantity;
-  @JsonKey(name: 'unit_cost')
+  @JsonKey(name: 'unitCost')
   final double unitCost;
-  @JsonKey(name: 'total_cost')
+  @JsonKey(name: 'totalCost')
   final double totalCost;
   final String? notes;
 
   Batch({
     required super.id,
-    super.createdAt,
-    super.updatedAt,
+    required super.createdAt,
+    required super.updatedAt,
     required this.batchNumber,
     required this.supplierId,
     required this.purchaseDate,

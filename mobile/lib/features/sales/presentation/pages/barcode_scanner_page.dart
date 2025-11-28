@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/foundation.dart';
 
 import '../../../../shared/providers/sale_provider.dart';
 
@@ -23,9 +24,18 @@ class _BarcodeScannerPageState extends ConsumerState<BarcodeScannerPage> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final isWeb = kIsWeb;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Scan Barcode'),
+        backgroundColor: colorScheme.primary,
+        foregroundColor: Colors.white,
+        leading: IconButton(
+          onPressed: () => Navigator.of(context).pop(),
+          icon: const Icon(Icons.arrow_back),
+        ),
         actions: [
           IconButton(
             icon: Icon(
@@ -35,53 +45,75 @@ class _BarcodeScannerPageState extends ConsumerState<BarcodeScannerPage> {
           ),
         ],
       ),
-      body: Stack(
-        children: [
-          MobileScanner(controller: controller, onDetect: _onDetect),
-          // Overlay with scan area
-          Container(
-            decoration: BoxDecoration(color: Colors.black.withOpacity(0.5)),
-            child: Center(
-              child: Container(
-                width: 250,
-                height: 250,
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.white, width: 2),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Center(
-                  child: Text(
-                    'Position barcode here',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-          // Processing indicator
-          if (_isProcessing)
-            Container(
-              color: Colors.black.withOpacity(0.7),
-              child: const Center(
+      body: isWeb
+          ? Center(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    CircularProgressIndicator(),
-                    SizedBox(height: 16),
-                    Text(
-                      'Processing...',
-                      style: TextStyle(color: Colors.white, fontSize: 16),
+                    const Icon(Icons.qr_code_scanner, size: 72),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'Barcode scanning is not supported on the web.',
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: const Text('Back'),
                     ),
                   ],
                 ),
               ),
+            )
+          : Stack(
+              children: [
+                MobileScanner(controller: controller, onDetect: _onDetect),
+                // Overlay with scan area
+                Container(
+                  decoration: BoxDecoration(color: Colors.black.withOpacity(0.5)),
+                  child: Center(
+                    child: Container(
+                      width: 250,
+                      height: 250,
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.white, width: 2),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Center(
+                        child: Text(
+                          'Position barcode here',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                // Processing indicator
+                if (_isProcessing)
+                  Container(
+                    color: Colors.black.withOpacity(0.7),
+                    child: const Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          CircularProgressIndicator(),
+                          SizedBox(height: 16),
+                          Text(
+                            'Processing...',
+                            style: TextStyle(color: Colors.white, fontSize: 16),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+              ],
             ),
-        ],
-      ),
     );
   }
 
@@ -155,9 +187,9 @@ class _BarcodeScannerPageState extends ConsumerState<BarcodeScannerPage> {
             ),
             const SizedBox(height: 8),
             Text('Barcode: $barcode'),
-            Text('Stock: ${item['stock_quantity'] ?? 0}'),
+            Text('Stock: ${item['stockQuantity'] ?? 0}'),
             Text(
-              'Price: \$${item['selling_price']?.toStringAsFixed(2) ?? '0.00'}',
+              'Price: \$${item['sellingPrice']?.toStringAsFixed(2) ?? '0.00'}',
             ),
           ],
         ),

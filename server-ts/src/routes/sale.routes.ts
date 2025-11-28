@@ -47,4 +47,16 @@ router.put(
   asyncHandler(saleController.updateStatus.bind(saleController))
 );
 
+router.post(
+  "/:id/payments",
+  authenticate,
+  asyncHandler(saleController.createPayment.bind(saleController))
+);
+
+router.post(
+  "/:id/payments",
+  authenticate,
+  asyncHandler(saleController.createPayment.bind(saleController))
+);
+
 export default router;

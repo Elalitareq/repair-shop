@@ -104,4 +104,37 @@ export class ReferenceController {
     });
     res.json({ data: paymentMethods });
   }
+
+  async createPaymentMethod(req: AuthRequest, res: Response) {
+    const { name, feeRate, description } = req.body;
+    const paymentMethod = await prisma.paymentMethod.create({
+      data: {
+        name,
+        feeRate: feeRate || 0.0,
+        description: description || null,
+      },
+    });
+    res.status(201).json({ data: paymentMethod });
+  }
+
+  async updatePaymentMethod(req: AuthRequest, res: Response) {
+    const { id } = req.params;
+    const { name, feeRate, description } = req.body;
+
+    const paymentMethod = await prisma.paymentMethod.update({
+      where: { id: parseInt(id) },
+      data: {
+        name,
+        feeRate: feeRate ?? undefined,
+        description: description ?? undefined,
+      },
+    });
+    res.json({ data: paymentMethod });
+  }
+
+  async deletePaymentMethod(req: AuthRequest, res: Response) {
+    const { id } = req.params;
+    await prisma.paymentMethod.delete({ where: { id: parseInt(id) } });
+    res.json({ message: "Payment method deleted successfully" });
+  }
 }

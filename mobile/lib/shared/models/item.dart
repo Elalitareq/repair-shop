@@ -8,43 +8,46 @@ part 'item.g.dart';
 
 @JsonSerializable(explicitToJson: true)
 class Item extends BaseModel {
+  @JsonKey(name: 'name')
   final String name;
-  @JsonKey(name: 'category_id')
-  final int? categoryId;
+  @JsonKey(name: 'categoryId')
+  final int categoryId;
+
   final Category? category;
-  final String? brand;
-  final String? model;
-  // IMEI moved to Serial model - use Serial list to represent device serials
+  final String brand;
+
+  final String model;
+  @JsonKey(name: 'description')
   final String? description;
-  @JsonKey(name: 'condition_id')
-  final int? conditionId;
+  @JsonKey(name: 'conditionId')
+  final int conditionId;
   final Condition? condition;
-  @JsonKey(name: 'quality_id')
-  final int? qualityId;
+  @JsonKey(name: 'qualityId')
+  final int qualityId;
   final Quality? quality;
-  @JsonKey(name: 'item_type')
+  @JsonKey(name: 'itemType')
   final String itemType; // 'phone' or 'other'
-  @JsonKey(name: 'stock_quantity')
+  @JsonKey(name: 'stockQuantity')
   final int stockQuantity;
-  @JsonKey(name: 'min_stock_level')
+  @JsonKey(name: 'minStockLevel')
   final int minStockLevel;
-  @JsonKey(name: 'selling_price')
+  @JsonKey(name: 'sellingPrice')
   final double? sellingPrice;
   final List<String>? barcodes; // List of barcode strings
 
   Item({
     required super.id,
-    super.createdAt,
-    super.updatedAt,
+    required super.createdAt,
+    required super.updatedAt,
     required this.name,
-    this.categoryId,
+    required this.categoryId,
     this.category,
-    this.brand,
-    this.model,
+    required this.brand,
+    required this.model,
     this.description,
-    this.conditionId,
+    required this.conditionId,
     this.condition,
-    this.qualityId,
+    required this.qualityId,
     this.quality,
     this.itemType = 'other',
     this.stockQuantity = 0,
@@ -78,6 +81,28 @@ class Item extends BaseModel {
     double? sellingPrice,
     List<String>? barcodes,
   }) {
+    print({
+      "copyWith": {
+        "id": id,
+        "createdAt": createdAt,
+        "updatedAt": updatedAt,
+        "name": name,
+        "categoryId": categoryId,
+        "category": category,
+        "brand": brand,
+        "model": model,
+        "description": description,
+        "conditionId": conditionId,
+        "condition": condition,
+        "qualityId": qualityId,
+        "quality": quality,
+        "itemType": itemType,
+        "stockQuantity": stockQuantity,
+        "minStockLevel": minStockLevel,
+        "sellingPrice": sellingPrice,
+        "barcodes": barcodes,
+      },
+    });
     return Item(
       id: id ?? this.id,
       createdAt: createdAt ?? this.createdAt,
@@ -104,12 +129,7 @@ class Item extends BaseModel {
   bool get isOutOfStock => stockQuantity == 0;
 
   String get displayName {
-    if (brand != null && model != null) {
-      return '$brand $model - $name';
-    } else if (brand != null) {
-      return '$brand - $name';
-    }
-    return name;
+    return '$brand $model - $name';
   }
 
   String get stockStatus {

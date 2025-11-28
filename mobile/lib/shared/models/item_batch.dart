@@ -8,27 +8,27 @@ part 'item_batch.g.dart';
 /// ItemBatch represents batch purchases
 @JsonSerializable()
 class ItemBatch extends BaseModel {
-  @JsonKey(name: 'batch_number')
+  @JsonKey(name: 'batchNumber')
   final String batchNumber;
 
-  @JsonKey(name: 'supplier_id')
+  @JsonKey(name: 'supplierId')
   final int supplierId;
 
   @JsonKey(name: 'supplier')
   final Customer? supplier;
 
-  @JsonKey(name: 'purchase_date')
+  @JsonKey(name: 'purchaseDate')
   final DateTime purchaseDate;
 
-  @JsonKey(name: 'total_quantity')
+  @JsonKey(name: 'totalQuantity')
   final int totalQuantity;
 
   @JsonKey(name: 'serials')
   final List<Serial>? serials;
-  @JsonKey(name: 'sold_quantity')
+  @JsonKey(name: 'soldQuantity')
   final int soldQuantity;
 
-  @JsonKey(name: 'total_cost')
+  @JsonKey(name: 'totalCost')
   final double totalCost;
 
   @JsonKey(name: 'notes')
@@ -36,8 +36,8 @@ class ItemBatch extends BaseModel {
 
   const ItemBatch({
     required super.id,
-    super.createdAt,
-    super.updatedAt,
+    required super.createdAt,
+    required super.updatedAt,
     super.syncStatus,
     this.serials,
     required this.batchNumber,
@@ -91,16 +91,16 @@ class ItemBatch extends BaseModel {
 class BatchStockInfo {
   final ItemBatch batch;
 
-  @JsonKey(name: 'remaining_stock')
+  @JsonKey(name: 'remainingStock')
   final int remainingStock;
 
-  @JsonKey(name: 'stock_percentage')
+  @JsonKey(name: 'stockPercentage')
   final double stockPercentage;
 
-  @JsonKey(name: 'is_low_stock')
+  @JsonKey(name: 'isLowStock')
   final bool isLowStock;
 
-  @JsonKey(name: 'is_out_of_stock')
+  @JsonKey(name: 'isOutOfStock')
   final bool isOutOfStock;
 
   const BatchStockInfo({

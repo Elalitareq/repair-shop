@@ -5,79 +5,153 @@ import 'repair_item.dart';
 
 part 'repair.g.dart';
 
-enum RepairStatus {
-  @JsonValue('pending')
-  pending,
-  @JsonValue('in_progress')
-  inProgress,
-  @JsonValue('waiting_parts')
-  waitingParts,
-  @JsonValue('completed')
-  completed,
-  @JsonValue('delivered')
-  delivered,
-  @JsonValue('cancelled')
-  cancelled,
+@JsonSerializable()
+class RepairState extends BaseModel {
+  final String name;
+  final String? description;
+  final int order;
+
+  const RepairState({
+    required super.id,
+    required this.name,
+    this.description,
+    required this.order,
+    required super.createdAt,
+    required super.updatedAt,
+    super.syncStatus,
+  });
+
+  factory RepairState.fromJson(Map<String, dynamic> json) =>
+      _$RepairStateFromJson(json);
+
+  @override
+  Map<String, dynamic> toJson() => _$RepairStateToJson(this);
+
+  RepairState copyWith({
+    int? id,
+    String? name,
+    String? description,
+    int? order,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    int? syncStatus,
+  }) {
+    return RepairState(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      description: description ?? this.description,
+      order: order ?? this.order,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      syncStatus: syncStatus ?? this.syncStatus,
+    );
+  }
 }
 
-enum RepairPriority {
-  @JsonValue('low')
-  low,
-  @JsonValue('normal')
-  normal,
-  @JsonValue('high')
-  high,
-  @JsonValue('urgent')
-  urgent,
+@JsonSerializable()
+class RepairIssue extends BaseModel {
+  final int repairId;
+  final int issueTypeId;
+  final String description;
+  final bool resolved;
+
+  const RepairIssue({
+    required super.id,
+    required this.repairId,
+    required this.issueTypeId,
+    required this.description,
+    this.resolved = false,
+    required super.createdAt,
+    required super.updatedAt,
+    super.syncStatus,
+  });
+
+  factory RepairIssue.fromJson(Map<String, dynamic> json) =>
+      _$RepairIssueFromJson(json);
+
+  @override
+  Map<String, dynamic> toJson() => _$RepairIssueToJson(this);
+
+  RepairIssue copyWith({
+    int? id,
+    int? repairId,
+    int? issueTypeId,
+    String? description,
+    bool? resolved,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    int? syncStatus,
+  }) {
+    return RepairIssue(
+      id: id ?? this.id,
+      repairId: repairId ?? this.repairId,
+      issueTypeId: issueTypeId ?? this.issueTypeId,
+      description: description ?? this.description,
+      resolved: resolved ?? this.resolved,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      syncStatus: syncStatus ?? this.syncStatus,
+    );
+  }
 }
 
 @JsonSerializable()
 class Repair extends BaseModel {
-  final String ticketNumber;
+  final String repairNumber;
   final int customerId;
-  final Customer? customer;
-  final String deviceType;
+  final Customer customer;
+  final String deviceBrand;
   final String deviceModel;
-  final String deviceSerial;
+  final String? deviceImei;
+  final String? password;
   final String problemDescription;
   final String? diagnosisNotes;
   final String? repairNotes;
-  final RepairStatus status;
-  final RepairPriority priority;
-  final double estimatedCost;
+  final String priority;
+  final double? estimatedCost;
   final double? finalCost;
   final DateTime? estimatedCompletion;
   final DateTime? actualCompletion;
-  final DateTime? deliveredAt;
   final bool warrantyProvided;
   final int? warrantyDays;
-  final List<RepairItem>? items;
-  final List<RepairStatusHistory>? statusHistory;
+  final int stateId;
+  final RepairState state;
+  final String? extraInfo;
+  final DateTime receivedDate;
+  final DateTime? completedDate;
+  final List<RepairIssue> issues;
+  final List<RepairItem> items;
+  final List<RepairStatusHistory> statusHistory;
 
   const Repair({
     required super.id,
-    required this.ticketNumber,
+    required this.repairNumber,
     required this.customerId,
-    this.customer,
-    required this.deviceType,
+    required this.customer,
+    required this.deviceBrand,
     required this.deviceModel,
-    this.deviceSerial = '',
     required this.problemDescription,
+    this.deviceImei,
+    this.password,
     this.diagnosisNotes,
     this.repairNotes,
-    this.status = RepairStatus.pending,
-    this.priority = RepairPriority.normal,
-    this.estimatedCost = 0.0,
+    this.priority = 'normal',
+    this.estimatedCost,
     this.finalCost,
     this.estimatedCompletion,
     this.actualCompletion,
-    this.deliveredAt,
     this.warrantyProvided = false,
     this.warrantyDays,
-    this.items,
-    this.statusHistory,
-    super.createdAt,
-    super.updatedAt,
+    required this.stateId,
+    required this.state,
+    this.extraInfo,
+    required this.receivedDate,
+    this.completedDate,
+    this.issues = const [],
+    this.items = const [],
+    this.statusHistory = const [],
+    required super.createdAt,
+    required super.updatedAt,
     super.syncStatus,
   });
 
@@ -87,104 +161,77 @@ class Repair extends BaseModel {
   Map<String, dynamic> toJson() => _$RepairToJson(this);
 
   Repair copyWith({
-    int? id,
-    String? ticketNumber,
+    String? repairNumber,
     int? customerId,
     Customer? customer,
-    String? deviceType,
+    String? deviceBrand,
     String? deviceModel,
-    String? deviceSerial,
+    String? deviceImei,
+    String? password,
     String? problemDescription,
     String? diagnosisNotes,
     String? repairNotes,
-    RepairStatus? status,
-    RepairPriority? priority,
+    String? priority,
     double? estimatedCost,
     double? finalCost,
     DateTime? estimatedCompletion,
     DateTime? actualCompletion,
-    DateTime? deliveredAt,
     bool? warrantyProvided,
     int? warrantyDays,
+    int? stateId,
+    RepairState? state,
+    String? extraInfo,
+    DateTime? receivedDate,
+    DateTime? completedDate,
+    List<RepairIssue>? issues,
     List<RepairItem>? items,
     List<RepairStatusHistory>? statusHistory,
-    DateTime? createdAt,
-    DateTime? updatedAt,
     int? syncStatus,
   }) {
     return Repair(
-      id: id ?? this.id,
-      ticketNumber: ticketNumber ?? this.ticketNumber,
+      id: id,
+      repairNumber: repairNumber ?? this.repairNumber,
       customerId: customerId ?? this.customerId,
       customer: customer ?? this.customer,
-      deviceType: deviceType ?? this.deviceType,
+      deviceBrand: deviceBrand ?? this.deviceBrand,
       deviceModel: deviceModel ?? this.deviceModel,
-      deviceSerial: deviceSerial ?? this.deviceSerial,
+      deviceImei: deviceImei ?? this.deviceImei,
+      password: password ?? this.password,
       problemDescription: problemDescription ?? this.problemDescription,
       diagnosisNotes: diagnosisNotes ?? this.diagnosisNotes,
       repairNotes: repairNotes ?? this.repairNotes,
-      status: status ?? this.status,
       priority: priority ?? this.priority,
       estimatedCost: estimatedCost ?? this.estimatedCost,
       finalCost: finalCost ?? this.finalCost,
       estimatedCompletion: estimatedCompletion ?? this.estimatedCompletion,
       actualCompletion: actualCompletion ?? this.actualCompletion,
-      deliveredAt: deliveredAt ?? this.deliveredAt,
       warrantyProvided: warrantyProvided ?? this.warrantyProvided,
       warrantyDays: warrantyDays ?? this.warrantyDays,
+      stateId: stateId ?? this.stateId,
+      state: state ?? this.state,
+      extraInfo: extraInfo ?? this.extraInfo,
+      receivedDate: receivedDate ?? this.receivedDate,
+      completedDate: completedDate ?? this.completedDate,
+      issues: issues ?? this.issues,
       items: items ?? this.items,
       statusHistory: statusHistory ?? this.statusHistory,
-      createdAt: createdAt ?? this.createdAt,
-      updatedAt: updatedAt ?? this.updatedAt,
+      createdAt: createdAt,
+      updatedAt: updatedAt,
       syncStatus: syncStatus ?? this.syncStatus,
     );
   }
 
-  String get statusDisplayName {
-    switch (status) {
-      case RepairStatus.pending:
-        return 'Pending';
-      case RepairStatus.inProgress:
-        return 'In Progress';
-      case RepairStatus.waitingParts:
-        return 'Waiting for Parts';
-      case RepairStatus.completed:
-        return 'Completed';
-      case RepairStatus.delivered:
-        return 'Delivered';
-      case RepairStatus.cancelled:
-        return 'Cancelled';
-    }
-  }
+  bool get isCompleted => completedDate != null;
 
-  String get priorityDisplayName {
-    switch (priority) {
-      case RepairPriority.low:
-        return 'Low';
-      case RepairPriority.normal:
-        return 'Normal';
-      case RepairPriority.high:
-        return 'High';
-      case RepairPriority.urgent:
-        return 'Urgent';
-    }
-  }
-
-  bool get isCompleted =>
-      status == RepairStatus.completed || status == RepairStatus.delivered;
-
-  bool get canBeEdited =>
-      status != RepairStatus.delivered && status != RepairStatus.cancelled;
-
-  double get totalCost => finalCost ?? estimatedCost;
+  double get totalCost => finalCost ?? estimatedCost ?? 0.0;
 }
 
 @JsonSerializable()
 class RepairStatusHistory extends BaseModel {
-  final int repairId;
-  final RepairStatus status;
+  final int? repairId;
+  final String? status;
   final String? notes;
-  final String updatedBy;
+  final String? updatedBy;
 
   const RepairStatusHistory({
     required super.id,
@@ -192,8 +239,8 @@ class RepairStatusHistory extends BaseModel {
     required this.status,
     this.notes,
     required this.updatedBy,
-    super.createdAt,
-    super.updatedAt,
+    required super.createdAt,
+    required super.updatedAt,
     super.syncStatus,
   });
 
@@ -206,7 +253,7 @@ class RepairStatusHistory extends BaseModel {
   RepairStatusHistory copyWith({
     int? id,
     int? repairId,
-    RepairStatus? status,
+    String? status,
     String? notes,
     String? updatedBy,
     DateTime? createdAt,

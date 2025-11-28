@@ -8,10 +8,10 @@ part 'serial.g.dart';
 class Serial extends BaseModel {
   final String imei;
 
-  @JsonKey(name: 'item_id')
+  @JsonKey(name: 'itemId')
   final int itemId;
 
-  @JsonKey(name: 'batch_id')
+  @JsonKey(name: 'batchId')
   final int batchId;
 
   @JsonKey(name: 'batch')
@@ -21,8 +21,8 @@ class Serial extends BaseModel {
 
   const Serial({
     required super.id,
-    super.createdAt,
-    super.updatedAt,
+    required super.createdAt,
+    required super.updatedAt,
     required this.imei,
     required this.itemId,
     required this.batchId,

@@ -31,16 +31,18 @@ class _ItemDetailPageState extends ConsumerState<ItemDetailPage> {
   Widget build(BuildContext context) {
     final state = ref.watch(itemDetailProvider);
 
-    if (state.isLoading)
+    if (state.isLoading) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
 
     if (state.error != null) {
       return Scaffold(body: Center(child: Text('Error: ${state.error}')));
     }
 
     final item = state.item;
-    if (item == null)
+    if (item == null) {
       return const Scaffold(body: Center(child: Text('Item not found')));
+    }
 
     return Scaffold(
       appBar: AppBar(title: Text(item.displayName)),
@@ -52,14 +54,8 @@ class _ItemDetailPageState extends ConsumerState<ItemDetailPage> {
               title: const Text('Name'),
               subtitle: Text(item.displayName),
             ),
-            ListTile(
-              title: const Text('Brand'),
-              subtitle: Text(item.brand ?? ''),
-            ),
-            ListTile(
-              title: const Text('Model'),
-              subtitle: Text(item.model ?? ''),
-            ),
+            ListTile(title: const Text('Brand'), subtitle: Text(item.brand)),
+            ListTile(title: const Text('Model'), subtitle: Text(item.model)),
             const SizedBox.shrink(),
             // Show serials associated with item
             Consumer(

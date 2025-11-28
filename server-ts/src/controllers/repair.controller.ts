@@ -25,6 +25,8 @@ export class RepairController {
               issueType: true,
             },
           },
+          items: true,
+          statusHistory: true,
         },
         orderBy: { receivedDate: "desc" },
       }),
@@ -56,6 +58,8 @@ export class RepairController {
           },
         },
         images: true,
+        items: true,
+        statusHistory: true,
         stockUsages: {
           include: {
             item: true,
@@ -78,13 +82,31 @@ export class RepairController {
       deviceModel,
       deviceImei,
       password,
+      problemDescription,
+      diagnosisNotes,
+      repairNotes,
+      priority,
       estimatedCost,
+      finalCost,
+      estimatedCompletion,
+      actualCompletion,
+      warrantyProvided,
+      warrantyDays,
       issues,
       extraInfo,
     } = req.body;
-
-    if (!customerId || !deviceBrand || !deviceModel) {
-      throw new AppError(400, "Customer, device brand, and model are required");
+    console.log(req.body);
+    if (!customerId || !deviceBrand || !deviceModel || !problemDescription) {
+      console.log({
+        customerId,
+        deviceBrand,
+        deviceModel,
+        problemDescription,
+      });
+      throw new AppError(
+        400,
+        "Customer, device brand, model, and problem description are required"
+      );
     }
 
     // Generate repair number
@@ -110,7 +132,18 @@ export class RepairController {
         deviceModel,
         deviceImei,
         password,
+        problemDescription,
+        diagnosisNotes,
+        repairNotes,
+        priority: priority || "normal",
         estimatedCost,
+        finalCost,
+        estimatedCompletion: estimatedCompletion
+          ? new Date(estimatedCompletion)
+          : null,
+        actualCompletion: actualCompletion ? new Date(actualCompletion) : null,
+        warrantyProvided: warrantyProvided || false,
+        warrantyDays,
         stateId: receivedState.id,
         extraInfo,
         issues: {
@@ -129,6 +162,8 @@ export class RepairController {
             issueType: true,
           },
         },
+        items: true,
+        statusHistory: true,
       },
     });
 

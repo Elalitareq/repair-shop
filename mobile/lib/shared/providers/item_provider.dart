@@ -2,7 +2,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/models.dart';
 import '../services/item_service.dart';
 import '../services/serial_service.dart';
-import '../models/serial.dart';
 // Serial service provider is added for IMEI management
 import '../services/category_service.dart';
 import '../services/reference_service.dart';
@@ -560,6 +559,14 @@ final conditionsProvider = FutureProvider<List<Condition>>((ref) async {
 final qualitiesProvider = FutureProvider<List<Quality>>((ref) async {
   final refService = ref.watch(referenceServiceProvider);
   final response = await refService.getQualities();
+  return response.dataOrThrow;
+});
+
+// Payment Methods Provider
+final paymentMethodsProvider = FutureProvider<List<PaymentMethod>>((ref) async {
+  final refService = ref.watch(referenceServiceProvider);
+  final response = await refService.getPaymentMethods();
+  print(response);
   return response.dataOrThrow;
 });
 

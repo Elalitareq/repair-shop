@@ -80,7 +80,7 @@ class CustomerService {
     required String name,
     String? companyName,
     required String type,
-    required String phoneNumber,
+    required String phone,
     String? address,
     String? taxNumber,
     String? locationLink,
@@ -89,12 +89,12 @@ class CustomerService {
       '/customers',
       data: {
         'name': name,
-        'company_name': companyName,
+        'companyName': companyName,
         'type': type,
-        'phone_number': phoneNumber,
+        'phone': phone,
         'address': address,
-        'tax_number': taxNumber,
-        'location_link': locationLink,
+        'taxNumber': taxNumber,
+        'locationLink': locationLink,
       },
     );
 
@@ -121,7 +121,7 @@ class CustomerService {
     String? name,
     String? companyName,
     String? type,
-    String? phoneNumber,
+    String? phone,
     String? address,
     String? taxNumber,
     String? locationLink,
@@ -129,12 +129,12 @@ class CustomerService {
     final data = <String, dynamic>{};
 
     if (name != null) data['name'] = name;
-    if (companyName != null) data['company_name'] = companyName;
+    if (companyName != null) data['companyName'] = companyName;
     if (type != null) data['type'] = type;
-    if (phoneNumber != null) data['phone_number'] = phoneNumber;
+    if (phone != null) data['phone'] = phone;
     if (address != null) data['address'] = address;
-    if (taxNumber != null) data['tax_number'] = taxNumber;
-    if (locationLink != null) data['location_link'] = locationLink;
+    if (taxNumber != null) data['taxNumber'] = taxNumber;
+    if (locationLink != null) data['locationLink'] = locationLink;
 
     final response = await _apiClient.put<Map<String, dynamic>>(
       '/customers/$id',

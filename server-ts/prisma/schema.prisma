@@ -115,6 +115,7 @@ model Customer {
     companyName  String?
     type         String   @default("customer")
     locationLink String?
+    taxNumber    String?
     createdAt    DateTime @default(now())
     updatedAt    DateTime @updatedAt
 
@@ -191,27 +192,37 @@ model Barcode {
 // ==================== Repairs ====================
 
 model Repair {
-    id            Int       @id @default(autoincrement())
-    repairNumber  String    @unique
-    customerId    Int
-    deviceBrand   String
-    deviceModel   String
-    deviceImei    String?
-    password      String?
-    estimatedCost Float?
-    finalCost     Float?
-    stateId       Int
-    extraInfo     String?
-    receivedDate  DateTime  @default(now())
-    completedDate DateTime?
-    createdAt     DateTime  @default(now())
-    updatedAt     DateTime  @updatedAt
+    id                 Int       @id @default(autoincrement())
+    repairNumber       String    @unique
+    customerId         Int
+    deviceBrand        String
+    deviceModel        String
+    deviceImei         String?
+    password           String?
+    problemDescription String
+    diagnosisNotes     String?
+    repairNotes        String?
+    priority           String    @default("normal")
+    estimatedCost      Float?
+    finalCost          Float?
+    estimatedCompletion DateTime?
+    actualCompletion   DateTime?
+    warrantyProvided   Boolean  @default(false)
+    warrantyDays       Int?
+    stateId            Int
+    extraInfo          String?
+    receivedDate       DateTime  @default(now())
+    completedDate      DateTime?
+    createdAt          DateTime  @default(now())
+    updatedAt          DateTime  @updatedAt
 
-    customer    Customer      @relation(fields: [customerId], references: [id], onDelete: Restrict)
-    state       RepairState   @relation(fields: [stateId], references: [id], onDelete: Restrict)
-    issues      RepairIssue[]
-    images      RepairImage[]
-    stockUsages StockUsage[]
+    customer       Customer            @relation(fields: [customerId], references: [id], onDelete: Restrict)
+    state          RepairState         @relation(fields: [stateId], references: [id], onDelete: Restrict)
+    issues         RepairIssue[]
+    images         RepairImage[]
+    items          RepairItem[]
+    statusHistory  RepairStatusHistory[]
+    stockUsages    StockUsage[]
 
     @@map("repairs")
 }
@@ -246,6 +257,37 @@ model RepairImage {
     repair Repair @relation(fields: [repairId], references: [id], onDelete: Cascade)
 
     @@map("repair_images")
+}
+
+model RepairItem {
+    id          Int      @id @default(autoincrement())
+    repairId    Int
+    itemName    String
+    description String?
+    quantity    Float
+    unitPrice   Float
+    totalPrice  Float
+    isLabor     Boolean  @default(false)
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
+
+    repair Repair @relation(fields: [repairId], references: [id], onDelete: Cascade)
+
+    @@map("repair_items")
+}
+
+model RepairStatusHistory {
+    id          Int      @id @default(autoincrement())
+    repairId    Int
+    status      String
+    notes       String?
+    updatedBy   String?
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
+
+    repair Repair @relation(fields: [repairId], references: [id], onDelete: Cascade)
+
+    @@map("repair_status_history")
 }
 
 // ==================== Stock Management ====================

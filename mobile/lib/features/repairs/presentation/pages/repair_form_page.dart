@@ -6,7 +6,7 @@ import 'package:intl/intl.dart';
 import '../../../../shared/models/repair.dart';
 import '../../../../shared/models/customer.dart';
 import '../../../../shared/providers/repair_provider.dart';
-import '../../../../shared/services/customer_service.dart';
+import '../../../../shared/widgets/customer_search_selector.dart';
 
 class RepairFormPage extends ConsumerStatefulWidget {
   final String? repairId;
@@ -32,10 +32,8 @@ class _RepairFormPageState extends ConsumerState<RepairFormPage> {
   final _warrantyDaysController = TextEditingController();
 
   Customer? _selectedCustomer;
-  List<Customer> _customers = [];
-  bool _loadingCustomers = false;
-  RepairPriority _selectedPriority = RepairPriority.normal;
-  RepairStatus _selectedStatus = RepairStatus.pending;
+  String _selectedPriority = 'normal';
+  int? _selectedStateId;
   DateTime? _estimatedCompletion;
   DateTime? _actualCompletion;
   bool _warrantyProvided = false;
@@ -43,7 +41,6 @@ class _RepairFormPageState extends ConsumerState<RepairFormPage> {
   @override
   void initState() {
     super.initState();
-    _loadCustomers();
 
     if (widget.isEditing) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -73,51 +70,22 @@ class _RepairFormPageState extends ConsumerState<RepairFormPage> {
     super.dispose();
   }
 
-  Future<void> _loadCustomers() async {
-    setState(() => _loadingCustomers = true);
-
-    try {
-      final customerService = ref.read(customerServiceProvider);
-      final response = await customerService.getCustomers(limit: 100);
-
-      if (response.isSuccess && response.data != null) {
-        setState(() {
-          _customers = response.data!;
-          _loadingCustomers = false;
-        });
-      } else {
-        setState(() => _loadingCustomers = false);
-        if (mounted) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(response.message)));
-        }
-      }
-    } catch (e) {
-      setState(() => _loadingCustomers = false);
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error loading customers: $e')));
-      }
-    }
-  }
-
   void _populateForm(Repair repair) {
-    _deviceTypeController.text = repair.deviceType;
+    _deviceTypeController.text = repair.deviceBrand;
     _deviceModelController.text = repair.deviceModel;
-    _deviceSerialController.text = repair.deviceSerial;
+    _deviceSerialController.text = repair.deviceImei ?? '';
     _problemDescriptionController.text = repair.problemDescription;
-    _diagnosisNotesController.text = repair.diagnosisNotes ?? '';
+    _diagnosisNotesController.text = repair.diagnosisNotes ?? "";
     _repairNotesController.text = repair.repairNotes ?? '';
-    _estimatedCostController.text = repair.estimatedCost.toStringAsFixed(2);
+    _estimatedCostController.text =
+        repair.estimatedCost?.toStringAsFixed(2) ?? '0.00';
     _finalCostController.text = repair.finalCost?.toStringAsFixed(2) ?? '';
     _warrantyDaysController.text = repair.warrantyDays?.toString() ?? '';
 
     setState(() {
       _selectedCustomer = repair.customer;
       _selectedPriority = repair.priority;
-      _selectedStatus = repair.status;
+      _selectedStateId = repair.stateId;
       _estimatedCompletion = repair.estimatedCompletion;
       _actualCompletion = repair.actualCompletion;
       _warrantyProvided = repair.warrantyProvided;
@@ -260,28 +228,13 @@ class _RepairFormPageState extends ConsumerState<RepairFormPage> {
           ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 16),
-        DropdownButtonFormField<Customer>(
-          value: _selectedCustomer,
-          decoration: const InputDecoration(
-            labelText: 'Customer *',
-            border: OutlineInputBorder(),
-          ),
-          validator: (value) =>
-              value == null ? 'Please select a customer' : null,
-          items: _loadingCustomers
-              ? []
-              : _customers
-                    .map(
-                      (customer) => DropdownMenuItem(
-                        value: customer,
-                        child: Text(customer.name),
-                      ),
-                    )
-                    .toList(),
-          onChanged: (value) => setState(() => _selectedCustomer = value),
-          hint: _loadingCustomers
-              ? const Text('Loading customers...')
-              : const Text('Select a customer'),
+        CustomerSearchSelector(
+          selectedCustomer: _selectedCustomer,
+          onCustomerSelected: (customer) =>
+              setState(() => _selectedCustomer = customer),
+          labelText: 'Customer *',
+          hintText: 'Search and select a customer',
+          showAddButton: true,
         ),
       ],
     );
@@ -355,17 +308,19 @@ class _RepairFormPageState extends ConsumerState<RepairFormPage> {
               value?.isEmpty ?? true ? 'Please describe the problem' : null,
         ),
         const SizedBox(height: 16),
-        DropdownButtonFormField<RepairPriority>(
+        DropdownButtonFormField<String>(
           value: _selectedPriority,
           decoration: const InputDecoration(
             labelText: 'Priority',
             border: OutlineInputBorder(),
           ),
-          items: RepairPriority.values
+          items: ['low', 'normal', 'high', 'urgent']
               .map(
                 (priority) => DropdownMenuItem(
                   value: priority,
-                  child: Text(priority.priorityDisplayName),
+                  child: Text(
+                    priority[0].toUpperCase() + priority.substring(1),
+                  ),
                 ),
               )
               .toList(),
@@ -376,6 +331,66 @@ class _RepairFormPageState extends ConsumerState<RepairFormPage> {
   }
 
   Widget _buildStatusSection() {
+    // For now, hardcode the states - in a real app, this would come from a provider
+    final states = [
+      RepairState(
+        id: 1,
+        name: 'Received',
+        description: 'Repair received',
+        order: 1,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      ),
+      RepairState(
+        id: 2,
+        name: 'Diagnosed',
+        description: 'Issue diagnosed',
+        order: 2,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      ),
+      RepairState(
+        id: 3,
+        name: 'In Progress',
+        description: 'Being repaired',
+        order: 3,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      ),
+      RepairState(
+        id: 4,
+        name: 'Waiting Parts',
+        description: 'Waiting for parts',
+        order: 4,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      ),
+      RepairState(
+        id: 5,
+        name: 'Completed',
+        description: 'Repair completed',
+        order: 5,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      ),
+      RepairState(
+        id: 6,
+        name: 'Ready for Pickup',
+        description: 'Ready for customer',
+        order: 6,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      ),
+      RepairState(
+        id: 7,
+        name: 'Delivered',
+        description: 'Delivered to customer',
+        order: 7,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      ),
+    ];
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -386,21 +401,19 @@ class _RepairFormPageState extends ConsumerState<RepairFormPage> {
           ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 16),
-        DropdownButtonFormField<RepairStatus>(
-          value: _selectedStatus,
+        DropdownButtonFormField<int>(
+          value: _selectedStateId,
           decoration: const InputDecoration(
             labelText: 'Repair Status',
             border: OutlineInputBorder(),
           ),
-          items: RepairStatus.values
+          items: states
               .map(
-                (status) => DropdownMenuItem(
-                  value: status,
-                  child: Text(status.statusDisplayName),
-                ),
+                (state) =>
+                    DropdownMenuItem(value: state.id, child: Text(state.name)),
               )
               .toList(),
-          onChanged: (value) => setState(() => _selectedStatus = value!),
+          onChanged: (value) => setState(() => _selectedStateId = value),
         ),
       ],
     );
@@ -658,9 +671,9 @@ class _RepairFormPageState extends ConsumerState<RepairFormPage> {
 
       final updatedRepair = currentRepair.copyWith(
         customerId: _selectedCustomer!.id,
-        deviceType: _deviceTypeController.text,
+        deviceBrand: _deviceTypeController.text,
         deviceModel: _deviceModelController.text,
-        deviceSerial: _deviceSerialController.text,
+        deviceImei: _deviceSerialController.text,
         problemDescription: _problemDescriptionController.text,
         diagnosisNotes: _diagnosisNotesController.text.isEmpty
             ? null
@@ -668,7 +681,7 @@ class _RepairFormPageState extends ConsumerState<RepairFormPage> {
         repairNotes: _repairNotesController.text.isEmpty
             ? null
             : _repairNotesController.text,
-        status: _selectedStatus,
+        stateId: _selectedStateId,
         priority: _selectedPriority,
         estimatedCost: estimatedCost,
         finalCost: finalCost,
@@ -706,9 +719,9 @@ class _RepairFormPageState extends ConsumerState<RepairFormPage> {
           .read(repairFormProvider.notifier)
           .createRepair(
             customerId: _selectedCustomer!.id,
-            deviceType: _deviceTypeController.text,
+            deviceBrand: _deviceTypeController.text,
             deviceModel: _deviceModelController.text,
-            deviceSerial: _deviceSerialController.text.isEmpty
+            deviceImei: _deviceSerialController.text.isEmpty
                 ? null
                 : _deviceSerialController.text,
             problemDescription: _problemDescriptionController.text,
@@ -731,41 +744,6 @@ class _RepairFormPageState extends ConsumerState<RepairFormPage> {
         );
         context.go('/repairs/${newRepair.id}');
       }
-    }
-  }
-}
-
-// Extension to get display names
-extension RepairStatusExtension on RepairStatus {
-  String get statusDisplayName {
-    switch (this) {
-      case RepairStatus.pending:
-        return 'Pending';
-      case RepairStatus.inProgress:
-        return 'In Progress';
-      case RepairStatus.waitingParts:
-        return 'Waiting for Parts';
-      case RepairStatus.completed:
-        return 'Completed';
-      case RepairStatus.delivered:
-        return 'Delivered';
-      case RepairStatus.cancelled:
-        return 'Cancelled';
-    }
-  }
-}
-
-extension RepairPriorityExtension on RepairPriority {
-  String get priorityDisplayName {
-    switch (this) {
-      case RepairPriority.low:
-        return 'Low';
-      case RepairPriority.normal:
-        return 'Normal';
-      case RepairPriority.high:
-        return 'High';
-      case RepairPriority.urgent:
-        return 'Urgent';
     }
   }
 }
