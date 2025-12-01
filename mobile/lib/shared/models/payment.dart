@@ -19,7 +19,7 @@ class Payment extends BaseModel {
   @JsonKey(name: 'referenceNumber')
   final String? referenceNumber;
 
-  @JsonKey(name: 'payment_date')
+  @JsonKey(name: 'paymentDate')
   final DateTime paymentDate;
 
   @JsonKey(name: 'status')

@@ -41,7 +41,7 @@ class _RepairsPageState extends ConsumerState<RepairsPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Repairs'),
-        backgroundColor: colorScheme.primary,
+        backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
         leading: IconButton(
           onPressed: () => context.go('/dashboard'),
@@ -355,7 +355,7 @@ class _RepairCard extends StatelessWidget {
               Row(
                 children: [
                   Text(
-                    'Ticket #${repair.repairNumber}',
+                    repair.repairNumber,
                     style: theme.textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
@@ -399,7 +399,7 @@ class _RepairCard extends StatelessWidget {
                   Text(
                     '\$${repair.totalCost.toStringAsFixed(2)}',
                     style: theme.textTheme.titleSmall?.copyWith(
-                      color: colorScheme.primary,
+                      color: Colors.blue,
                       fontWeight: FontWeight.bold,
                     ),
                   ),

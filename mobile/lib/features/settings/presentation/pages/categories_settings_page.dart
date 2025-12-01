@@ -27,7 +27,7 @@ class _CategoriesSettingsPageState
     return Scaffold(
       appBar: AppBar(
         title: const Text('Manage Categories'),
-        backgroundColor: Theme.of(context).colorScheme.primary,
+        backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
       ),
       floatingActionButton: FloatingActionButton.extended(

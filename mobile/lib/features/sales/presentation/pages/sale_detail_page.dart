@@ -32,7 +32,7 @@ class _SaleDetailPageState extends ConsumerState<SaleDetailPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Sale Details'),
-        backgroundColor: colorScheme.primary,
+        backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
         leading: IconButton(
           onPressed: () => context.go('/sales'),
@@ -426,6 +426,10 @@ class _SaleDetailPageState extends ConsumerState<SaleDetailPage> {
                       DropdownMenuItem(
                         value: 'refunded',
                         child: Text('Refunded'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'Paid',
+                        child: Text('Paid'),
                       ),
                     ],
                     onChanged: (value) {

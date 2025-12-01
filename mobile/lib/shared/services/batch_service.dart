@@ -1,3 +1,4 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dio/dio.dart';
 import '../../core/network/api_client.dart';
 import '../models/batch.dart';
@@ -86,3 +87,9 @@ class BatchService {
     }
   }
 }
+
+// Provider for BatchService
+final batchServiceProvider = Provider<BatchService>((ref) {
+  final apiClient = ref.watch(apiClientProvider);
+  return BatchService(apiClient);
+});

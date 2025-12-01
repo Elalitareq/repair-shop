@@ -62,7 +62,7 @@ class _CustomerFormPageState extends ConsumerState<CustomerFormPage> {
           _nameController.text = customer.name;
           _companyNameController.text = customer.companyName ?? '';
           _phoneController.text = customer.phone;
-          _addressController.text = customer.address;
+          _addressController.text = customer.address ?? "";
           _taxNumberController.text = customer.taxNumber ?? '';
           _locationLinkController.text = customer.locationLink ?? '';
           _type = customer.type;
@@ -75,7 +75,7 @@ class _CustomerFormPageState extends ConsumerState<CustomerFormPage> {
         title: Text(
           widget.customerId == null ? 'Add Customer' : 'Edit Customer',
         ),
-        backgroundColor: Theme.of(context).colorScheme.primary,
+        backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
       ),
       body: detailState.isLoading && customer == null
@@ -239,9 +239,7 @@ class _CustomerFormPageState extends ConsumerState<CustomerFormPage> {
                         onPressed: _isSubmitting ? null : _submit,
                         style: ElevatedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 16),
-                          backgroundColor: Theme.of(
-                            context,
-                          ).colorScheme.primary,
+                            backgroundColor:Colors.blue,
                           foregroundColor: Colors.white,
                         ),
                         child: _isSubmitting

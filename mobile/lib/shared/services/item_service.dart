@@ -1,3 +1,8 @@
+import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:dio/dio.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:path/path.dart' as path;
 import '../../core/network/api_client.dart';
 import '../models/models.dart';
 import '../../core/network/api_response.dart';
@@ -7,9 +12,59 @@ class ItemService {
 
   ItemService(this._apiClient);
 
+  // Import inventory from CSV
+  Future<ApiResponse<Map<String, dynamic>>> importInventory(dynamic file) async {
+    MultipartFile multipartFile;
+    
+    if (kIsWeb) {
+      // Web: Use bytes from file picker
+      if (file is PlatformFile) {
+        multipartFile = MultipartFile.fromBytes(
+          file.bytes ?? [],
+          filename: file.name,
+        );
+      } else {
+        throw ArgumentError('Invalid file type for web platform');
+      }
+    } else {
+      // Mobile/Desktop: Use File path
+      if (file is File) {
+        multipartFile = await MultipartFile.fromFile(
+          file.path,
+          filename: path.basename(file.path),
+        );
+      } else {
+        throw ArgumentError('Invalid file type for mobile platform');
+      }
+    }
+    
+    final formData = FormData.fromMap({
+      'file': multipartFile,
+    });
+
+    final response = await _apiClient.uploadMultipart<Map<String, dynamic>>(
+      '/items/import',
+      formData: formData,
+    );
+
+    if (response.isSuccess) {
+      return ApiResponse.success(
+        message: response.data?['message'] ?? response.message,
+        data: response.data,
+      );
+    }
+
+    return ApiResponse.error(
+      message: response.message,
+      statusCode: response.statusCode,
+    );
+  }
+
   // Get all items with optional filters
   Future<ApiResponse<List<Item>>> getItems({
     int? categoryId,
+    int? conditionId,
+    int? qualityId,
     int? batchId,
     bool? lowStock,
     int page = 1,
@@ -19,8 +74,10 @@ class ItemService {
       'page': page,
       'limit': limit,
       if (categoryId != null) 'categoryId': categoryId,
+      if (conditionId != null) 'conditionId': conditionId,
+      if (qualityId != null) 'qualityId': qualityId,
       if (batchId != null) 'batchId': batchId,
-      if (lowStock != null) 'low_stock': lowStock,
+      if (lowStock != null) 'lowStock': lowStock,
     };
 
     final response = await _apiClient.get<Map<String, dynamic>>(
@@ -74,18 +131,32 @@ class ItemService {
         print({"dataQuality": first["quality"]});
       }
 
-      try {
-        final items = data.map((json) => Item.fromJson(json)).toList();
-
-        print({"items": items});
-        return ApiResponse.success(
-          data: items,
-          message: response.data!['message'] ?? response.message,
-        );
-      } catch (e) {
-        print({"parsing_error": e.toString()});
-        throw e;
+      final items = <Item>[];
+      String? firstParseError;
+      
+      for (final json in data) {
+        try {
+          final item = Item.fromJson(json);
+          items.add(item);
+        } catch (e) {
+          print('❌ ItemService.getItems - Failed to parse item: $e');
+          print('❌ ItemService.getItems - Problematic JSON: $json');
+          firstParseError ??= e.toString();
+          continue;
+        }
       }
+
+      if (items.isEmpty && data.isNotEmpty) {
+         return ApiResponse.error(
+          message: 'Failed to parse items: $firstParseError',
+          statusCode: 500,
+        );
+      }
+
+      return ApiResponse.success(
+        data: items,
+        message: response.data!['message'] ?? response.message,
+      );
     }
 
     return ApiResponse.error(

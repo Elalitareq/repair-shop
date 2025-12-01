@@ -16,6 +16,8 @@ class SaleFormPage extends ConsumerStatefulWidget {
 
 class _SaleFormPageState extends ConsumerState<SaleFormPage> {
   final _formKey = GlobalKey<FormState>();
+  final _barcodeController = TextEditingController();
+  final _barcodeFocusNode = FocusNode();
   final List<SaleItemData> _saleItems = [];
   Customer? _selectedCustomer;
   String? _discountType;
@@ -33,8 +35,39 @@ class _SaleFormPageState extends ConsumerState<SaleFormPage> {
 
   @override
   void dispose() {
+    _barcodeController.dispose();
+    _barcodeFocusNode.dispose();
     _notesController.dispose();
     super.dispose();
+  }
+
+  Future<void> _handleBarcodeSubmit(String value) async {
+    if (value.isEmpty) return;
+
+    // Show loading?
+    final response = await ref.read(itemServiceProvider).searchItems(value);
+
+    if (response.isSuccess &&
+        response.data != null &&
+        response.data!.isNotEmpty) {
+      final items = response.data!;
+      // Ideally exact match for barcode/IMEI should be first or unique
+      // For now, take the first one
+      final item = items.first;
+      _addItem(item);
+      _barcodeController.clear();
+      // Keep focus for next scan
+      _barcodeFocusNode.requestFocus();
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Item not found for: $value'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      // Keep focus even on error to allow retry
+      _barcodeFocusNode.requestFocus();
+    }
   }
 
   @override
@@ -46,7 +79,7 @@ class _SaleFormPageState extends ConsumerState<SaleFormPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('New Sale'),
-        backgroundColor: colorScheme.primary,
+        backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
         leading: IconButton(
           onPressed: () => context.go('/sales'),
@@ -65,7 +98,16 @@ class _SaleFormPageState extends ConsumerState<SaleFormPage> {
               ),
             )
           else
-            TextButton(onPressed: _submitSale, child: const Text('Save')),
+            TextButton(
+              onPressed: _submitSale,
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.white,
+              ),
+              child: const Text(
+                'Save',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
         ],
       ),
       body: Form(
@@ -73,6 +115,27 @@ class _SaleFormPageState extends ConsumerState<SaleFormPage> {
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
+            // Barcode Scanner Input
+            Card(
+              color: Colors.blue.shade50,
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: TextField(
+                  controller: _barcodeController,
+                  focusNode: _barcodeFocusNode,
+                  autofocus: true, // Auto-focus for scanning
+                  decoration: const InputDecoration(
+                    labelText: 'Scan Barcode / IMEI',
+                    hintText: 'Scan item to add to cart',
+                    prefixIcon: Icon(Icons.qr_code_scanner),
+                    border: OutlineInputBorder(),
+                  ),
+                  onSubmitted: _handleBarcodeSubmit,
+                  textInputAction: TextInputAction.go,
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
             // Customer selection
             Card(
               child: Padding(
@@ -327,35 +390,113 @@ class _SaleFormPageState extends ConsumerState<SaleFormPage> {
   void _showAddItemDialog(List<Item> availableItems) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Add Item'),
-        content: SizedBox(
-          width: double.maxFinite,
-          height: 300,
-          child: ListView.builder(
-            itemCount: availableItems.length,
-            itemBuilder: (context, index) {
-              final item = availableItems[index];
-              return ListTile(
-                title: Text(item.name ?? 'Unknown Item'),
-                subtitle: Text(
-                  'Stock: ${item.stockQuantity} • Price: \$${item.sellingPrice?.toStringAsFixed(2) ?? 'N/A'}',
+      builder: (context) {
+        bool showCost = false;
+        String searchQuery = '';
+        return StatefulBuilder(
+          builder: (context, setState) {
+            final filteredItems = availableItems.where((item) {
+              final query = searchQuery.toLowerCase();
+              return (item.name.toLowerCase().contains(query)) ||
+                  (item.brand.toLowerCase().contains(query)) ||
+                  (item.model.toLowerCase().contains(query));
+            }).toList();
+
+            return AlertDialog(
+              title: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('Add Item'),
+                  IconButton(
+                    icon: Icon(
+                      showCost ? Icons.visibility_off : Icons.visibility,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        showCost = !showCost;
+                      });
+                    },
+                    tooltip: showCost ? 'Hide Costs' : 'Show Costs',
+                  ),
+                ],
+              ),
+              content: SizedBox(
+                width: double.maxFinite,
+                height: 400, // Increased height for search field
+                child: Column(
+                  children: [
+                    TextField(
+                      decoration: const InputDecoration(
+                        labelText: 'Search Items',
+                        prefixIcon: Icon(Icons.search),
+                        border: OutlineInputBorder(),
+                      ),
+                      onChanged: (value) {
+                        setState(() {
+                          searchQuery = value;
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 8),
+                    Expanded(
+                      child: ListView.builder(
+                        itemCount: filteredItems.length,
+                        itemBuilder: (context, index) {
+                          final item = filteredItems[index];
+                          final price = item.sellingPrice ?? 0.0;
+                          final cost = item.lastBatchPrice;
+                          final profit = price - cost;
+
+                          return ListTile(
+                            title: Text(item.name ?? 'Unknown Item'),
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Stock: ${item.stockQuantity} • Price: \$${price.toStringAsFixed(2)}',
+                                ),
+                                if (showCost) ...[
+                                  Text(
+                                    'Cost: \$${cost.toStringAsFixed(2)}',
+                                    style:
+                                        Theme.of(context).textTheme.bodySmall,
+                                  ),
+                                  Text(
+                                    'Profit: \$${profit.toStringAsFixed(2)}',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodySmall
+                                        ?.copyWith(
+                                          color: profit >= 0
+                                              ? Colors.green
+                                              : Colors.red,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                            onTap: () {
+                              _addItem(item);
+                              Navigator.of(context).pop();
+                            },
+                          );
+                        },
+                      ),
+                    ),
+                  ],
                 ),
-                onTap: () {
-                  _addItem(item);
-                  Navigator.of(context).pop();
-                },
-              );
-            },
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
-          ),
-        ],
-      ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('Cancel'),
+                ),
+              ],
+            );
+          },
+        );
+      },
     );
   }
 

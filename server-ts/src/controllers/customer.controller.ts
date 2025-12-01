@@ -5,14 +5,12 @@ import { prisma } from "../utils/prisma";
 
 export class CustomerController {
   async getAll(req: AuthRequest, res: Response) {
-    const { page = "1", limit = "50", type, search } = req.query;
+    const { page = "1", limit = "50", search } = req.query;
     console.log("getAll query params:", req.query);
     const skip = (parseInt(page as string) - 1) * parseInt(limit as string);
 
     const where: any = {};
-    if (type) {
-      where.type = type;
-    }
+ 
     if (search) {
       console.log("Searching for:", search);
       where.OR = [

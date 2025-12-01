@@ -31,6 +31,7 @@ export class BatchController {
         unitCost: b.unitCost,
         totalCost: b.totalCost,
         notes: b.notes,
+        supplier: b.supplier,
         createdAt: b.createdAt.toISOString(),
         updatedAt: b.updatedAt.toISOString(),
       },
@@ -82,6 +83,7 @@ export class BatchController {
         unitCost: batch.unitCost,
         totalCost: batch.totalCost,
         notes: batch.notes,
+        supplier: batch.supplier,
         createdAt: batch.createdAt.toISOString(),
         updatedAt: batch.updatedAt.toISOString(),
       },
@@ -175,6 +177,7 @@ export class BatchController {
         totalCost,
         unitCost,
         notes,
+        itemId: itemId ? parseInt(itemId as string) : undefined,
       },
       include: { supplier: true, serials: true },
     });
@@ -381,10 +384,15 @@ export class BatchController {
     const { itemId } = req.params;
     if (!itemId) throw new AppError(400, "Item id required");
 
-    // Find batches that contain serials for the given item
+    // Find batches that contain serials for the given item OR are directly linked to the item
     // @ts-ignore
     const batches = await prisma.batch.findMany({
-      where: { serials: { some: { itemId: parseInt(itemId as string) } } },
+      where: {
+        OR: [
+          { serials: { some: { itemId: parseInt(itemId as string) } } },
+          { itemId: parseInt(itemId as string) },
+        ],
+      },
       include: { supplier: true, serials: true },
     });
 
@@ -401,6 +409,7 @@ export class BatchController {
         notes: b.notes,
         createdAt: b.createdAt.toISOString(),
         updatedAt: b.updatedAt.toISOString(),
+        supplier: b.supplier,
       },
       remainingStock: Math.max(
         0,

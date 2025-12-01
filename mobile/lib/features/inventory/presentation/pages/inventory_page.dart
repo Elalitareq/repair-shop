@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:file_picker/file_picker.dart';
+import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import '../../../../shared/models/item.dart';
 import '../../../../shared/providers/item_provider.dart';
+import '../../../../shared/services/item_service.dart';
+import '../../../../core/network/api_client.dart';
 import 'batch_form_page.dart';
 
 class InventoryPage extends ConsumerStatefulWidget {
@@ -41,7 +46,7 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Items'),
-        backgroundColor: Theme.of(context).colorScheme.primary,
+        backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
         leading: IconButton(
           onPressed: () => context.go('/dashboard'),
@@ -154,9 +159,21 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => context.go('/inventory/items/new'),
-        child: const Icon(Icons.add),
+      floatingActionButton: Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          FloatingActionButton(
+            heroTag: "csv",
+            onPressed: _importCSV,
+            child: const Icon(Icons.upload_file),
+          ),
+          const SizedBox(height: 16),
+          FloatingActionButton(
+            heroTag: "add",
+            onPressed: () => context.go('/inventory/items/new'),
+            child: const Icon(Icons.add),
+          ),
+        ],
       ),
     );
   }
@@ -221,6 +238,12 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
         .loadItems(
           categoryId: _selectedCategory != 'All'
               ? int.tryParse(_selectedCategory)
+              : null,
+          conditionId: _selectedCondition != 'All'
+              ? int.tryParse(_selectedCondition)
+              : null,
+          qualityId: _selectedQuality != 'All'
+              ? int.tryParse(_selectedQuality)
               : null,
           lowStock: _showLowStockOnly,
           refresh: true,
@@ -454,5 +477,129 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
         ],
       ),
     );
+  }
+
+  Future<void> _importCSV() async {
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['csv'],
+        allowMultiple: false,
+      );
+
+      if (result == null || result.files.isEmpty) return;
+
+      dynamic file;
+      
+      if (kIsWeb) {
+        // Web: Use PlatformFile directly
+        file = result.files.single;
+        if (file.bytes == null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Failed to read file bytes'),
+              backgroundColor: Colors.red,
+            ),
+          );
+          return;
+        }
+      } else {
+        // Mobile/Desktop: Use File object
+        final filePath = result.files.single.path;
+        if (filePath == null) return;
+        file = File(filePath);
+      }
+
+      // Show confirmation dialog
+      final confirm = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Import CSV'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('Are you sure you want to import this CSV file?'),
+              const SizedBox(height: 8),
+              Text('File: ${result.files.single.name}'),
+              const SizedBox(height: 8),
+              const Text(
+                'CSV format should be: Code,Description,Quantity,Amount,Category,Brand,Model,SupplierName,SupplierPhone,SupplierType',
+                style: TextStyle(fontSize: 12, color: Colors.grey),
+              ),
+              const SizedBox(height: 4),
+              const Text(
+                'Note: Amount is the unit cost. Category, Brand, Model, SupplierName, SupplierPhone and SupplierType columns are optional',
+                style: TextStyle(fontSize: 11, color: Colors.grey),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text('Import'),
+            ),
+          ],
+        ),
+      );
+
+      if (confirm != true) return;
+
+      // Show loading dialog
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const AlertDialog(
+          content: Row(
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(width: 16),
+              Text('Importing CSV...'),
+            ],
+          ),
+        ),
+      );
+
+      final itemService = ItemService(ref.read(apiClientProvider));
+      final response = await itemService.importInventory(file);
+
+      // Close loading dialog
+      Navigator.of(context).pop();
+
+      if (response.isSuccess) {
+        // Refresh the item list
+        ref.read(itemListProvider.notifier).loadItems(refresh: true);
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(response.message),
+            backgroundColor: Colors.green,
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(response.message),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      // Close loading dialog if it's open
+      if (mounted) {
+        Navigator.of(context).pop();
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error importing CSV: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 }

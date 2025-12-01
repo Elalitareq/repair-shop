@@ -19,6 +19,8 @@ Sale _$SaleFromJson(Map<String, dynamic> json) => Sale(
   status: json['status'] as String? ?? 'draft',
   paymentStatus: json['paymentStatus'] as String? ?? 'pending',
   totalAmount: (json['totalAmount'] as num).toDouble(),
+  cogs: (json['cogs'] as num?)?.toDouble() ?? 0.0,
+  profit: (json['profit'] as num?)?.toDouble() ?? 0.0,
   saleItems: (json['items'] as List<dynamic>?)
       ?.map((e) => SaleItem.fromJson(e as Map<String, dynamic>))
       .toList(),
@@ -39,6 +41,8 @@ Map<String, dynamic> _$SaleToJson(Sale instance) => <String, dynamic>{
   'status': instance.status,
   'paymentStatus': instance.paymentStatus,
   'totalAmount': instance.totalAmount,
+  'cogs': instance.cogs,
+  'profit': instance.profit,
   'items': instance.saleItems,
   'payments': instance.payments,
   'notes': instance.notes,

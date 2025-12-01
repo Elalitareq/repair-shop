@@ -138,10 +138,12 @@ model Batch {
     unitCost      Float // Cost per unit in this batch
     totalCost     Float
     notes         String?
+    itemId        Int?
     createdAt     DateTime @default(now())
     updatedAt     DateTime @updatedAt
 
     supplier Customer @relation(fields: [supplierId], references: [id], onDelete: Restrict)
+    item     Item?    @relation(fields: [itemId], references: [id], onDelete: Restrict)
 
     // Serial numbers (IMEIs) associated with this batch
     serials Serial[]
@@ -172,6 +174,7 @@ model Item {
     saleItems   SaleItem[]
     stockUsages StockUsage[]
     serials     Serial[] // Items have serials, serials have batches
+    batches     Batch[] // Direct relation to batches
     barcodes    Barcode[] // Multiple barcodes for the same item
 
     @@map("items")

@@ -115,7 +115,7 @@ async function main() {
       username: "admin",
       email: "tech1@repairshop.com",
       password: tech1HashedPassword,
-      role: "technician",
+      role: "admin",
     },
   });
 
@@ -140,7 +140,7 @@ async function main() {
   if (receivedState) {
     await prisma.repair.create({
       data: {
-        repairNumber: "REP-2025-0001",
+        repairNumber: "CASE-0001",
         customerId: demoCustomer.id,
         deviceBrand: "Apple",
         deviceModel: "iPhone 14 Pro",

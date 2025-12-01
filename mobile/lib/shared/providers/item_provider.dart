@@ -53,6 +53,8 @@ class ItemListNotifier extends StateNotifier<ItemListState> {
 
   Future<void> loadItems({
     int? categoryId,
+    int? conditionId,
+    int? qualityId,
     int? batchId,
     bool? lowStock,
     bool refresh = false,
@@ -68,6 +70,8 @@ class ItemListNotifier extends StateNotifier<ItemListState> {
     try {
       final response = await _itemService.getItems(
         categoryId: categoryId,
+        conditionId: conditionId,
+        qualityId: qualityId,
         batchId: batchId,
         lowStock: lowStock,
         page: refresh ? 1 : state.currentPage,
@@ -271,6 +275,14 @@ final serialsForItemProvider = FutureProvider.family<List<Serial>, int>((
 ) async {
   final service = ref.watch(serialServiceProvider);
   final resp = await service.getSerials(itemId: itemId);
+  return resp.dataOrThrow;
+});
+
+// Provider for fetching batches for a specific item
+final batchesForItemProvider =
+    FutureProvider.family<List<BatchStockInfo>, int>((ref, itemId) async {
+  final service = ref.watch(itemServiceProvider);
+  final resp = await service.getBatchesForItem(itemId);
   return resp.dataOrThrow;
 });
 
@@ -573,7 +585,6 @@ final repairStatesProvider = FutureProvider<List<RepairState>>((ref) async {
 final paymentMethodsProvider = FutureProvider<List<PaymentMethod>>((ref) async {
   final refService = ref.watch(referenceServiceProvider);
   final response = await refService.getPaymentMethods();
-  print(response);
   return response.dataOrThrow;
 });
 

@@ -10,7 +10,7 @@ class Customer extends BaseModel {
   final String? companyName;
   final String type; // dealer, customer
   final String phone;
-  final String address;
+  final String? address;
   final String? taxNumber;
   final String? locationLink;
 
@@ -23,7 +23,7 @@ class Customer extends BaseModel {
     this.companyName,
     required this.type,
     required this.phone,
-    required this.address,
+    this.address,
     this.taxNumber,
     this.locationLink,
   });

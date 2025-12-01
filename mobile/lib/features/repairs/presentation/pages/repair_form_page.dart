@@ -113,7 +113,7 @@ class _RepairFormPageState extends ConsumerState<RepairFormPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.isEditing ? 'Edit Repair' : 'Create Repair'),
-        backgroundColor: Theme.of(context).colorScheme.primary,
+        backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
         leading: IconButton(
           onPressed: () {

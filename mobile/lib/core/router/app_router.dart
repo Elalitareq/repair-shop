@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../features/auth/presentation/pages/login_page.dart';
+import '../../features/splash/presentation/pages/splash_page.dart';
 import '../../features/dashboard/presentation/pages/dashboard_page.dart';
 import '../../features/inventory/presentation/pages/inventory_page.dart';
 import '../../features/inventory/presentation/pages/batch_list_page.dart';
@@ -32,13 +33,36 @@ final appRouterProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authProvider);
 
   final router = GoRouter(
-    initialLocation: authState.isAuthenticated ? '/dashboard' : '/login',
+    initialLocation: authState.isLoading
+        ? '/splash'
+        : (authState.isAuthenticated ? '/dashboard' : '/login'),
     redirect: (context, state) {
       final isLoggedIn = authState.isAuthenticated;
+      final isLoading = authState.isLoading;
       final isLoggingIn = state.uri.toString() == '/login';
+      final isSplash = state.uri.path == '/splash';
+
+      // If loading, go to splash, saving original location if not splash/login
+      if (isLoading && !isSplash) {
+        final from = state.uri.toString();
+        return '/splash?from=${Uri.encodeComponent(from)}';
+      }
+
+      // If not loading and on splash, redirect based on auth
+      if (!isLoading && isSplash) {
+        final from = state.uri.queryParameters['from'];
+        if (isLoggedIn) {
+          if (from != null && from.isNotEmpty && from != '/login' && from != '/splash') {
+            return from;
+          }
+          return '/dashboard';
+        } else {
+          return '/login';
+        }
+      }
 
       // If not logged in and not on login page, redirect to login
-      if (!isLoggedIn && !isLoggingIn) {
+      if (!isLoading && !isLoggedIn && !isLoggingIn) {
         return '/login';
       }
 
@@ -50,6 +74,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       return null; // no redirect
     },
     routes: [
+      // Splash Route
+      GoRoute(
+        path: '/splash',
+        name: 'splash',
+        builder: (context, state) => const SplashPage(),
+      ),
+
       // Auth Routes
       GoRoute(
         path: '/login',

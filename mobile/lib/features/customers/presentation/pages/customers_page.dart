@@ -36,7 +36,7 @@ class _CustomersPageState extends ConsumerState<CustomersPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Customers'),
-        backgroundColor: Theme.of(context).colorScheme.primary,
+        backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
         leading: IconButton(
           onPressed: () => context.go('/dashboard'),
@@ -103,7 +103,7 @@ class _CustomersPageState extends ConsumerState<CustomersPage> {
                       },
                       backgroundColor: Colors.white.withOpacity(0.2),
                       selectedColor: Colors.white,
-                      checkmarkColor: Theme.of(context).colorScheme.primary,
+                      checkmarkColor: Colors.blue
                     ),
                     const SizedBox(width: 8),
                     FilterChip(
@@ -119,7 +119,7 @@ class _CustomersPageState extends ConsumerState<CustomersPage> {
                       },
                       backgroundColor: Colors.white.withOpacity(0.2),
                       selectedColor: Colors.white,
-                      checkmarkColor: Theme.of(context).colorScheme.primary,
+                      checkmarkColor: Colors.blue
                     ),
                     const SizedBox(width: 8),
                     FilterChip(
@@ -135,7 +135,7 @@ class _CustomersPageState extends ConsumerState<CustomersPage> {
                       },
                       backgroundColor: Colors.white.withOpacity(0.2),
                       selectedColor: Colors.white,
-                      checkmarkColor: Theme.of(context).colorScheme.primary,
+                      checkmarkColor: Colors.blue
                     ),
                   ],
                 ),

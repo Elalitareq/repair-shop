@@ -33,7 +33,7 @@ class _CustomerDetailPageState extends ConsumerState<CustomerDetailPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Customer Details'),
-        backgroundColor: Theme.of(context).colorScheme.primary,
+        backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
         actions: [
           if (customer != null)
@@ -95,9 +95,7 @@ class _CustomerDetailPageState extends ConsumerState<CustomerDetailPage> {
                             children: [
                               CircleAvatar(
                                 radius: 30,
-                                backgroundColor: Theme.of(
-                                  context,
-                                ).colorScheme.primary,
+                                backgroundColor: Colors.blue,
                                 child: Text(
                                   customer.name.isNotEmpty
                                       ? customer.name[0].toUpperCase()
@@ -180,11 +178,12 @@ class _CustomerDetailPageState extends ConsumerState<CustomerDetailPage> {
                               onPressed: () => _launchPhone(customer.phone),
                             ),
                           ),
-                          if (customer.address.isNotEmpty)
+                          if (customer.address != null &&
+                              customer.address!.isNotEmpty)
                             ListTile(
                               leading: const Icon(Icons.location_on),
                               title: const Text('Address'),
-                              subtitle: Text(customer.address),
+                              subtitle: Text(customer.address ?? ""),
                               trailing:
                                   customer.locationLink != null &&
                                       customer.locationLink!.isNotEmpty
@@ -309,7 +308,7 @@ class _CustomerDetailPageState extends ConsumerState<CustomerDetailPage> {
                                 return ListTile(
                                   contentPadding: EdgeInsets.zero,
                                   title: Text(
-                                    'Ticket #${repair.repairNumber} - ${repair.deviceModel}',
+                                    '${repair.repairNumber} - ${repair.deviceModel}',
                                   ),
                                   subtitle: Text(repair.problemDescription),
                                   trailing: Text(

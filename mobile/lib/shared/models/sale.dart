@@ -27,6 +27,12 @@ class Sale extends BaseModel {
   @JsonKey(name: 'totalAmount')
   final double totalAmount;
 
+  @JsonKey(name: 'cogs')
+  final double cogs;
+
+  @JsonKey(name: 'profit')
+  final double profit;
+
   @JsonKey(name: 'items')
   final List<SaleItem>? saleItems;
 
@@ -47,6 +53,8 @@ class Sale extends BaseModel {
     this.status = 'draft',
     this.paymentStatus = 'pending',
     required this.totalAmount,
+    this.cogs = 0.0,
+    this.profit = 0.0,
     this.saleItems,
     this.payments,
     this.notes,

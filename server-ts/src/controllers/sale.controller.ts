@@ -381,7 +381,12 @@ export class SaleController {
     if (!sale) {
       throw new AppError(404, "Sale not found");
     }
-
+    await prisma.sale.update({
+      where: { id: parseInt(id) },
+      data: {
+        status:"Confirmed"
+      },
+    });
     const payment = await prisma.payment.create({
       data: {
         saleId: parseInt(id),

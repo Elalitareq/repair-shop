@@ -20,7 +20,7 @@ class QualitiesSettingsPage extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Manage Qualities'),
-        backgroundColor: Theme.of(context).colorScheme.primary,
+        backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
       ),
       floatingActionButton: FloatingActionButton.extended(

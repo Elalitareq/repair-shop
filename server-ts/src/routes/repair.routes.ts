@@ -22,4 +22,20 @@ router.put(
   asyncHandler(repairController.updateStatus)
 );
 
+router.post(
+  "/:id/items",
+  authenticate,
+  asyncHandler(repairController.addItem)
+);
+router.put(
+  "/:id/items/:itemId",
+  authenticate,
+  asyncHandler(repairController.updateItem)
+);
+router.delete(
+  "/:id/items/:itemId",
+  authenticate,
+  asyncHandler(repairController.deleteItem)
+);
+
 export default router;

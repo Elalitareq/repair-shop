@@ -20,7 +20,7 @@ class RepairStatesSettingsPage extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Manage Repair States'),
-        backgroundColor: Theme.of(context).colorScheme.primary,
+        backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
       ),
       floatingActionButton: FloatingActionButton.extended(

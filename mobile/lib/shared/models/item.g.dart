@@ -27,9 +27,10 @@ Item _$ItemFromJson(Map<String, dynamic> json) => Item(
       ? null
       : Quality.fromJson(json['quality'] as Map<String, dynamic>),
   itemType: json['itemType'] as String? ?? 'other',
-  stockQuantity: (json['stockQuantity'] as num?)?.toInt() ?? 0,
-  minStockLevel: (json['minStockLevel'] as num?)?.toInt() ?? 5,
+  stockQuantity: (json['stockQuantity'] as num).toInt(),
+  minStockLevel: (json['minStockLevel'] as num).toInt(),
   sellingPrice: (json['sellingPrice'] as num?)?.toDouble(),
+  lastBatchPrice: (json['lastBatchPrice'] as num?)?.toDouble() ?? 0.0,
   barcodes: (json['barcodes'] as List<dynamic>?)
       ?.map((e) => e as String)
       .toList(),
@@ -53,5 +54,6 @@ Map<String, dynamic> _$ItemToJson(Item instance) => <String, dynamic>{
   'stockQuantity': instance.stockQuantity,
   'minStockLevel': instance.minStockLevel,
   'sellingPrice': instance.sellingPrice,
+  'lastBatchPrice': instance.lastBatchPrice,
   'barcodes': instance.barcodes,
 };

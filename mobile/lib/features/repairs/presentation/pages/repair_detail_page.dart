@@ -37,7 +37,7 @@ class _RepairDetailPageState extends ConsumerState<RepairDetailPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Case #${repairDetailState.repair?.id ?? widget.repairId}'),
-        backgroundColor: colorScheme.primary,
+        backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
         leading: IconButton(
           onPressed: () => context.go('/repairs'),
@@ -153,7 +153,7 @@ class _RepairDetailPageState extends ConsumerState<RepairDetailPage> {
               children: [
                 Icon(
                   Icons.info_outline,
-                  color: Theme.of(context).colorScheme.primary,
+                  color: Colors.blue,
                 ),
                 const SizedBox(width: 8),
                 Text(
@@ -340,7 +340,7 @@ class _RepairDetailPageState extends ConsumerState<RepairDetailPage> {
               children: [
                 Icon(
                   Icons.devices,
-                  color: Theme.of(context).colorScheme.primary,
+                  color: Colors.blue
                 ),
                 const SizedBox(width: 8),
                 Text(
@@ -373,7 +373,7 @@ class _RepairDetailPageState extends ConsumerState<RepairDetailPage> {
               children: [
                 Icon(
                   Icons.person,
-                  color: Theme.of(context).colorScheme.primary,
+                  color: Colors.blue
                 ),
                 const SizedBox(width: 8),
                 Text(
@@ -406,7 +406,7 @@ class _RepairDetailPageState extends ConsumerState<RepairDetailPage> {
               children: [
                 Icon(
                   Icons.bug_report,
-                  color: Theme.of(context).colorScheme.primary,
+                  color: Colors.blue
                 ),
                 const SizedBox(width: 8),
                 Text(
@@ -437,7 +437,7 @@ class _RepairDetailPageState extends ConsumerState<RepairDetailPage> {
           children: [
             Row(
               children: [
-                Icon(Icons.note, color: Theme.of(context).colorScheme.primary),
+                Icon(Icons.note, color: Colors.blue ),
                 const SizedBox(width: 8),
                 Text(
                   'Notes',
@@ -490,7 +490,7 @@ class _RepairDetailPageState extends ConsumerState<RepairDetailPage> {
               children: [
                 Icon(
                   Icons.attach_money,
-                  color: Theme.of(context).colorScheme.primary,
+                  color: Colors.blue
                 ),
                 const SizedBox(width: 8),
                 Text(
@@ -522,7 +522,7 @@ class _RepairDetailPageState extends ConsumerState<RepairDetailPage> {
                   '\$${repair.totalCost.toStringAsFixed(2)}',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
-                    color: Theme.of(context).colorScheme.primary,
+                    color: Colors.blue
                   ),
                 ),
               ],
@@ -546,7 +546,7 @@ class _RepairDetailPageState extends ConsumerState<RepairDetailPage> {
               children: [
                 Icon(
                   Icons.schedule,
-                  color: Theme.of(context).colorScheme.primary,
+                  color: Colors.blue
                 ),
                 const SizedBox(width: 8),
                 Text(
@@ -586,7 +586,7 @@ class _RepairDetailPageState extends ConsumerState<RepairDetailPage> {
               children: [
                 Icon(
                   Icons.inventory,
-                  color: Theme.of(context).colorScheme.primary,
+                  color: Colors.blue
                 ),
                 const SizedBox(width: 8),
                 Text(
@@ -679,7 +679,7 @@ class _RepairDetailPageState extends ConsumerState<RepairDetailPage> {
               children: [
                 Icon(
                   Icons.verified_user,
-                  color: Theme.of(context).colorScheme.primary,
+                  color: Colors.blue
                 ),
                 const SizedBox(width: 8),
                 Text(
@@ -713,7 +713,7 @@ class _RepairDetailPageState extends ConsumerState<RepairDetailPage> {
               children: [
                 Icon(
                   Icons.history,
-                  color: Theme.of(context).colorScheme.primary,
+                  color: Colors.blue
                 ),
                 const SizedBox(width: 8),
                 Text(

@@ -33,6 +33,8 @@ class Item extends BaseModel {
   final int minStockLevel;
   @JsonKey(name: 'sellingPrice')
   final double? sellingPrice;
+  @JsonKey(name: 'lastBatchPrice')
+  final double lastBatchPrice;
   final List<String>? barcodes; // List of barcode strings
 
   Item({
@@ -53,6 +55,7 @@ class Item extends BaseModel {
     this.stockQuantity = 0,
     this.minStockLevel = 5,
     this.sellingPrice,
+    this.lastBatchPrice = 0.0,
     this.barcodes,
   });
 
@@ -79,6 +82,7 @@ class Item extends BaseModel {
     int? stockQuantity,
     int? minStockLevel,
     double? sellingPrice,
+    double? lastBatchPrice,
     List<String>? barcodes,
   }) {
     print({
@@ -100,6 +104,7 @@ class Item extends BaseModel {
         "stockQuantity": stockQuantity,
         "minStockLevel": minStockLevel,
         "sellingPrice": sellingPrice,
+        "lastBatchPrice": lastBatchPrice,
         "barcodes": barcodes,
       },
     });
@@ -121,6 +126,7 @@ class Item extends BaseModel {
       stockQuantity: stockQuantity ?? this.stockQuantity,
       minStockLevel: minStockLevel ?? this.minStockLevel,
       sellingPrice: sellingPrice ?? this.sellingPrice,
+      lastBatchPrice: lastBatchPrice ?? this.lastBatchPrice,
       barcodes: barcodes ?? this.barcodes,
     );
   }

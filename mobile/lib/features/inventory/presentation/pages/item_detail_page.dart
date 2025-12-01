@@ -16,6 +16,98 @@ class ItemDetailPage extends ConsumerStatefulWidget {
 }
 
 class _ItemDetailPageState extends ConsumerState<ItemDetailPage> {
+  bool _isSelectionMode = false;
+  Set<int> _selectedSerials = {};
+
+  void _toggleSelectionMode() {
+    setState(() {
+      _isSelectionMode = !_isSelectionMode;
+      if (!_isSelectionMode) {
+        _selectedSerials.clear();
+      }
+    });
+  }
+
+  void _toggleSerialSelection(int serialId) {
+    setState(() {
+      if (_selectedSerials.contains(serialId)) {
+        _selectedSerials.remove(serialId);
+      } else {
+        _selectedSerials.add(serialId);
+      }
+    });
+  }
+
+  void _selectAllSerials(List serials) {
+    setState(() {
+      if (_selectedSerials.length == serials.length) {
+        _selectedSerials.clear();
+      } else {
+        _selectedSerials = serials.map<int>((s) => s.id).toSet();
+      }
+    });
+  }
+
+  Future<void> _deleteSelectedSerials() async {
+    if (_selectedSerials.isEmpty) return;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Selected Serials'),
+        content: Text(
+          'Are you sure you want to delete ${_selectedSerials.length} serial(s)?\n\nThis action cannot be undone.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.red,
+            ),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      final service = ref.read(serialServiceProvider);
+      int successCount = 0;
+      int failureCount = 0;
+
+      for (final serialId in _selectedSerials) {
+        final resp = await service.deleteSerial(serialId);
+        if (resp.isSuccess) {
+          successCount++;
+        } else {
+          failureCount++;
+        }
+      }
+
+      final itemDetail = ref.read(itemDetailProvider);
+      final itemId = itemDetail.item?.id ?? int.tryParse(widget.itemId);
+      
+      if (itemId != null) {
+        ref.invalidate(serialsForItemProvider(itemId));
+      }
+      _toggleSelectionMode(); // Exit selection mode
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Deleted $successCount serial(s)${failureCount > 0 ? ', $failureCount failed' : ''}',
+            ),
+            backgroundColor: failureCount > 0 ? Colors.orange : Colors.green,
+          ),
+        );
+      }
+    }
+  }
   @override
   void initState() {
     super.initState();
@@ -57,16 +149,93 @@ class _ItemDetailPageState extends ConsumerState<ItemDetailPage> {
             ListTile(title: const Text('Brand'), subtitle: Text(item.brand)),
             ListTile(title: const Text('Model'), subtitle: Text(item.model)),
             const SizedBox.shrink(),
+            // Show batches associated with item
+            Consumer(
+              builder: (context, ref, _) {
+                final batchesAsync = ref.watch(batchesForItemProvider(item.id));
+                return batchesAsync.when(
+                  data: (batches) => ExpansionTile(
+                    title: const Text('Batches'),
+                    children: batches.isEmpty
+                        ? [const ListTile(title: Text('No batches found'))]
+                        : batches
+                            .map(
+                              (b) => ListTile(
+                                title: Text('Batch: ${b.batch.batchNumber}'),
+                                subtitle: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Supplier: ${b.batch.supplier?.name ?? 'Unknown'}',
+                                    ),
+                                    Text(
+                                      'Date: ${b.batch.purchaseDate.toString().split(' ')[0]}',
+                                    ),
+                                    Text(
+                                      'Qty: ${b.batch.totalQuantity} (Remaining: ${b.remainingStock})',
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            )
+                            .toList(),
+                  ),
+                  loading: () =>
+                      const Center(child: CircularProgressIndicator()),
+                  error: (_, __) => const SizedBox.shrink(),
+                );
+              },
+            ),
             // Show serials associated with item
             Consumer(
               builder: (context, ref, _) {
                 final serialsAsync = ref.watch(serialsForItemProvider(item.id));
                 return serialsAsync.when(
                   data: (serials) => ExpansionTile(
-                    title: const Text('Serials'),
+                    title: Row(
+                      children: [
+                        const Text('Serials'),
+                        const Spacer(),
+                        if (!_isSelectionMode && serials.isNotEmpty)
+                          IconButton(
+                            icon: const Icon(Icons.checklist_outlined, size: 20),
+                            onPressed: _toggleSelectionMode,
+                            tooltip: 'Select Multiple',
+                          ),
+                        if (_isSelectionMode) ...[
+                          TextButton(
+                            onPressed: () => _selectAllSerials(serials),
+                            child: Text(
+                              _selectedSerials.length == serials.length
+                                  ? 'Deselect All'
+                                  : 'Select All',
+                            ),
+                          ),
+                          if (_selectedSerials.isNotEmpty)
+                            IconButton(
+                              icon: const Icon(Icons.delete, size: 20, color: Colors.red),
+                              onPressed: _deleteSelectedSerials,
+                              tooltip: 'Delete Selected',
+                            ),
+                          IconButton(
+                            icon: const Icon(Icons.close, size: 20),
+                            onPressed: _toggleSelectionMode,
+                            tooltip: 'Cancel Selection',
+                          ),
+                        ],
+                      ],
+                    ),
                     children: serials
                         .map(
                           (s) => ListTile(
+                            leading: _isSelectionMode
+                                ? Checkbox(
+                                    value: _selectedSerials.contains(s.id),
+                                    onChanged: (value) {
+                                      _toggleSerialSelection(s.id);
+                                    },
+                                  )
+                                : null,
                             title: Text(s.imei),
                             subtitle: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -76,22 +245,81 @@ class _ItemDetailPageState extends ConsumerState<ItemDetailPage> {
                                 Text('Status: ${s.status}'),
                               ],
                             ),
-                            trailing: IconButton(
-                              icon: const Icon(Icons.delete_outline),
-                              onPressed: () async {
-                                final service = ref.read(serialServiceProvider);
-                                final resp = await service.deleteSerial(s.id);
-                                if (resp.isSuccess) {
-                                  ref.invalidate(
-                                    serialsForItemProvider(item.id),
-                                  );
-                                } else {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text(resp.message)),
-                                  );
-                                }
-                              },
-                            ),
+                            trailing: _isSelectionMode
+                                ? null
+                                : Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      IconButton(
+                                        icon: const Icon(Icons.edit_outlined),
+                                        onPressed: () {
+                                          // TODO: Add edit serial functionality
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            const SnackBar(
+                                              content: Text('Edit serial functionality coming soon'),
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                      IconButton(
+                                        icon: const Icon(Icons.delete_outline),
+                                        onPressed: () async {
+                                          final confirmed = await showDialog<bool>(
+                                            context: context,
+                                            builder: (context) => AlertDialog(
+                                              title: const Text('Delete Serial'),
+                                              content: Text(
+                                                'Are you sure you want to delete serial "${s.imei}"?\n\nThis action cannot be undone.',
+                                              ),
+                                              actions: [
+                                                TextButton(
+                                                  onPressed: () => Navigator.of(context).pop(false),
+                                                  child: const Text('Cancel'),
+                                                ),
+                                                TextButton(
+                                                  onPressed: () => Navigator.of(context).pop(true),
+                                                  style: TextButton.styleFrom(
+                                                    foregroundColor: Colors.red,
+                                                  ),
+                                                  child: const Text('Delete'),
+                                                ),
+                                              ],
+                                            ),
+                                          );
+
+                                          if (confirmed == true) {
+                                            final service = ref.read(serialServiceProvider);
+                                            final resp = await service.deleteSerial(s.id);
+                                            if (resp.isSuccess) {
+                                              ref.invalidate(
+                                                serialsForItemProvider(item.id),
+                                              );
+                                              if (mounted) {
+                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                  const SnackBar(
+                                                    content: Text('Serial deleted successfully'),
+                                                    backgroundColor: Colors.green,
+                                                  ),
+                                                );
+                                              }
+                                            } else {
+                                              if (mounted) {
+                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                  SnackBar(
+                                                    content: Text(resp.message),
+                                                    backgroundColor: Colors.red,
+                                                  ),
+                                                );
+                                              }
+                                            }
+                                          }
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                            onTap: _isSelectionMode
+                                ? () => _toggleSerialSelection(s.id)
+                                : null,
                           ),
                         )
                         .toList(),
@@ -115,6 +343,7 @@ class _ItemDetailPageState extends ConsumerState<ItemDetailPage> {
                   // Refresh item details and serials
                   ref.read(itemDetailProvider.notifier).loadItem(item.id);
                   ref.invalidate(serialsForItemProvider(item.id));
+                  ref.invalidate(batchesForItemProvider(item.id));
                 }
               },
               icon: const Icon(Icons.inventory_2),

@@ -21,7 +21,7 @@ class PaymentMethodsSettingsPage extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Payment Methods'),
-        backgroundColor: Theme.of(context).colorScheme.primary,
+        backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
       ),
       floatingActionButton: FloatingActionButton.extended(

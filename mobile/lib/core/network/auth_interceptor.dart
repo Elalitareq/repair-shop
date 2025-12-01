@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:logger/logger.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 /// Interceptor to handle authentication tokens
 class AuthInterceptor extends Interceptor {
@@ -130,8 +131,7 @@ class AuthInterceptor extends Interceptor {
 
   /// Get base URL from environment or default
   String _getBaseUrl() {
-    // This should match the base URL from your API client
-    return 'http://localhost:8080/api';
+    return dotenv.env['API_BASE_URL'] ?? 'http://localhost:8080/api';
   }
 
   /// Save authentication tokens

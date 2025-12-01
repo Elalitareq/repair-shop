@@ -2,9 +2,11 @@ import { Router } from "express";
 import { ItemController } from "../controllers/item.controller";
 import { authenticate } from "../middleware/auth";
 import { asyncHandler } from "../middleware/errorHandler";
+import multer from "multer";
 
 const router: Router = Router();
 const itemController = new ItemController();
+const upload = multer({ dest: "uploads/" });
 
 router.get(
   "/",
@@ -15,6 +17,12 @@ router.get(
   "/search",
   authenticate,
   asyncHandler(itemController.search.bind(itemController))
+);
+router.post(
+  "/import",
+  authenticate,
+  upload.single("file"),
+  asyncHandler(itemController.importInventory.bind(itemController))
 );
 router.get(
   "/low-stock",

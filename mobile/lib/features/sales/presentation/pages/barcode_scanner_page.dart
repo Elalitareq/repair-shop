@@ -30,7 +30,7 @@ class _BarcodeScannerPageState extends ConsumerState<BarcodeScannerPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Scan Barcode'),
-        backgroundColor: colorScheme.primary,
+        backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
         leading: IconButton(
           onPressed: () => Navigator.of(context).pop(),

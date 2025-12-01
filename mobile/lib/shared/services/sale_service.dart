@@ -47,6 +47,8 @@ class SaleService {
       );
 
       final sales = <Sale>[];
+      String? firstParseError;
+      
       for (final json in data) {
         try {
           if (json == null) {
@@ -54,19 +56,22 @@ class SaleService {
             continue;
           }
           final sale = Sale.fromJson(json as Map<String, dynamic>);
-          print(
-            '🔍 SaleService.getSales - Successfully parsed sale: ${sale.id}',
-          );
           sales.add(sale);
         } catch (e) {
           print('❌ SaleService.getSales - Failed to parse sale: $e');
-          print('❌ SaleService.getSales - Problematic JSON: $json');
-          // Skip problematic entry and continue parsing
+          firstParseError ??= e.toString();
+          // Continue trying to parse other items
           continue;
         }
       }
 
-      print('🔍 SaleService.getSales - Total sales parsed: ${sales.length}');
+      if (sales.isEmpty && data.isNotEmpty) {
+        return ApiResponse.error(
+          message: 'Failed to parse sales data: $firstParseError',
+          statusCode: 500,
+        );
+      }
+
       return ApiResponse.success(
         data: sales,
         message: response.data!['message'] ?? response.message,

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
 class AppTheme {
-  static const Color primaryColor = Color(0xFF1976D2);
-  static const Color secondaryColor = Color(0xFF03DAC6);
+  static const Color primaryColor = Color(0xFF1976D2); // Darker Blue
+  static const Color secondaryColor = Color(0xFF1976D2);
   static const Color errorColor = Color(0xFFB00020);
   static const Color surfaceColor = Color(0xFFFFFFFF);
   static const Color backgroundColor = Color(0xFFF5F5F5);
@@ -60,7 +60,7 @@ class AppTheme {
         seedColor: primaryColor,
         brightness: Brightness.dark,
       ),
-      appBarTheme: const AppBarTheme(elevation: 0, centerTitle: true),
+      appBarTheme: const AppBarTheme(elevation: 0, centerTitle: true, backgroundColor: primaryColor,),
       cardTheme: CardThemeData(
         elevation: 4,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),

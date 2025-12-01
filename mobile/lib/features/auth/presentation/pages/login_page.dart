@@ -83,9 +83,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 ),
                 const SizedBox(height: 48),
 
-                // Username field
+                  // Username field
                 TextFormField(
                   controller: _usernameController,
+                  textInputAction: TextInputAction.next, // Move to next field
                   decoration: const InputDecoration(
                     labelText: 'Username or Email',
                     prefixIcon: Icon(Icons.person),
@@ -104,6 +105,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 TextFormField(
                   controller: _passwordController,
                   obscureText: _obscurePassword,
+                  textInputAction: TextInputAction.done, // Submit action
+                  onFieldSubmitted: (_) => _handleLogin(), // Trigger login on Enter
                   decoration: InputDecoration(
                     labelText: 'Password',
                     prefixIcon: const Icon(Icons.lock),

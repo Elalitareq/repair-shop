@@ -94,6 +94,7 @@ export class RepairController {
       warrantyDays,
       issues,
       extraInfo,
+      items,
     } = req.body;
     console.log(req.body);
     if (!customerId || !deviceBrand || !deviceModel || !problemDescription) {
@@ -111,7 +112,7 @@ export class RepairController {
 
     // Generate repair number
     const count = await prisma.repair.count();
-    const repairNumber = `REP-${new Date().getFullYear()}-${String(
+    const repairNumber = `CASE-${String(
       count + 1
     ).padStart(4, "0")}`;
 
@@ -151,6 +152,17 @@ export class RepairController {
             issues?.map((issue: any) => ({
               issueTypeId: issue.issueTypeId,
               description: issue.description,
+            })) || [],
+        },
+        items: {
+          create:
+            items?.map((item: any) => ({
+              itemName: item.item_name || item.itemName,
+              description: item.description,
+              quantity: item.quantity,
+              unitPrice: item.unit_price || item.unitPrice,
+              totalPrice: item.total_price || item.totalPrice,
+              isLabor: item.is_labor || item.isLabor || false,
             })) || [],
         },
       },
@@ -362,5 +374,97 @@ export class RepairController {
     }
 
     res.json({ data: updated, message: "Repair status updated successfully" });
+  }
+
+  async addItem(req: AuthRequest, res: Response) {
+    const { id } = req.params;
+    const {
+      item_name,
+      itemName,
+      description,
+      quantity,
+      unit_price,
+      unitPrice,
+      total_price,
+      totalPrice,
+      is_labor,
+      isLabor,
+    } = req.body;
+
+    const repair = await prisma.repair.findUnique({
+      where: { id: parseInt(id) },
+    });
+
+    if (!repair) {
+      throw new AppError(404, "Repair not found");
+    }
+
+    const item = await prisma.repairItem.create({
+      data: {
+        repairId: parseInt(id),
+        itemName: item_name || itemName,
+        description,
+        quantity: parseFloat(quantity),
+        unitPrice: parseFloat(unit_price || unitPrice),
+        totalPrice: parseFloat(total_price || totalPrice),
+        isLabor: is_labor || isLabor || false,
+      },
+    });
+
+    res
+      .status(201)
+      .json({ data: item, message: "Repair item added successfully" });
+  }
+
+  async updateItem(req: AuthRequest, res: Response) {
+    const { id, itemId } = req.params;
+    const {
+      item_name,
+      itemName,
+      description,
+      quantity,
+      unit_price,
+      unitPrice,
+      total_price,
+      totalPrice,
+      is_labor,
+      isLabor,
+    } = req.body;
+
+    const repair = await prisma.repair.findUnique({
+      where: { id: parseInt(id) },
+    });
+
+    if (!repair) {
+      throw new AppError(404, "Repair not found");
+    }
+
+    const data: any = {};
+    if (item_name || itemName) data.itemName = item_name || itemName;
+    if (description !== undefined) data.description = description;
+    if (quantity !== undefined) data.quantity = parseFloat(quantity);
+    if (unit_price !== undefined || unitPrice !== undefined)
+      data.unitPrice = parseFloat(unit_price || unitPrice);
+    if (total_price !== undefined || totalPrice !== undefined)
+      data.totalPrice = parseFloat(total_price || totalPrice);
+    if (is_labor !== undefined || isLabor !== undefined)
+      data.isLabor = is_labor || isLabor;
+
+    const updated = await prisma.repairItem.update({
+      where: { id: parseInt(itemId) },
+      data,
+    });
+
+    res.json({ data: updated, message: "Repair item updated successfully" });
+  }
+
+  async deleteItem(req: AuthRequest, res: Response) {
+    const { itemId } = req.params;
+
+    await prisma.repairItem.delete({
+      where: { id: parseInt(itemId) },
+    });
+
+    res.json({ message: "Repair item deleted successfully" });
   }
 }
