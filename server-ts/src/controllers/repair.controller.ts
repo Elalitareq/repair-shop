@@ -194,6 +194,7 @@ export class RepairController {
       estimatedCost,
       finalCost,
       extraInfo,
+      issues,
     } = req.body;
 
     const repair = await prisma.repair.findUnique({
@@ -204,17 +205,29 @@ export class RepairController {
       throw new AppError(404, "Repair not found");
     }
 
+    const updateData: any = {
+      deviceBrand,
+      deviceModel,
+      deviceImei,
+      password,
+      estimatedCost,
+      finalCost,
+      extraInfo,
+    };
+
+    if (issues) {
+      updateData.issues = {
+        deleteMany: {},
+        create: issues.map((issue: any) => ({
+          issueTypeId: issue.issueTypeId,
+          description: issue.description,
+        })),
+      };
+    }
+
     const updated = await prisma.repair.update({
       where: { id: parseInt(id) },
-      data: {
-        deviceBrand,
-        deviceModel,
-        deviceImei,
-        password,
-        estimatedCost,
-        finalCost,
-        extraInfo,
-      },
+      data: updateData,
       include: {
         customer: true,
         state: true,

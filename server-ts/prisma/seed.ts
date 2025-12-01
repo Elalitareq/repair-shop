@@ -84,13 +84,7 @@ async function main() {
       description: "Whish money (wallet) payment",
       feeRate: 0.0,
     },
-    { name: "Card", description: "Credit/Debit card", feeRate: 0.025 },
-    { name: "Bank Transfer", description: "Bank transfer", feeRate: 0.0 },
-    {
-      name: "Mobile Payment",
-      description: "Mobile payment apps",
-      feeRate: 0.015,
-    },
+    
   ];
 
   for (const method of paymentMethods) {
@@ -132,66 +126,11 @@ async function main() {
   });
   console.log("✅ Demo customer created");
 
-  // Seed demo repair
-  const receivedState = await prisma.repairState.findFirst({
-    where: { name: "Received" },
-  });
-
-  if (receivedState) {
-    await prisma.repair.create({
-      data: {
-        repairNumber: "CASE-0001",
-        customerId: demoCustomer.id,
-        deviceBrand: "Apple",
-        deviceModel: "iPhone 14 Pro",
-        deviceImei: "123456789012345",
-        password: "1234",
-        problemDescription: "Screen is cracked and not responding to touch",
-        diagnosisNotes: "Screen damage detected, digitizer needs replacement",
-        priority: "high",
-        estimatedCost: 150.0,
-        estimatedCompletion: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
-        warrantyProvided: true,
-        warrantyDays: 90,
-        stateId: receivedState.id,
-        extraInfo: "Customer wants quick repair",
-      },
-    });
-    console.log("✅ Demo repair created");
-  }
 
   console.log("🎉 Database seeding completed!");
 
   // Add demo serials (IMEIs) if items and batches exist
-  const itemsCount = await prisma.item.count();
-  const batchesCount = await prisma.batch.count();
 
-  if (itemsCount > 0 && batchesCount > 0) {
-    const item = await prisma.item.findFirst();
-    const batch = await prisma.batch.findFirst();
-
-    if (item && batch) {
-      try {
-        await prisma.serial.create({
-          data: {
-            imei: `IMEI-${item.id}-1`,
-            itemId: item.id,
-            batchId: batch.id,
-          },
-        });
-        await prisma.serial.create({
-          data: {
-            imei: `IMEI-${item.id}-2`,
-            itemId: item.id,
-            batchId: batch.id,
-          },
-        });
-        console.log("✅ Demo serials created for item and batch");
-      } catch (error) {
-        console.log("ℹ️  Demo serials already exist or failed to create");
-      }
-    }
-  }
 }
 
 main()

@@ -57,6 +57,22 @@ router.get(
   authenticate,
   asyncHandler(referenceController.getIssueTypes.bind(referenceController))
 );
+router.post(
+  "/issue-types",
+  authenticate,
+  [body("name").notEmpty().withMessage("Name is required")],
+  asyncHandler(referenceController.createIssueType.bind(referenceController))
+);
+router.put(
+  "/issue-types/:id",
+  authenticate,
+  asyncHandler(referenceController.updateIssueType.bind(referenceController))
+);
+router.delete(
+  "/issue-types/:id",
+  authenticate,
+  asyncHandler(referenceController.deleteIssueType.bind(referenceController))
+);
 router.get(
   "/repair-states",
   authenticate,

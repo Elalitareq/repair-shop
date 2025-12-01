@@ -91,6 +91,31 @@ export class ReferenceController {
     res.json({ data: issueTypes });
   }
 
+  async createIssueType(req: AuthRequest, res: Response) {
+    const { name, description } = req.body;
+    const issueType = await prisma.issueType.create({
+      data: { name, description: description || null },
+    });
+    res.status(201).json({ data: issueType });
+  }
+
+  async updateIssueType(req: AuthRequest, res: Response) {
+    const { id } = req.params;
+    const { name, description } = req.body;
+
+    const issueType = await prisma.issueType.update({
+      where: { id: parseInt(id) },
+      data: { name, description: description ?? undefined },
+    });
+    res.json({ data: issueType });
+  }
+
+  async deleteIssueType(req: AuthRequest, res: Response) {
+    const { id } = req.params;
+    await prisma.issueType.delete({ where: { id: parseInt(id) } });
+    res.json({ message: "Issue type deleted successfully" });
+  }
+
   async getRepairStates(_req: AuthRequest, res: Response) {
     const repairStates = await prisma.repairState.findMany({
       orderBy: { order: "asc" },
