@@ -116,7 +116,7 @@ async function main() {
   console.log("✅ Admin user created (username: khaled, password: myshop99)");
 
   // Seed demo customer
-  const demoCustomer = await prisma.customer.create({
+ await prisma.customer.create({
     data: {
       name: "John Doe",
       phone: "+1234567890",
