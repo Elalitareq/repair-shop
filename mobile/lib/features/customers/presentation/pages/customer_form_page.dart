@@ -272,15 +272,7 @@ class _CustomerFormPageState extends ConsumerState<CustomerFormPage> {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isSubmitting = true);
-    print({
-      'name': _nameController.text,
-      'companyName': _companyNameController.text,
-      'type': _type,
-      'phone': _phoneController.text,
-      'address': _addressController.text,
-      'taxNumber': _taxNumberController.text,
-      'locationLink': _locationLinkController.text,
-    });
+ 
     final data = {
       'name': _nameController.text,
       'companyName': _companyNameController.text.isEmpty
@@ -299,7 +291,6 @@ class _CustomerFormPageState extends ConsumerState<CustomerFormPage> {
           : _locationLinkController.text,
     };
 
-    print({'data': data});
     final success = widget.customerId == null
         ? await ref.read(customerDetailProvider.notifier).createCustomer(data)
         : await ref

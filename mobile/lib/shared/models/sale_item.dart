@@ -2,6 +2,7 @@ import 'package:json_annotation/json_annotation.dart';
 import 'base_model.dart';
 import 'item_batch.dart';
 import 'item.dart';
+import 'sale_item_batch.dart';
 
 part 'sale_item.g.dart';
 
@@ -21,38 +22,27 @@ class SaleItem extends BaseModel {
   final ItemBatch? batch;
 
   @JsonKey(name: 'quantity')
-  final int quantity;
-
-  @JsonKey(name: 'unitPrice')
+  final double quantity;
   final double unitPrice;
-
-  @JsonKey(name: 'discount')
   final double discount;
-
-  @JsonKey(name: 'total')
   final double total;
-
-  @JsonKey(name: 'notes')
-  final String? notes;
-
-  @JsonKey(name: 'item')
   final Item? item;
+  final List<SaleItemBatch>? batches;
 
   const SaleItem({
     required super.id,
-    required super.createdAt,
-    required super.updatedAt,
-    super.syncStatus,
     required this.saleId,
     required this.itemId,
-    this.batchId,
-    this.batch,
     required this.quantity,
     required this.unitPrice,
-    this.discount = 0.0,
+    required this.discount,
     required this.total,
-    this.notes,
+    required super.createdAt,
+    required super.updatedAt,
+    this.batchId,
+    this.batch,
     this.item,
+    this.batches,
   });
 
   factory SaleItem.fromJson(Map<String, dynamic> json) =>

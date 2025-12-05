@@ -25,7 +25,6 @@ class _SalesListPageState extends ConsumerState<SalesListPage> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(saleListProvider);
-    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
       appBar: AppBar(
@@ -183,7 +182,6 @@ class _SalesListPageState extends ConsumerState<SalesListPage> {
   }
 
   Color _getStatusColor(String status) {
-    print('🔍 SalesListPage._getStatusColor - status: $status');
     switch (status.toLowerCase()) {
       case 'draft':
         return Colors.orange;
@@ -199,7 +197,6 @@ class _SalesListPageState extends ConsumerState<SalesListPage> {
   }
 
   IconData _getStatusIcon(String status) {
-    print('🔍 SalesListPage._getStatusIcon - status: $status');
     switch (status.toLowerCase()) {
       case 'draft':
         return Icons.edit;

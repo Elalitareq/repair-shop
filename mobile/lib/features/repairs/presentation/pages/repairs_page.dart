@@ -338,7 +338,6 @@ class _RepairCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
     final theme = Theme.of(context);
 
     return Card(
@@ -385,6 +384,28 @@ class _RepairCard extends StatelessWidget {
                 style: theme.textTheme.bodyMedium,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 8),
+
+              // Cost breakdown
+              Row(
+                children: [
+                  const Icon(Icons.miscellaneous_services,
+                      size: 14, color: Colors.grey),
+                  const SizedBox(width: 4),
+                  Text(
+                    'Service: \$${(repair.serviceCharge ?? 0.0).toStringAsFixed(2)}',
+                    style: theme.textTheme.bodySmall,
+                  ),
+                  const SizedBox(width: 12),
+                  const Icon(Icons.inventory_2_outlined,
+                      size: 14, color: Colors.grey),
+                  const SizedBox(width: 4),
+                  Text(
+                    'Parts: \$${repair.items.fold(0.0, (sum, item) => sum + (item.totalPrice ?? 0.0)).toStringAsFixed(2)}',
+                    style: theme.textTheme.bodySmall,
+                  ),
+                ],
               ),
               const SizedBox(height: 12),
 

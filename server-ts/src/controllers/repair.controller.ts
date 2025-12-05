@@ -27,6 +27,20 @@ export class RepairController {
           },
           items: true,
           statusHistory: true,
+          payments: {
+            include: {
+              paymentMethod: true,
+            },
+          },
+          paymentAllocations: {
+            include: {
+              payment: {
+                include: {
+                  paymentMethod: true,
+                },
+              },
+            },
+          },
         },
         orderBy: { receivedDate: "desc" },
       }),
@@ -58,11 +72,28 @@ export class RepairController {
           },
         },
         images: true,
-        items: true,
-        statusHistory: true,
-        stockUsages: {
+        items: {
           include: {
-            item: true,
+            repairItemBatches: {
+              include: {
+                batch: true,
+              },
+            },
+          },
+        },
+        statusHistory: true,
+        payments: {
+          include: {
+            paymentMethod: true,
+          },
+        },
+        paymentAllocations: {
+          include: {
+            payment: {
+              include: {
+                paymentMethod: true,
+              },
+            },
           },
         },
       },
@@ -73,6 +104,66 @@ export class RepairController {
     }
 
     res.json({ data: repair });
+  }
+
+  async createPayment(req: AuthRequest, res: Response) {
+    const { id } = req.params;
+    const { paymentMethodId, amount, referenceNumber, paymentDate, notes } =
+      req.body;
+
+    if (!paymentMethodId || !amount) {
+      throw new AppError(400, "paymentMethodId and amount are required");
+    }
+
+    const repair = await prisma.repair.findUnique({
+      where: { id: parseInt(id) },
+      include: { items: true },
+    });
+
+    if (!repair) {
+      throw new AppError(404, "Repair not found");
+    }
+
+    const payment = await prisma.payment.create({
+      data: {
+        repairId: parseInt(id),
+        paymentMethodId,
+        amount,
+        referenceNumber: referenceNumber || null,
+        notes: notes || null,
+        paymentDate: paymentDate ? new Date(paymentDate) : new Date(),
+      },
+      include: { paymentMethod: true },
+    });
+
+    // Update repair payment status
+    const totalPaidResult = await prisma.payment.aggregate({
+      where: { repairId: parseInt(id) },
+      _sum: { amount: true },
+    });
+    const totalPaid = totalPaidResult._sum.amount || 0;
+
+    const itemsCost = repair.items.reduce(
+      (sum, item) => sum + item.totalPrice,
+      0
+    );
+    const totalCost = (repair.serviceCharge || 0) + itemsCost;
+
+    const paymentStatus =
+      totalPaid >= totalCost - 0.01 // Tolerance
+        ? "paid"
+        : totalPaid > 0
+        ? "partial"
+        : "pending";
+
+    await prisma.repair.update({
+      where: { id: parseInt(id) },
+      data: { paymentStatus },
+    });
+
+    res
+      .status(201)
+      .json({ data: payment, message: "Payment added successfully" });
   }
 
   async create(req: AuthRequest, res: Response) {
@@ -88,6 +179,7 @@ export class RepairController {
       priority,
       estimatedCost,
       finalCost,
+      serviceCharge,
       estimatedCompletion,
       actualCompletion,
       warrantyProvided,
@@ -112,9 +204,7 @@ export class RepairController {
 
     // Generate repair number
     const count = await prisma.repair.count();
-    const repairNumber = `CASE-${String(
-      count + 1
-    ).padStart(4, "0")}`;
+    const repairNumber = `CASE-${String(count + 1).padStart(4, "0")}`;
 
     // Get default "Received" state
     const receivedState = await prisma.repairState.findFirst({
@@ -139,6 +229,7 @@ export class RepairController {
         priority: priority || "normal",
         estimatedCost,
         finalCost,
+        serviceCharge,
         estimatedCompletion: estimatedCompletion
           ? new Date(estimatedCompletion)
           : null,
@@ -195,6 +286,7 @@ export class RepairController {
       finalCost,
       extraInfo,
       issues,
+      serviceCharge,
     } = req.body;
 
     const repair = await prisma.repair.findUnique({
@@ -212,6 +304,7 @@ export class RepairController {
       password,
       estimatedCost,
       finalCost,
+      serviceCharge,
       extraInfo,
     };
 
@@ -368,8 +461,51 @@ export class RepairController {
             issueType: true,
           },
         },
+        items: true, // Include items to process return to stock
       },
     });
+
+    // If status is Cancelled, return items to stock
+    if (state.name.toLowerCase() === "cancelled") {
+      for (const repairItem of updated.items) {
+        // Restore batches
+        const batches = await prisma.repairItemBatch.findMany({
+          where: { repairItemId: repairItem.id },
+        });
+
+        for (const batchRecord of batches) {
+          await prisma.batch.update({
+            where: { id: batchRecord.batchId },
+            data: { soldQuantity: { decrement: batchRecord.quantity } },
+          });
+        }
+
+        // Restore serials
+        await prisma.serial.updateMany({
+          where: { repairItemId: repairItem.id },
+          data: { status: "available", repairItemId: null },
+        });
+
+        // Restore item stock
+        // We need to find the item associated with the batch to restore stock
+        for (const batchRecord of batches) {
+          const batch = await prisma.batch.findUnique({
+            where: { id: batchRecord.batchId },
+          });
+          if (batch && batch.itemId) {
+            await prisma.item.update({
+              where: { id: batch.itemId },
+              data: { stockQuantity: { increment: batchRecord.quantity } },
+            });
+          }
+        }
+
+        // Clear RepairItemBatch records
+        await prisma.repairItemBatch.deleteMany({
+          where: { repairItemId: repairItem.id },
+        });
+      }
+    }
 
     // Log status change in history
     try {
@@ -392,6 +528,7 @@ export class RepairController {
   async addItem(req: AuthRequest, res: Response) {
     const { id } = req.params;
     const {
+      itemId,
       item_name,
       itemName,
       description,
@@ -410,6 +547,154 @@ export class RepairController {
 
     if (!repair) {
       throw new AppError(404, "Repair not found");
+    }
+
+    if (itemId) {
+      // Handle stock item
+      const stockItem = await prisma.item.findUnique({
+        where: { id: parseInt(itemId) },
+        include: { serials: { include: { batch: true } } },
+      });
+
+      if (!stockItem) {
+        throw new AppError(404, "Stock item not found");
+      }
+
+      const qty = parseFloat(quantity);
+
+      if (stockItem.stockQuantity < qty) {
+        throw new AppError(400, "Insufficient stock");
+      }
+
+      // Use provided unit price or default to selling price
+      const price =
+        unit_price !== undefined
+          ? parseFloat(unit_price)
+          : unitPrice !== undefined
+          ? parseFloat(unitPrice)
+          : stockItem.sellingPrice;
+      const total =
+        total_price !== undefined
+          ? parseFloat(total_price)
+          : totalPrice !== undefined
+          ? parseFloat(totalPrice)
+          : price * qty;
+
+      const result = await prisma.$transaction(async (tx) => {
+        // Create RepairItem
+        const repairItem = await tx.repairItem.create({
+          data: {
+            repairId: parseInt(id),
+            itemName: stockItem.name,
+            description: description || stockItem.description,
+            quantity: qty,
+            unitPrice: price,
+            totalPrice: total,
+            isLabor: false,
+          },
+        });
+
+        // Batch Tracking Logic
+        let remainingQuantity = qty;
+        let itemCogs = 0;
+
+        // Sort serials by batch purchase date (FIFO)
+        const availableSerials = stockItem.serials
+          .filter((s) => s.status === "available")
+          .sort(
+            (a, b) =>
+              a.batch.purchaseDate.getTime() - b.batch.purchaseDate.getTime()
+          );
+
+        for (const serial of availableSerials) {
+          if (remainingQuantity <= 0) break;
+
+          // Mark serial as sold/used
+          await tx.serial.update({
+            where: { id: serial.id },
+            data: {
+              status: "sold",
+              repairItemId: repairItem.id,
+            },
+          });
+
+          // Update batch sold quantity
+          await tx.batch.update({
+            where: { id: serial.batchId },
+            data: { soldQuantity: { increment: 1 } },
+          });
+
+          // Create RepairItemBatch
+          await tx.repairItemBatch.create({
+            data: {
+              repairItemId: repairItem.id,
+              batchId: serial.batchId,
+              quantity: 1,
+            },
+          });
+
+          itemCogs += serial.batch.unitCost;
+          remainingQuantity--;
+        }
+
+        if (remainingQuantity > 0) {
+          // Find batches with available quantity (FIFO)
+          const batches = await tx.batch.findMany({
+            where: {
+              itemId: stockItem.id,
+              soldQuantity: { lt: tx.batch.fields.totalQuantity },
+            },
+            orderBy: { purchaseDate: "asc" },
+          });
+
+          for (const batch of batches) {
+            if (remainingQuantity <= 0) break;
+
+            const availableInBatch = batch.totalQuantity - batch.soldQuantity;
+            const takeFromBatch = Math.min(remainingQuantity, availableInBatch);
+
+            await tx.batch.update({
+              where: { id: batch.id },
+              data: { soldQuantity: { increment: takeFromBatch } },
+            });
+
+            await tx.repairItemBatch.create({
+              data: {
+                repairItemId: repairItem.id,
+                batchId: batch.id,
+                quantity: takeFromBatch,
+              },
+            });
+
+            itemCogs += batch.unitCost * takeFromBatch;
+            remainingQuantity -= takeFromBatch;
+          }
+        }
+
+        // Update Stock
+        await tx.item.update({
+          where: { id: stockItem.id },
+          data: { stockQuantity: { decrement: qty } },
+        });
+
+        // Create StockUsage
+        await tx.stockUsage.create({
+          data: {
+            itemId: stockItem.id,
+            repairId: parseInt(id),
+            quantity: qty,
+            unitCost: itemCogs / qty,
+            reason: `Used in repair #${repair.repairNumber}`,
+          },
+        });
+
+        return repairItem;
+      });
+
+      res
+        .status(201)
+        .json({ data: result, message: "Stock item added to repair" });
+      return;
     }
 
     const item = await prisma.repairItem.create({
@@ -474,10 +759,93 @@ export class RepairController {
   async deleteItem(req: AuthRequest, res: Response) {
     const { itemId } = req.params;
 
+    // Return to stock logic
+    const repairItem = await prisma.repairItem.findUnique({
+      where: { id: parseInt(itemId) },
+      // include: { batches: true }, // Removed invalid relation
+    });
+
+    if (repairItem) {
+      // Restore batches
+      const batches = await prisma.repairItemBatch.findMany({
+        where: { repairItemId: parseInt(itemId) },
+      });
+
+      for (const batchRecord of batches) {
+        await prisma.batch.update({
+          where: { id: batchRecord.batchId },
+          data: { soldQuantity: { decrement: batchRecord.quantity } },
+        });
+      }
+
+      // Restore serials
+      await prisma.serial.updateMany({
+        where: { repairItemId: parseInt(itemId) },
+        data: { status: "available", repairItemId: null },
+      });
+
+      // Restore item stock if it was a stock item (we need to know if it was linked to an item, currently RepairItem doesn't strictly enforce itemId link but we added it in create)
+      // We need to check if we added `itemId` to RepairItem model.
+      // Wait, I didn't add `itemId` to `RepairItem` in schema.prisma in the plan.
+      // But `StockUsage` has `itemId`.
+      // Let's check if `RepairItem` has `itemId`.
+      // Looking at schema.prisma earlier: `RepairItem` does NOT have `itemId`.
+      // So we can't easily know which Item to restore unless we infer from name or check StockUsage.
+      // However, `RepairItemBatch` links to `Batch`, and `Batch` links to `Item`.
+      // So we can restore stock based on batches!
+
+      for (const batchRecord of batches) {
+        const batch = await prisma.batch.findUnique({
+          where: { id: batchRecord.batchId },
+        });
+        if (batch && batch.itemId) {
+          await prisma.item.update({
+            where: { id: batch.itemId },
+            data: { stockQuantity: { increment: batchRecord.quantity } },
+          });
+        }
+      }
+    }
+
     await prisma.repairItem.delete({
       where: { id: parseInt(itemId) },
     });
 
     res.json({ message: "Repair item deleted successfully" });
+  }
+
+  async updateServiceCharge(req: AuthRequest, res: Response) {
+    const { id } = req.params;
+    const { serviceCharge } = req.body;
+
+    if (serviceCharge === undefined || serviceCharge === null) {
+      throw new AppError(400, "Service charge is required");
+    }
+
+    const repair = await prisma.repair.findUnique({
+      where: { id: parseInt(id) },
+    });
+
+    if (!repair) {
+      throw new AppError(404, "Repair not found");
+    }
+
+    const updated = await prisma.repair.update({
+      where: { id: parseInt(id) },
+      include: {
+        customer: true,
+        state: true,
+        issues: {
+          include: {
+            issueType: true,
+          },
+        },
+      },
+      data: {
+        serviceCharge: parseFloat(serviceCharge),
+      },
+    });
+
+    res.json({ data: updated, message: "Service charge updated successfully" });
   }
 }

@@ -1,36 +1,42 @@
 import 'package:json_annotation/json_annotation.dart';
-import 'base_model.dart';
+import 'repair_item_batch.dart';
 
 part 'repair_item.g.dart';
 
 @JsonSerializable()
-class RepairItem extends BaseModel {
-  final int? repairId;
-  final String? itemName;
+class RepairItem {
+  final int id;
+  final int repairId;
+  final String itemName;
   final String? description;
-  final double? quantity;
-  final double? unitPrice;
-  final double? totalPrice;
+  final double quantity;
+  final double unitPrice;
+  final double totalPrice;
   final bool isLabor;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final int? itemId;
+  @JsonKey(name: 'repairItemBatches')
+  final List<RepairItemBatch>? batches;
 
   const RepairItem({
-    required super.id,
+    required this.id,
     required this.repairId,
     required this.itemName,
     this.description,
     required this.quantity,
     required this.unitPrice,
     required this.totalPrice,
-    this.isLabor = false,
-    required super.createdAt,
-    required super.updatedAt,
-    super.syncStatus,
+    required this.isLabor,
+    required this.createdAt,
+    required this.updatedAt,
+    this.itemId,
+    this.batches,
   });
 
   factory RepairItem.fromJson(Map<String, dynamic> json) =>
       _$RepairItemFromJson(json);
 
-  @override
   Map<String, dynamic> toJson() => _$RepairItemToJson(this);
 
   RepairItem copyWith({
@@ -57,7 +63,6 @@ class RepairItem extends BaseModel {
       isLabor: isLabor ?? this.isLabor,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
-      syncStatus: syncStatus ?? this.syncStatus,
     );
   }
 }

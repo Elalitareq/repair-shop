@@ -1,9 +1,32 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:json_annotation/json_annotation.dart';
 
 import '../../core/network/api_client.dart';
 import '../../core/network/api_response.dart';
 import '../models/repair.dart';
 import '../models/repair_item.dart';
+import '../models/payment.dart';
+
+part 'repair_service.g.dart';
+
+/// Issue type model for repair issues
+@JsonSerializable()
+class IssueType {
+  final int id;
+  final String name;
+  final String? description;
+
+  const IssueType({
+    required this.id,
+    required this.name,
+    this.description,
+  });
+
+  factory IssueType.fromJson(Map<String, dynamic> json) =>
+      _$IssueTypeFromJson(json);
+
+  Map<String, dynamic> toJson() => _$IssueTypeToJson(this);
+}
 
 /// Service for managing repairs
 class RepairService {
@@ -54,11 +77,9 @@ class RepairService {
       }
 
       final data = dataList as List<dynamic>;
-      print(data);
       final repairs = data
           .map((json) => Repair.fromJson(json as Map<String, dynamic>))
           .toList();
-      print(repairs);
 
       return ApiResponse.success(
         data: repairs,
@@ -111,12 +132,14 @@ class RepairService {
     String? deviceImei,
     required String problemDescription,
     String? diagnosisNotes,
-    String priority = 'Normal',
+    String priority = 'normal',
     double estimatedCost = 0.0,
+    double? serviceCharge = 0.0,
     DateTime? estimatedCompletion,
     bool warrantyProvided = false,
     int? warrantyDays,
     List<RepairItem>? items,
+    List<RepairIssue>? issues,
   }) async {
     final response = await _apiClient.post<Map<String, dynamic>>(
       '/repairs',
@@ -129,10 +152,12 @@ class RepairService {
         'diagnosisNotes': diagnosisNotes,
         'priority': priority,
         'estimatedCost': estimatedCost,
+        'serviceCharge': serviceCharge,
         'estimatedCompletion': estimatedCompletion?.toIso8601String(),
         'warrantyProvided': warrantyProvided,
         'warrantyDays': warrantyDays,
         'items': items?.map((item) => item.toJson()).toList(),
+        'issues': issues?.map((issue) => issue.toJson()).toList(),
       },
     );
 
@@ -175,11 +200,13 @@ class RepairService {
     String? priority,
     double? estimatedCost,
     double? finalCost,
+    double? serviceCharge,
     DateTime? estimatedCompletion,
     DateTime? actualCompletion,
     bool? warrantyProvided,
     int? warrantyDays,
     List<RepairItem>? items,
+    List<RepairIssue>? issues,
   }) async {
     final data = <String, dynamic>{};
 
@@ -196,6 +223,7 @@ class RepairService {
     if (priority != null) data['priority'] = priority;
     if (estimatedCost != null) data['estimatedCost'] = estimatedCost;
     if (finalCost != null) data['finalCost'] = finalCost;
+    if (serviceCharge != null) data['serviceCharge'] = serviceCharge;
     if (estimatedCompletion != null) {
       data['estimatedCompletion'] = estimatedCompletion.toIso8601String();
     }
@@ -207,8 +235,11 @@ class RepairService {
     if (items != null) {
       data['items'] = items.map((item) => item.toJson()).toList();
     }
+    if (issues != null) {
+      data['issues'] = issues.map((issue) => issue.toJson()).toList();
+    }
 
-    final response = await _apiClient.put<Map<String, dynamic>>(
+    final response = await _apiClient.patch<Map<String, dynamic>>(
       '/repairs/$id',
       data: data,
     );
@@ -404,13 +435,14 @@ class RepairService {
   }
 
   /// Add item to repair
-  Future<ApiResponse<RepairItem>> addRepairItem({
+  Future<ApiResponse<RepairItem>>   addRepairItem({
     required int repairId,
     required String itemName,
     String? description,
     required double quantity,
     required double unitPrice,
     bool isLabor = false,
+    int? itemId,
   }) async {
     final response = await _apiClient.post<Map<String, dynamic>>(
       '/repairs/$repairId/items',
@@ -421,6 +453,7 @@ class RepairService {
         'unit_price': unitPrice,
         'total_price': quantity * unitPrice,
         'is_labor': isLabor,
+        if (itemId != null) 'itemId': itemId,
       },
     );
 
@@ -537,6 +570,118 @@ class RepairService {
       statusCode: response.statusCode,
       error: response.error,
     );
+  }
+
+  /// Update service charge
+  Future<ApiResponse<Repair>> updateServiceCharge({
+    required int repairId,
+    required double serviceCharge,
+  }) async {
+    final response = await _apiClient.patch<Map<String, dynamic>>(
+      '/repairs/$repairId/service-charge',
+      data: {'serviceCharge': serviceCharge},
+    );
+
+    if (response.isSuccess && response.data != null) {
+      final repairData = response.data!['data'];
+      if (repairData == null) {
+        return ApiResponse.error(
+          message: 'Failed to update service charge',
+          statusCode: response.statusCode,
+        );
+      }
+
+      final repair = Repair.fromJson(repairData as Map<String, dynamic>);
+
+      return ApiResponse.success(
+        data: repair,
+        message: response.message,
+        statusCode: response.statusCode,
+      );
+    }
+
+    return ApiResponse.error(
+      message: response.message,
+      statusCode: response.statusCode,
+      error: response.error,
+    );
+  }
+
+  /// Create payment for repair
+  Future<ApiResponse<Payment>> createPayment({
+    required int repairId,
+    required int paymentMethodId,
+    required double amount,
+    String? referenceNumber,
+    DateTime? paymentDate,
+    String? notes,
+  }) async {
+    final response = await _apiClient.post<Map<String, dynamic>>(
+      '/repairs/$repairId/payments',
+      data: {
+        'paymentMethodId': paymentMethodId,
+        'amount': amount,
+        'referenceNumber': referenceNumber,
+        'paymentDate': paymentDate?.toIso8601String(),
+        'notes': notes,
+      },
+    );
+
+    if (response.isSuccess && response.data != null) {
+      final paymentData = response.data!['data'];
+      if (paymentData == null) {
+        return ApiResponse.error(
+          message: 'Failed to create payment',
+          statusCode: response.statusCode,
+        );
+      }
+
+      final payment = Payment.fromJson(paymentData as Map<String, dynamic>);
+
+      return ApiResponse.success(
+        data: payment,
+        message: response.message,
+        statusCode: response.statusCode,
+      );
+    }
+
+    return ApiResponse.error(
+      message: response.message,
+      statusCode: response.statusCode,
+      error: response.error,
+    );
+  }
+
+  /// Get all issue types
+  Future<ApiResponse<List<IssueType>>> getIssueTypes() async {
+    try {
+      final response = await _apiClient.get<Map<String, dynamic>>(
+        '/reference/issue-types',
+      );
+      
+
+      if (response.isSuccess && response.data != null) {
+        final List<dynamic> data = response.data!['data'] ?? [];
+        final issueTypes = data.map((json) => IssueType.fromJson(json)).toList();
+        
+        return ApiResponse<List<IssueType>>.success(
+          data: issueTypes,
+          message: response.message,
+          statusCode: response.statusCode,
+        );
+      }
+
+      return ApiResponse.error(
+        message: response.message,
+        statusCode: response.statusCode,
+        error: response.error,
+      );
+    } catch (e) {
+      return ApiResponse.error(
+        message: 'Failed to fetch issue types: $e',
+        statusCode: 500,
+      );
+    }
   }
 }
 

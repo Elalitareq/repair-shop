@@ -249,11 +249,13 @@ class RepairDetailNotifier extends StateNotifier<RepairDetailState> {
         priority: updatedRepair.priority,
         estimatedCost: updatedRepair.estimatedCost,
         finalCost: updatedRepair.finalCost,
+        serviceCharge: updatedRepair.serviceCharge,
         estimatedCompletion: updatedRepair.estimatedCompletion,
         actualCompletion: updatedRepair.actualCompletion,
         warrantyProvided: updatedRepair.warrantyProvided,
         warrantyDays: updatedRepair.warrantyDays,
         items: updatedRepair.items,
+        issues: updatedRepair.issues,
       );
 
       if (response.isSuccess && response.data != null) {
@@ -262,6 +264,128 @@ class RepairDetailNotifier extends StateNotifier<RepairDetailState> {
           repair: response.data,
           error: null,
         );
+        return true;
+      } else {
+        state = state.copyWith(isLoading: false, error: response.message);
+        return false;
+      }
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+      return false;
+    }
+  }
+
+  /// Add item to repair
+  Future<bool> addRepairItem({
+    required int repairId,
+    required String itemName,
+    String? description,
+    required double quantity,
+    required double unitPrice,
+    bool isLabor = false,
+    int? itemId,
+  }) async {
+    if (state.repair == null) return false;
+    state = state.copyWith(isLoading: true, error: null);
+
+    try {
+      final response = await _repairService.addRepairItem(
+        repairId: repairId,
+        itemName: itemName,
+        description: description,
+        quantity: quantity,
+        unitPrice: unitPrice,
+        isLabor: isLabor,
+        itemId: itemId,
+      );
+
+      if (response.isSuccess) {
+        // Reload repair to get updated items and cost
+        await loadRepair(repairId);
+        return true;
+      } else {
+        state = state.copyWith(isLoading: false, error: response.message);
+        return false;
+      }
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+      return false;
+    }
+  }
+
+  /// Update service charge
+  Future<bool> updateServiceCharge(int repairId, double serviceCharge) async {
+    if (state.repair == null) return false;
+    state = state.copyWith(isLoading: true, error: null);
+
+    try {
+      final response = await _repairService.updateServiceCharge(
+        repairId: repairId,
+        serviceCharge: serviceCharge,
+      );
+
+      if (response.isSuccess && response.data != null) {
+        state = state.copyWith(
+          isLoading: false,
+          repair: response.data,
+          error: null,
+        );
+        return true;
+      } else {
+        state = state.copyWith(isLoading: false, error: response.message);
+        return false;
+      }
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+      return false;
+    }
+  }
+
+  /// Add payment to repair
+  Future<bool> addPayment(
+    int repairId, {
+    required int paymentMethodId,
+    required double amount,
+    String? referenceNumber,
+    DateTime? paymentDate,
+    String? notes,
+  }) async {
+    if (state.repair == null) return false;
+    state = state.copyWith(isLoading: true, error: null);
+
+    try {
+      final response = await _repairService.createPayment(
+        repairId: repairId,
+        paymentMethodId: paymentMethodId,
+        amount: amount,
+        referenceNumber: referenceNumber,
+        paymentDate: paymentDate,
+        notes: notes,
+      );
+
+      if (response.isSuccess) {
+        // Reload repair to get updated payments
+        await loadRepair(repairId);
+        return true;
+      } else {
+        state = state.copyWith(isLoading: false, error: response.message);
+        return false;
+      }
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+      return false;
+    }
+  }
+
+  /// Delete repair
+  Future<bool> deleteRepair(int id) async {
+    state = state.copyWith(isLoading: true, error: null);
+
+    try {
+      final response = await _repairService.deleteRepair(id);
+
+      if (response.isSuccess) {
+        state = state.copyWith(isLoading: false, error: null);
         return true;
       } else {
         state = state.copyWith(isLoading: false, error: response.message);
@@ -341,12 +465,14 @@ class RepairFormNotifier extends StateNotifier<RepairFormState> {
     String? deviceImei,
     required String problemDescription,
     String? diagnosisNotes,
-    String priority = 'Normal',
+    String priority = 'normal',
     double estimatedCost = 0.0,
+    double? serviceCharge,
     DateTime? estimatedCompletion,
     bool warrantyProvided = false,
     int? warrantyDays,
     List<RepairItem>? items,
+    List<RepairIssue>? issues,
   }) async {
     state = state.copyWith(isLoading: true, error: null, successMessage: null);
 
@@ -360,10 +486,12 @@ class RepairFormNotifier extends StateNotifier<RepairFormState> {
         diagnosisNotes: diagnosisNotes,
         priority: priority,
         estimatedCost: estimatedCost,
+        serviceCharge: serviceCharge,
         estimatedCompletion: estimatedCompletion,
         warrantyProvided: warrantyProvided,
         warrantyDays: warrantyDays,
         items: items,
+        issues: issues,
       );
 
       if (response.isSuccess && response.data != null) {
@@ -402,11 +530,13 @@ class RepairFormNotifier extends StateNotifier<RepairFormState> {
         priority: updatedRepair.priority,
         estimatedCost: updatedRepair.estimatedCost,
         finalCost: updatedRepair.finalCost,
+        serviceCharge: updatedRepair.serviceCharge,
         estimatedCompletion: updatedRepair.estimatedCompletion,
         actualCompletion: updatedRepair.actualCompletion,
         warrantyProvided: updatedRepair.warrantyProvided,
         warrantyDays: updatedRepair.warrantyDays,
         items: updatedRepair.items,
+        issues: updatedRepair.issues,
       );
 
       if (response.isSuccess && response.data != null) {

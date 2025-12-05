@@ -576,10 +576,10 @@ export class ItemController {
             updatedCount++;
           } else {
             // 3. Create New Item
-           await prisma.item.create({
+            await prisma.item.create({
               data: {
                 name: description,
-                sellingPrice: unitCost * 1.2, // Default selling price as 20% markup on unit cost
+                sellingPrice: unitCost * 1.3, // Selling price as 30% markup on unit cost
                 categoryId,
                 conditionId: defaultConditionId,
                 qualityId: defaultQualityId,

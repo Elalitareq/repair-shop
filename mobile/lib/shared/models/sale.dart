@@ -3,6 +3,7 @@ import 'base_model.dart';
 import 'customer.dart';
 import 'sale_item.dart';
 import 'payment.dart';
+import 'payment_allocation.dart';
 
 part 'sale.g.dart';
 
@@ -24,6 +25,24 @@ class Sale extends BaseModel {
   @JsonKey(name: 'paymentStatus')
   final String paymentStatus; // pending, partial, paid
 
+  @JsonKey(name: 'subtotal')
+  final double subtotal;
+
+  @JsonKey(name: 'discountType')
+  final String? discountType;
+
+  @JsonKey(name: 'discountValue')
+  final double discountValue;
+
+  @JsonKey(name: 'discountAmount')
+  final double discountAmount;
+
+  @JsonKey(name: 'taxRate')
+  final double taxRate;
+
+  @JsonKey(name: 'taxAmount')
+  final double taxAmount;
+
   @JsonKey(name: 'totalAmount')
   final double totalAmount;
 
@@ -39,6 +58,9 @@ class Sale extends BaseModel {
   @JsonKey(name: 'payments')
   final List<Payment>? payments;
 
+  @JsonKey(name: 'paymentAllocations')
+  final List<PaymentAllocation> paymentAllocations;
+
   @JsonKey(name: 'notes')
   final String? notes;
 
@@ -52,11 +74,18 @@ class Sale extends BaseModel {
     this.customer,
     this.status = 'draft',
     this.paymentStatus = 'pending',
+    required this.subtotal,
+    this.discountType,
+    this.discountValue = 0.0,
+    this.discountAmount = 0.0,
+    this.taxRate = 0.0,
+    this.taxAmount = 0.0,
     required this.totalAmount,
     this.cogs = 0.0,
     this.profit = 0.0,
     this.saleItems,
     this.payments,
+    this.paymentAllocations = const [],
     this.notes,
   });
 
@@ -91,7 +120,7 @@ class Sale extends BaseModel {
       remainingBalance <= 0.01; // Allow for small floating point errors
 
   /// Get total item count
-  int get totalItems {
+  double get totalItems {
     if (saleItems == null) return 0;
     return saleItems!.fold(0, (sum, item) => sum + item.quantity);
   }

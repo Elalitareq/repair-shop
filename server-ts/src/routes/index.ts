@@ -10,6 +10,7 @@ import batchRoutes from "./batch.routes";
 import serialRoutes from "./serial.routes";
 import barcodeRoutes from "./barcode.routes";
 import backupRoutes from "./backup.routes";
+import paymentRoutes from "./payment.routes";
 
 const router: Router = Router();
 
@@ -24,5 +25,6 @@ router.use("/batches", batchRoutes);
 router.use("/serials", serialRoutes);
 router.use("/barcodes", barcodeRoutes);
 router.use("/backups", backupRoutes);
+router.use("/payments", paymentRoutes);
 
 export default router;

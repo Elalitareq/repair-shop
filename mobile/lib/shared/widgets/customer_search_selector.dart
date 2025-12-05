@@ -75,7 +75,8 @@ class _CustomerSearchSelectorState
         return response.data!;
       }
     } catch (e) {
-      print('Search error: $e');
+      debugPrint('Search error: $e');
+      return [];
     }
     return [];
   }
@@ -223,7 +224,6 @@ class _AddCustomerDialogState extends ConsumerState<AddCustomerDialog> {
             : _taxNumberController.text.trim(),
       };
 
-      print('Creating customer with data: $customerData');
 
       final response = await customerService.createCustomer(
         name: _nameController.text.trim(),
@@ -241,12 +241,10 @@ class _AddCustomerDialogState extends ConsumerState<AddCustomerDialog> {
       );
 
       if (response.isSuccess && response.data != null) {
-        print('Customer created successfully: ${response.data!.name}');
         if (mounted) {
           Navigator.of(context).pop(response.data);
         }
       } else {
-        print('Failed to create customer: ${response.message}');
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -257,7 +255,6 @@ class _AddCustomerDialogState extends ConsumerState<AddCustomerDialog> {
         }
       }
     } catch (e) {
-      print('Error creating customer: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

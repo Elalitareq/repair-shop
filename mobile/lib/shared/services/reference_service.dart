@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/network/api_client.dart';
 import '../../core/network/api_response.dart';
 import '../models/models.dart';
+import 'repair_service.dart'; // Import IssueType
 
 class ReferenceService {
   final ApiClient _apiClient;
@@ -134,12 +135,7 @@ class ReferenceService {
           methods.add(method);
         } catch (e) {
           // Log and skip problematic entries
-          print(
-            '❌ ReferenceService.getPaymentMethods - Failed to parse method: $e',
-          );
-          print(
-            '❌ ReferenceService.getPaymentMethods - Problematic JSON: $json',
-          );
+        
           continue;
         }
       }
@@ -156,6 +152,97 @@ class ReferenceService {
     );
   }
 
+  // Issue Types
+  Future<ApiResponse<List<IssueType>>> getIssueTypes() async {
+    final response = await _apiClient.get<Map<String, dynamic>>(
+      '/reference/issue-types',
+    );
+
+    if (response.isSuccess && response.data != null) {
+      final data = response.data!['data'] as List<dynamic>;
+      final issueTypes = data.map((json) => IssueType.fromJson(json)).toList();
+      return ApiResponse.success(
+        data: issueTypes,
+        message: response.message,
+        statusCode: response.statusCode,
+      );
+    }
+
+    return ApiResponse.error(
+      message: response.message,
+      statusCode: response.statusCode,
+    );
+  }
+
+  Future<ApiResponse<IssueType>> createIssueType({
+    required String name,
+    String? description,
+  }) async {
+    final response = await _apiClient.post<Map<String, dynamic>>(
+      '/reference/issue-types',
+      data: {'name': name, if (description != null) 'description': description},
+    );
+
+    if (response.isSuccess && response.data != null) {
+      final issueType = IssueType.fromJson(response.data!['data']);
+      return ApiResponse.success(
+        data: issueType,
+        message: response.message,
+        statusCode: response.statusCode,
+      );
+    }
+
+    return ApiResponse.error(
+      message: response.message,
+      statusCode: response.statusCode,
+    );
+  }
+
+  Future<ApiResponse<IssueType>> updateIssueType({
+    required int id,
+    required String name,
+    String? description,
+  }) async {
+    final response = await _apiClient.put<Map<String, dynamic>>(
+      '/reference/issue-types/$id',
+      data: {'name': name, if (description != null) 'description': description},
+    );
+
+    if (response.isSuccess && response.data != null) {
+      final issueType = IssueType.fromJson(response.data!['data']);
+      return ApiResponse.success(
+        data: issueType,
+        message: response.message,
+        statusCode: response.statusCode,
+      );
+    }
+
+    return ApiResponse.error(
+      message: response.message,
+      statusCode: response.statusCode,
+    );
+  }
+
+  Future<ApiResponse<void>> deleteIssueType(int id) async {
+    final response = await _apiClient.delete<Map<String, dynamic>>(
+      '/reference/issue-types/$id',
+    );
+
+    if (response.isSuccess) {
+      return ApiResponse.success(
+        data: null,
+        message: response.message,
+        statusCode: response.statusCode,
+      );
+    }
+
+    return ApiResponse.error(
+      message: response.message,
+      statusCode: response.statusCode,
+    );
+  }
+
+  // Repair States
   Future<ApiResponse<List<RepairState>>> getRepairStates() async {
     final response = await _apiClient.get<Map<String, dynamic>>(
       '/reference/repair-states',

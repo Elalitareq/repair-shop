@@ -10,7 +10,7 @@ export class CustomerController {
     const skip = (parseInt(page as string) - 1) * parseInt(limit as string);
 
     const where: any = {};
- 
+
     if (search) {
       console.log("Searching for:", search);
       where.OR = [
@@ -276,5 +276,121 @@ export class CustomerController {
     });
 
     res.json({ message: "Customer deleted successfully" });
+  }
+
+  async getLedger(req: AuthRequest, res: Response) {
+    const { id } = req.params;
+    const { startDate, endDate } = req.query;
+    const customerId = parseInt(id);
+
+    const [repairs, sales, payments] = await Promise.all([
+      prisma.repair.findMany({
+        where: { customerId },
+        include: { items: true },
+      }),
+      prisma.sale.findMany({
+        where: { customerId },
+      }),
+      prisma.payment.findMany({
+        where: {
+          OR: [
+            { customerId },
+            { sale: { customerId } },
+            { repair: { customerId } },
+          ],
+        },
+        include: { paymentMethod: true },
+      }),
+    ]);
+
+    const transactions: any[] = [];
+
+    // Add repairs
+    repairs.forEach((repair) => {
+      // Calculate cost if finalCost is not set
+      let amount = repair.finalCost;
+      if (amount === null || amount === undefined) {
+        const itemsCost = repair.items.reduce(
+          (sum, item) => sum + item.totalPrice,
+          0
+        );
+        amount = (repair.serviceCharge || 0) + itemsCost;
+      }
+
+      transactions.push({
+        id: `R-${repair.id}`,
+        date: repair.createdAt,
+        type: "Repair",
+        reference: repair.repairNumber,
+        description: `Repair: ${repair.deviceBrand} ${repair.deviceModel}`,
+        debit: amount,
+        credit: 0,
+        originalObj: repair,
+      });
+    });
+
+    // Add sales
+    sales.forEach((sale) => {
+      if (sale.status === "draft" || sale.status === "cancelled") return;
+
+      transactions.push({
+        id: `S-${sale.id}`,
+        date: sale.saleDate,
+        type: "Sale",
+        reference: sale.saleNumber,
+        description: "Sale",
+        debit: sale.totalAmount,
+        credit: 0,
+        originalObj: sale,
+      });
+    });
+
+    // Add payments
+    payments.forEach((payment) => {
+      transactions.push({
+        id: `P-${payment.id}`,
+        date: payment.paymentDate,
+        type: "Payment",
+        reference: payment.referenceNumber,
+        description: `Payment (${payment.paymentMethod.name})`,
+        debit: 0,
+        credit: payment.amount,
+        originalObj: payment,
+      });
+    });
+
+    // Sort by date
+    transactions.sort(
+      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+    );
+
+    // Calculate running balance
+    let balance = 0;
+    const ledgerWithBalance = transactions.map((t) => {
+      balance += t.debit - t.credit;
+      return { ...t, balance };
+    });
+
+    // Filter by date range if provided
+    let filteredLedger = ledgerWithBalance;
+    if (startDate) {
+      filteredLedger = filteredLedger.filter(
+        (t) => new Date(t.date) >= new Date(startDate as string)
+      );
+    }
+    if (endDate) {
+      filteredLedger = filteredLedger.filter(
+        (t) => new Date(t.date) <= new Date(endDate as string)
+      );
+    }
+
+    res.json({
+      data: filteredLedger,
+      summary: {
+        totalDebit: transactions.reduce((sum, t) => sum + t.debit, 0),
+        totalCredit: transactions.reduce((sum, t) => sum + t.credit, 0),
+        finalBalance: balance,
+      },
+    });
   }
 }

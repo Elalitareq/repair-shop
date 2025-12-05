@@ -65,6 +65,7 @@ Repair _$RepairFromJson(Map<String, dynamic> json) => Repair(
   priority: json['priority'] as String? ?? 'normal',
   estimatedCost: (json['estimatedCost'] as num?)?.toDouble(),
   finalCost: (json['finalCost'] as num?)?.toDouble(),
+  serviceCharge: (json['serviceCharge'] as num?)?.toDouble(),
   estimatedCompletion: json['estimatedCompletion'] == null
       ? null
       : DateTime.parse(json['estimatedCompletion'] as String),
@@ -95,6 +96,17 @@ Repair _$RepairFromJson(Map<String, dynamic> json) => Repair(
           ?.map((e) => RepairStatusHistory.fromJson(e as Map<String, dynamic>))
           .toList() ??
       const [],
+  paymentStatus: json['paymentStatus'] as String? ?? 'pending',
+  payments:
+      (json['payments'] as List<dynamic>?)
+          ?.map((e) => Payment.fromJson(e as Map<String, dynamic>))
+          .toList() ??
+      const [],
+  paymentAllocations:
+      (json['paymentAllocations'] as List<dynamic>?)
+          ?.map((e) => PaymentAllocation.fromJson(e as Map<String, dynamic>))
+          .toList() ??
+      const [],
   createdAt: DateTime.parse(json['createdAt'] as String),
   updatedAt: DateTime.parse(json['updatedAt'] as String),
   syncStatus: (json['syncStatus'] as num?)?.toInt() ?? 0,
@@ -118,6 +130,7 @@ Map<String, dynamic> _$RepairToJson(Repair instance) => <String, dynamic>{
   'priority': instance.priority,
   'estimatedCost': instance.estimatedCost,
   'finalCost': instance.finalCost,
+  'serviceCharge': instance.serviceCharge,
   'estimatedCompletion': instance.estimatedCompletion?.toIso8601String(),
   'actualCompletion': instance.actualCompletion?.toIso8601String(),
   'warrantyProvided': instance.warrantyProvided,
@@ -130,6 +143,9 @@ Map<String, dynamic> _$RepairToJson(Repair instance) => <String, dynamic>{
   'issues': instance.issues,
   'items': instance.items,
   'statusHistory': instance.statusHistory,
+  'paymentStatus': instance.paymentStatus,
+  'payments': instance.payments,
+  'paymentAllocations': instance.paymentAllocations,
 };
 
 RepairStatusHistory _$RepairStatusHistoryFromJson(Map<String, dynamic> json) =>

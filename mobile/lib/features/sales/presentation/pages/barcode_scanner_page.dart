@@ -24,7 +24,6 @@ class _BarcodeScannerPageState extends ConsumerState<BarcodeScannerPage> {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
     final isWeb = kIsWeb;
 
     return Scaffold(

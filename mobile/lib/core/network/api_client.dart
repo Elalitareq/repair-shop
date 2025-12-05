@@ -115,6 +115,27 @@ class ApiClient {
     }
   }
 
+  // PATCH request
+  Future<ApiResponse<T>> patch<T>(
+    String path, {
+    dynamic data,
+    Map<String, dynamic>? queryParameters,
+    Options? options,
+    T Function(dynamic)? fromJson,
+  }) async {
+    try {
+      final response = await _dio.patch(
+        path,
+        data: data,
+        queryParameters: queryParameters,
+        options: options,
+      );
+      return _handleResponse<T>(response, fromJson);
+    } catch (e) {
+      return _handleError<T>(e);
+    }
+  }
+
   // DELETE request
   Future<ApiResponse<T>> delete<T>(
     String path, {

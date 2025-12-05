@@ -86,7 +86,6 @@ class ItemService {
     );
 
     if (response.isSuccess && response.data != null) {
-      print({"response": response.data});
       final data = response.data!['data'] as List<dynamic>;
       //    required super.id,
       // required super.createdAt,
@@ -107,29 +106,7 @@ class ItemService {
       // this.sellingPrice,
       // this.barcodes,
 
-      if (data.isEmpty) {
-        print({'items_data': 'empty'});
-      } else {
-        final first = data[0];
-        print({"dataId": first["id"]});
-        print({"dataName": first["name"]});
-        print({"dataBrand": first["brand"]});
-        print({"dataModel": first["model"]});
-        print({"dataDescription": first["description"]});
-        print({"dataItemType": first["itemType"]}); // 'phone' or 'other'
-        print({"dataCategoryId": first["categoryId"]});
-        print({"dataConditionId": first["conditionId"]});
-        print({"dataQualityId": first["qualityId"]});
-        print({"dataStockQuantity": first["stockQuantity"]});
-        print({"dataMinStockLevel": first["minStockLevel"]});
-        print({"dataSellingPrice": first["sellingPrice"]});
-        print({"dataBarcodes": first["barcodes"]});
-        print({"dataCreatedAt": first["createdAt"]});
-        print({"dataUpdatedAt": first["updatedAt"]});
-        print({"dataCategory": first["category"]});
-        print({"dataCondition": first["condition"]});
-        print({"dataQuality": first["quality"]});
-      }
+    
 
       final items = <Item>[];
       String? firstParseError;
@@ -139,8 +116,6 @@ class ItemService {
           final item = Item.fromJson(json);
           items.add(item);
         } catch (e) {
-          print('❌ ItemService.getItems - Failed to parse item: $e');
-          print('❌ ItemService.getItems - Problematic JSON: $json');
           firstParseError ??= e.toString();
           continue;
         }
@@ -170,9 +145,7 @@ class ItemService {
     final response = await _apiClient.get<Map<String, dynamic>>('/items/$id');
 
     if (response.isSuccess && response.data != null) {
-      print({"response": response.data});
       final item = Item.fromJson(response.data!['data']);
-      print({"item2": item});
       return ApiResponse.success(
         data: item,
         message: response.data!['message'] ?? response.message,

@@ -61,9 +61,7 @@ class SaleListNotifier extends StateNotifier<SaleListState> {
     state = state.copyWith(isLoading: true, error: null);
 
     try {
-      print(
-        '🔍 SaleListNotifier.loadSales - Starting load, refresh: $refresh, page: ${refresh ? 1 : state.currentPage}',
-      );
+  
       final response = await _saleService.getSales(
         customerId: customerId,
         status: status,
@@ -71,23 +69,14 @@ class SaleListNotifier extends StateNotifier<SaleListState> {
         limit: 50,
       );
 
-      print(
-        '🔍 SaleListNotifier.loadSales - Response received: ${response.isSuccess}, data length: ${response.data?.length ?? 0}',
-      );
+  
 
       if (response.isSuccess && response.data != null) {
         final newSales = refresh
             ? response.data!
             : [...state.sales, ...response.data!];
 
-        print(
-          '🔍 SaleListNotifier.loadSales - New sales count: ${newSales.length}',
-        );
-        if (newSales.isNotEmpty) {
-          print(
-            '🔍 SaleListNotifier.loadSales - First sale sample: ${newSales.first.toString()}',
-          );
-        }
+      
 
         state = state.copyWith(
           sales: newSales,

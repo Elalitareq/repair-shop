@@ -7,6 +7,7 @@ part 'customer.g.dart';
 @JsonSerializable()
 class Customer extends BaseModel {
   final String name;
+  final String? email;
   final String? companyName;
   final String type; // dealer, customer
   final String phone;
@@ -20,6 +21,7 @@ class Customer extends BaseModel {
     required super.updatedAt,
     super.syncStatus,
     required this.name,
+    this.email,
     this.companyName,
     required this.type,
     required this.phone,

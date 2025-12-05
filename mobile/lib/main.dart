@@ -13,7 +13,7 @@ import 'core/app/app.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Configure URL strategy for web (remove # from URLs)
+  // Configure URL strategy for web (remove # from URLs)this 
   if (kIsWeb) {
     usePathUrlStrategy();
   }

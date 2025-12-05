@@ -117,6 +117,7 @@ class CustomerDetailState {
   final Customer? customer;
   final Map<String, dynamic>? stats;
   final List<Repair>? recentRepairs;
+  final Map<String, dynamic>? ledger; // New ledger field
   final bool isLoading;
   final String? error;
 
@@ -124,6 +125,7 @@ class CustomerDetailState {
     this.customer,
     this.stats,
     this.recentRepairs,
+    this.ledger,
     this.isLoading = false,
     this.error,
   });
@@ -132,6 +134,7 @@ class CustomerDetailState {
     Customer? customer,
     Map<String, dynamic>? stats,
     List<Repair>? recentRepairs,
+    Map<String, dynamic>? ledger,
     bool? isLoading,
     String? error,
   }) {
@@ -139,6 +142,7 @@ class CustomerDetailState {
       customer: customer ?? this.customer,
       stats: stats ?? this.stats,
       recentRepairs: recentRepairs ?? this.recentRepairs,
+      ledger: ledger ?? this.ledger,
       isLoading: isLoading ?? this.isLoading,
       error: error ?? this.error,
     );
@@ -189,12 +193,16 @@ class CustomerDetailNotifier extends StateNotifier<CustomerDetailState> {
               )
             : 0.0;
 
+        // Load initial ledger
+        final ledgerResp = await _customerService.getLedger(id);
+
         state = state.copyWith(
           customer: response.data,
           stats: {'totalRepairs': totalRepairs, 'totalSpent': totalSpent},
           recentRepairs: recentRepairsResp.isSuccess
               ? recentRepairsResp.data
               : null,
+          ledger: ledgerResp.data,
           isLoading: false,
         );
       } else {
@@ -205,9 +213,31 @@ class CustomerDetailNotifier extends StateNotifier<CustomerDetailState> {
     }
   }
 
+  Future<void> loadLedger(
+    int id, {
+    DateTime? startDate,
+    DateTime? endDate,
+  }) async {
+    // Don't set full loading state to avoid flickering the whole page
+    // Maybe add a specific loading state for ledger if needed, or just handle UI side
+    try {
+      final response = await _customerService.getLedger(
+        id,
+        startDate: startDate,
+        endDate: endDate,
+      );
+
+      if (response.isSuccess && response.data != null) {
+        state = state.copyWith(ledger: response.data);
+      }
+    } catch (e) {
+      // Silently fail or show snackbar
+      print('Error loading ledger: $e');
+    }
+  }
+
   Future<bool> createCustomer(Map<String, dynamic> data) async {
     state = state.copyWith(isLoading: true, error: null);
-    print({'createCustomerData': data});
     try {
       final response = await _customerService.createCustomer(
         name: data['name'],

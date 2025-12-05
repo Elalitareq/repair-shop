@@ -18,6 +18,8 @@ class Serial extends BaseModel {
   final ItemBatch? batch;
 
   final String status;
+  final int? saleItemId;
+  final int? repairItemId;
 
   const Serial({
     required super.id,
@@ -28,6 +30,8 @@ class Serial extends BaseModel {
     required this.batchId,
     this.batch,
     this.status = 'available',
+    this.saleItemId,
+    this.repairItemId,
   });
 
   factory Serial.fromJson(Map<String, dynamic> json) => _$SerialFromJson(json);

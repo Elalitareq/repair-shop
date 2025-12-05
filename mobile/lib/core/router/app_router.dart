@@ -27,6 +27,7 @@ import '../../features/settings/presentation/pages/conditions_settings_page.dart
 import '../../features/settings/presentation/pages/qualities_settings_page.dart';
 import '../../features/settings/presentation/pages/payment_methods_settings_page.dart';
 import '../../features/settings/presentation/pages/repair_states_settings_page.dart';
+import '../../features/settings/presentation/pages/issue_types_settings_page.dart';
 import '../../shared/providers/auth_provider.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
@@ -275,6 +276,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             path: 'repair-states',
             name: 'settings-repair-states',
             builder: (context, state) => const RepairStatesSettingsPage(),
+          ),
+          GoRoute(
+            path: 'issue-types',
+            name: 'settings-issue-types',
+            builder: (context, state) => const IssueTypesSettingsPage(),
           ),
           // Duplicate "payment-methods" route removed to avoid name collision.
           GoRoute(

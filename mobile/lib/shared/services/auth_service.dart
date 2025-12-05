@@ -22,7 +22,6 @@ class AuthService {
     );
 
     if (response.isSuccess && response.data != null) {
-      print(response.data);
       final authResponse = AuthResponse.fromJson(response.data!);
 
       // Save tokens

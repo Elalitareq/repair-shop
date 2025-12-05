@@ -26,9 +26,6 @@ class SaleService {
       queryParameters: queryParams,
     );
 
-    print('🔍 SaleService.getSales - Raw response: ${response.toString()}');
-    print('🔍 SaleService.getSales - Response data: ${response.data}');
-    print('🔍 SaleService.getSales - Response success: ${response.isSuccess}');
 
     if (response.isSuccess && response.data != null) {
       final rawData = response.data!['data'];
@@ -41,10 +38,7 @@ class SaleService {
         // If data is null or unexpected type, return empty list
         data = [];
       }
-      print('🔍 SaleService.getSales - Data array length: ${data.length}');
-      print(
-        '🔍 SaleService.getSales - First item sample: ${data.isNotEmpty ? data.first : 'empty'}',
-      );
+   
 
       final sales = <Sale>[];
       String? firstParseError;
@@ -52,13 +46,11 @@ class SaleService {
       for (final json in data) {
         try {
           if (json == null) {
-            print('❌ SaleService.getSales - Skipping null sale JSON');
             continue;
           }
           final sale = Sale.fromJson(json as Map<String, dynamic>);
           sales.add(sale);
         } catch (e) {
-          print('❌ SaleService.getSales - Failed to parse sale: $e');
           firstParseError ??= e.toString();
           // Continue trying to parse other items
           continue;

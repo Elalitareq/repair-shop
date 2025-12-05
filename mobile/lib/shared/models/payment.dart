@@ -8,7 +8,10 @@ part 'payment.g.dart';
 @JsonSerializable()
 class Payment extends BaseModel {
   @JsonKey(name: 'saleId')
-  final int saleId;
+  final int? saleId;
+
+  @JsonKey(name: 'repairId')
+  final int? repairId;
 
   @JsonKey(name: 'paymentMethod')
   final PaymentMethod? paymentMethod;
@@ -36,7 +39,8 @@ class Payment extends BaseModel {
     required super.createdAt,
     required super.updatedAt,
     super.syncStatus,
-    required this.saleId,
+    this.saleId,
+    this.repairId,
     required this.paymentMethod,
     required this.amount,
     this.referenceNumber,

@@ -92,6 +92,17 @@ class SettingsPage extends ConsumerWidget {
                   color: Colors.blue,
                   onTap: () => context.push('/settings/repair-states'),
                 ),
+                const SizedBox(height: 16),
+
+                // Issue Types Section
+                _buildSettingsSection(
+                  context,
+                  title: 'Issue Types',
+                  description: 'Manage repair issue types',
+                  icon: Icons.bug_report,
+                  color: Colors.red,
+                  onTap: () => context.push('/settings/issue-types'),
+                ),
                 const SizedBox(height: 32),
 
                 // System Settings Header

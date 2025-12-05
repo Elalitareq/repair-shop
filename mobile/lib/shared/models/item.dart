@@ -85,29 +85,7 @@ class Item extends BaseModel {
     double? lastBatchPrice,
     List<String>? barcodes,
   }) {
-    print({
-      "copyWith": {
-        "id": id,
-        "createdAt": createdAt,
-        "updatedAt": updatedAt,
-        "name": name,
-        "categoryId": categoryId,
-        "category": category,
-        "brand": brand,
-        "model": model,
-        "description": description,
-        "conditionId": conditionId,
-        "condition": condition,
-        "qualityId": qualityId,
-        "quality": quality,
-        "itemType": itemType,
-        "stockQuantity": stockQuantity,
-        "minStockLevel": minStockLevel,
-        "sellingPrice": sellingPrice,
-        "lastBatchPrice": lastBatchPrice,
-        "barcodes": barcodes,
-      },
-    });
+    
     return Item(
       id: id ?? this.id,
       createdAt: createdAt ?? this.createdAt,

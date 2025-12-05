@@ -27,6 +27,11 @@ router.post(
   authenticate,
   asyncHandler(repairController.addItem)
 );
+router.post(
+  "/:id/payments",
+  authenticate,
+  asyncHandler(repairController.createPayment)
+);
 router.put(
   "/:id/items/:itemId",
   authenticate,
@@ -36,6 +41,11 @@ router.delete(
   "/:id/items/:itemId",
   authenticate,
   asyncHandler(repairController.deleteItem)
+);
+router.patch(
+  "/:id/service-charge",
+  authenticate,
+  asyncHandler(repairController.updateServiceCharge.bind(repairController))
 );
 
 export default router;

@@ -74,7 +74,6 @@ class _SaleFormPageState extends ConsumerState<SaleFormPage> {
   Widget build(BuildContext context) {
     final itemState = ref.watch(itemListProvider);
     final formState = ref.watch(saleFormProvider);
-    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
       appBar: AppBar(
@@ -100,9 +99,7 @@ class _SaleFormPageState extends ConsumerState<SaleFormPage> {
           else
             TextButton(
               onPressed: _submitSale,
-              style: TextButton.styleFrom(
-                foregroundColor: Colors.white,
-              ),
+              style: TextButton.styleFrom(foregroundColor: Colors.white),
               child: const Text(
                 'Save',
                 style: TextStyle(fontWeight: FontWeight.bold),
@@ -329,12 +326,29 @@ class _SaleFormPageState extends ConsumerState<SaleFormPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    item.item.name ?? 'Unknown Item',
+                    item.item.name,
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
-                  Text(
-                    'Price: \$${item.unitPrice.toStringAsFixed(2)}',
-                    style: Theme.of(context).textTheme.bodySmall,
+                  InkWell(
+                    onTap: () => _showEditPriceDialog(item),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 4.0),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'Price: \$${item.unitPrice.toStringAsFixed(2)}',
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(
+                                  color: Colors.blue,
+                                  decoration: TextDecoration.underline,
+                                ),
+                          ),
+                          const SizedBox(width: 4),
+                          const Icon(Icons.edit, size: 14, color: Colors.blue),
+                        ],
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -448,7 +462,7 @@ class _SaleFormPageState extends ConsumerState<SaleFormPage> {
                           final profit = price - cost;
 
                           return ListTile(
-                            title: Text(item.name ?? 'Unknown Item'),
+                            title: Text(item.name),
                             subtitle: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -458,14 +472,13 @@ class _SaleFormPageState extends ConsumerState<SaleFormPage> {
                                 if (showCost) ...[
                                   Text(
                                     'Cost: \$${cost.toStringAsFixed(2)}',
-                                    style:
-                                        Theme.of(context).textTheme.bodySmall,
+                                    style: Theme.of(
+                                      context,
+                                    ).textTheme.bodySmall,
                                   ),
                                   Text(
                                     'Profit: \$${profit.toStringAsFixed(2)}',
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .bodySmall
+                                    style: Theme.of(context).textTheme.bodySmall
                                         ?.copyWith(
                                           color: profit >= 0
                                               ? Colors.green
@@ -477,8 +490,8 @@ class _SaleFormPageState extends ConsumerState<SaleFormPage> {
                               ],
                             ),
                             onTap: () {
-                              _addItem(item);
                               Navigator.of(context).pop();
+                              _showItemDetailsDialog(item);
                             },
                           );
                         },
@@ -500,20 +513,81 @@ class _SaleFormPageState extends ConsumerState<SaleFormPage> {
     );
   }
 
-  void _addItem(Item item) {
+  void _showItemDetailsDialog(Item item) {
+    final quantityController = TextEditingController(text: '1');
+    final priceController = TextEditingController(
+      text: (item.sellingPrice ?? 0.0).toStringAsFixed(2),
+    );
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(item.name),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: quantityController,
+              decoration: const InputDecoration(
+                labelText: 'Quantity',
+                border: OutlineInputBorder(),
+              ),
+              keyboardType: TextInputType.number,
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: priceController,
+              decoration: const InputDecoration(
+                labelText: 'Unit Price',
+                border: OutlineInputBorder(),
+                prefixText: '\$',
+              ),
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              final qty = int.tryParse(quantityController.text) ?? 1;
+              final price = double.tryParse(priceController.text) ?? 0.0;
+
+              _addItem(item, quantity: qty, price: price);
+              Navigator.of(context).pop();
+            },
+            child: const Text('Add'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _addItem(Item item, {int quantity = 1, double? price}) {
     final existingIndex = _saleItems.indexWhere((si) => si.item.id == item.id);
     if (existingIndex >= 0) {
-      _updateItemQuantity(
-        _saleItems[existingIndex],
-        _saleItems[existingIndex].quantity + 1,
+      // If item exists, just update quantity (keep existing price or update it?)
+      // User might want to add more with different price?
+      // Usually in a simple cart, we just update quantity.
+      // If price is different, maybe we should update the price to the new one?
+      // Let's update both.
+      _saleItems[existingIndex] = _saleItems[existingIndex].copyWith(
+        quantity: _saleItems[existingIndex].quantity + quantity,
+        unitPrice: price ?? _saleItems[existingIndex].unitPrice,
       );
+      setState(() {});
     } else {
       setState(() {
         _saleItems.add(
           SaleItemData(
             item: item,
-            quantity: 1,
-            unitPrice: item.sellingPrice ?? 0.0,
+            quantity: quantity,
+            unitPrice: price ?? item.sellingPrice ?? 0.0,
             discount: 0,
           ),
         );
@@ -528,6 +602,54 @@ class _SaleFormPageState extends ConsumerState<SaleFormPage> {
         _saleItems[index] = item.copyWith(quantity: quantity);
       }
     });
+  }
+
+  void _updateItemPrice(SaleItemData item, double price) {
+    setState(() {
+      final index = _saleItems.indexOf(item);
+      if (index >= 0) {
+        _saleItems[index] = item.copyWith(unitPrice: price);
+      }
+    });
+  }
+
+  void _showEditPriceDialog(SaleItemData item) {
+    final priceController = TextEditingController(
+      text: item.unitPrice.toStringAsFixed(2),
+    );
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Edit Price: ${item.item.name}'),
+        content: TextField(
+          controller: priceController,
+          decoration: const InputDecoration(
+            labelText: 'New Unit Price',
+            border: OutlineInputBorder(),
+            prefixText: '\$',
+          ),
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          autofocus: true,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              final price = double.tryParse(priceController.text);
+              if (price != null && price >= 0) {
+                _updateItemPrice(item, price);
+                Navigator.of(context).pop();
+              }
+            },
+            child: const Text('Update'),
+          ),
+        ],
+      ),
+    );
   }
 
   void _removeItem(SaleItemData item) {

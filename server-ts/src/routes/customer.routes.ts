@@ -17,6 +17,11 @@ router.get(
   asyncHandler(customerController.search.bind(customerController))
 );
 router.get("/:id", authenticate, asyncHandler(customerController.getById));
+router.get(
+  "/:id/ledger",
+  authenticate,
+  asyncHandler(customerController.getLedger.bind(customerController))
+);
 router.post("/", authenticate, asyncHandler(customerController.create));
 router.put(
   "/:id",

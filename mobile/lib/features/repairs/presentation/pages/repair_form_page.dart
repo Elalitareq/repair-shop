@@ -7,6 +7,8 @@ import '../../../../shared/models/repair.dart';
 import '../../../../shared/models/customer.dart';
 import '../../../../shared/providers/repair_provider.dart';
 import '../../../../shared/providers/item_provider.dart';
+import '../../../../shared/providers/issue_type_provider.dart';
+import '../../../../shared/services/repair_service.dart';
 import '../../../../shared/widgets/customer_search_selector.dart';
 
 class RepairFormPage extends ConsumerStatefulWidget {
@@ -29,6 +31,7 @@ class _RepairFormPageState extends ConsumerState<RepairFormPage> {
   final _diagnosisNotesController = TextEditingController();
   final _repairNotesController = TextEditingController();
   final _estimatedCostController = TextEditingController(text: '0.00');
+  final _serviceChargeController = TextEditingController(text: '0.00');
   final _finalCostController = TextEditingController();
   final _warrantyDaysController = TextEditingController();
 
@@ -38,6 +41,10 @@ class _RepairFormPageState extends ConsumerState<RepairFormPage> {
   DateTime? _estimatedCompletion;
   DateTime? _actualCompletion;
   bool _warrantyProvided = false;
+  
+  // Issues management
+  List<RepairIssue> _selectedIssues = [];
+  final Map<int, TextEditingController> _issueDescriptionControllers = {};
 
   @override
   void initState() {
@@ -66,6 +73,7 @@ class _RepairFormPageState extends ConsumerState<RepairFormPage> {
     _diagnosisNotesController.dispose();
     _repairNotesController.dispose();
     _estimatedCostController.dispose();
+    _serviceChargeController.dispose();
     _finalCostController.dispose();
     _warrantyDaysController.dispose();
     super.dispose();
@@ -80,16 +88,28 @@ class _RepairFormPageState extends ConsumerState<RepairFormPage> {
     _repairNotesController.text = repair.repairNotes ?? '';
     _estimatedCostController.text =
         repair.estimatedCost?.toStringAsFixed(2) ?? '0.00';
+    _serviceChargeController.text =
+        repair.serviceCharge?.toStringAsFixed(2) ?? '0.00';
     _finalCostController.text = repair.finalCost?.toStringAsFixed(2) ?? '';
     _warrantyDaysController.text = repair.warrantyDays?.toString() ?? '';
 
     setState(() {
       _selectedCustomer = repair.customer;
-      _selectedPriority = repair.priority;
+      final priority = repair.priority.toLowerCase();
+      _selectedPriority = ['low', 'normal', 'high', 'urgent'].contains(priority)
+          ? priority
+          : 'normal';
       _selectedStateId = repair.stateId;
       _estimatedCompletion = repair.estimatedCompletion;
       _actualCompletion = repair.actualCompletion;
       _warrantyProvided = repair.warrantyProvided;
+      
+      // Populate issues
+      _selectedIssues = List.from(repair.issues);
+      _issueDescriptionControllers.clear();
+      for (final issue in _selectedIssues) {
+        _issueDescriptionControllers[issue.issueTypeId] = TextEditingController(text: issue.description);
+      }
     });
   }
 
@@ -145,6 +165,10 @@ class _RepairFormPageState extends ConsumerState<RepairFormPage> {
 
                     // Problem Description
                     _buildProblemSection(),
+                    const SizedBox(height: 24),
+
+                    // Issues Section
+                    _buildIssuesSection(),
                     const SizedBox(height: 24),
 
                     // Status and Priority (only for editing)
@@ -348,20 +372,38 @@ class _RepairFormPageState extends ConsumerState<RepairFormPage> {
         ),
         const SizedBox(height: 16),
         statesAsync.when(
-          data: (dataStates) => DropdownButtonFormField<int>(
-            value: _selectedStateId,
-            decoration: const InputDecoration(
-              labelText: 'Repair Status',
-              border: OutlineInputBorder(),
-            ),
-            items: dataStates
-                .map((s) => DropdownMenuItem(value: s.id, child: Text(s.name)))
-                .toList(),
-            onChanged: (value) => setState(() => _selectedStateId = value),
-          ),
+          data: (dataStates) {
+            // Deduplicate states by ID
+            final uniqueStates = <int, RepairState>{};
+            for (final state in dataStates) {
+              uniqueStates[state.id] = state;
+            }
+            final dedupedStates = uniqueStates.values.toList();
+
+            // Calculate valid ID
+            final isValid = _selectedStateId != null &&
+                dedupedStates.any((s) => s.id == _selectedStateId);
+            
+            final dropdownValue = isValid ? _selectedStateId : null;
+
+            return DropdownButtonFormField<int>(
+              key: ValueKey('status_dropdown_${dropdownValue ?? 'null'}'),
+              value: dropdownValue,
+              decoration: const InputDecoration(
+                labelText: 'Repair Status',
+                border: OutlineInputBorder(),
+              ),
+              items: dedupedStates
+                  .map(
+                    (s) => DropdownMenuItem(value: s.id, child: Text(s.name)),
+                  )
+                  .toList(),
+              onChanged: (value) => setState(() => _selectedStateId = value),
+            );
+          },
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (_, __) => DropdownButtonFormField<int>(
-            value: _selectedStateId,
+            value: null,
             decoration: const InputDecoration(
               labelText: 'Repair Status',
               border: OutlineInputBorder(),
@@ -430,6 +472,22 @@ class _RepairFormPageState extends ConsumerState<RepairFormPage> {
           keyboardType: TextInputType.number,
           validator: (value) {
             if (value?.isEmpty ?? true) return 'Please enter estimated cost';
+            if (double.tryParse(value!) == null)
+              return 'Please enter a valid number';
+            return null;
+          },
+        ),
+        const SizedBox(height: 16),
+        TextFormField(
+          controller: _serviceChargeController,
+          decoration: const InputDecoration(
+            labelText: 'Service Charge',
+            border: OutlineInputBorder(),
+            prefixText: '\$',
+          ),
+          keyboardType: TextInputType.number,
+          validator: (value) {
+            if (value?.isEmpty ?? true) return 'Please enter service charge';
             if (double.tryParse(value!) == null)
               return 'Please enter a valid number';
             return null;
@@ -586,6 +644,155 @@ class _RepairFormPageState extends ConsumerState<RepairFormPage> {
     );
   }
 
+  Widget _buildIssuesSection() {
+    final issueTypesAsync = ref.watch(issueTypesProvider);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Issues',
+          style: Theme.of(
+            context,
+          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 16),
+        issueTypesAsync.when(
+          data: (response) {
+            if (!response.isSuccess) {
+              return Text(
+                'Error loading issue types',
+                style: const TextStyle(color: Colors.red),
+              );
+            }
+
+            final issueTypes = response.data ?? [];
+            // Deduplicate issue types by ID
+            final uniqueIssueTypes = <int, IssueType>{};
+            for (final type in issueTypes) {
+              uniqueIssueTypes[type.id] = type;
+            }
+            final dedupedIssueTypes = uniqueIssueTypes.values.toList();
+
+            final availableTypes = dedupedIssueTypes
+                .where(
+                  (type) =>
+                      !_selectedIssues.any((i) => i.issueTypeId == type.id),
+                )
+                .toList();
+
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (availableTypes.isNotEmpty)
+                  DropdownButtonFormField<int>(
+                    key: ValueKey('issue_dropdown_${_selectedIssues.length}'),
+                    decoration: const InputDecoration(
+                      labelText: 'Add Issue',
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.bug_report),
+                    ),
+                    value: null,
+                    items: availableTypes.map((type) {
+                      return DropdownMenuItem(
+                        value: type.id,
+                        child: Text(type.name),
+                      );
+                    }).toList(),
+                    onChanged: (selectedTypeId) {
+                      if (selectedTypeId != null) {
+                        final selectedType = issueTypes.firstWhere(
+                          (t) => t.id == selectedTypeId,
+                        );
+                        setState(() {
+                          final newIssue = RepairIssue(
+                            id: 0,
+                            repairId: int.tryParse(widget.repairId ?? '0') ?? 0,
+                            issueTypeId: selectedType.id,
+                            description: '',
+                            createdAt: DateTime.now(),
+                            updatedAt: DateTime.now(),
+                          );
+                          _selectedIssues.add(newIssue);
+                          _issueDescriptionControllers[selectedType.id] =
+                              TextEditingController();
+                        });
+                      }
+                    },
+                  ),
+                const SizedBox(height: 16),
+                if (_selectedIssues.isEmpty)
+                  const Text(
+                    'No issues added.',
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                ..._selectedIssues.asMap().entries.map((entry) {
+                  final index = entry.key;
+                  final issue = entry.value;
+                  final type = issueTypes.firstWhere(
+                    (t) => t.id == issue.issueTypeId,
+                    orElse:
+                        () => IssueType(id: issue.issueTypeId, name: 'Unknown'),
+                  );
+
+                  return Card(
+                    margin: const EdgeInsets.only(bottom: 8),
+                    child: Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  type.name,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                              IconButton(
+                                icon: const Icon(
+                                  Icons.delete,
+                                  color: Colors.red,
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    _selectedIssues.removeAt(index);
+                                    _issueDescriptionControllers.remove(
+                                      issue.issueTypeId,
+                                    );
+                                  });
+                                },
+                              ),
+                            ],
+                          ),
+                          TextFormField(
+                            controller:
+                                _issueDescriptionControllers[issue.issueTypeId],
+                            decoration: const InputDecoration(
+                              labelText: 'Description',
+                              border: OutlineInputBorder(),
+                              isDense: true,
+                            ),
+                            maxLines: 2,
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }),
+              ],
+            );
+          },
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (_, __) => const Text('Failed to load issue types'),
+        ),
+      ],
+    );
+  }
+
   Future<void> _selectDate(BuildContext context, String type) async {
     final DateTime? picked = await showDatePicker(
       context: context,
@@ -611,6 +818,7 @@ class _RepairFormPageState extends ConsumerState<RepairFormPage> {
     if (!_formKey.currentState!.validate()) return;
 
     final estimatedCost = double.tryParse(_estimatedCostController.text) ?? 0.0;
+    final serviceCharge = double.tryParse(_serviceChargeController.text) ?? 0.0;
     final finalCost = _finalCostController.text.isEmpty
         ? null
         : double.tryParse(_finalCostController.text);
@@ -618,6 +826,12 @@ class _RepairFormPageState extends ConsumerState<RepairFormPage> {
         _warrantyProvided && _warrantyDaysController.text.isNotEmpty
         ? int.tryParse(_warrantyDaysController.text)
         : null;
+
+    // Sync issues descriptions
+    final issuesToSubmit = _selectedIssues.map((issue) {
+      final controller = _issueDescriptionControllers[issue.issueTypeId];
+      return issue.copyWith(description: controller?.text ?? issue.description);
+    }).toList();
 
     if (widget.isEditing) {
       // Update existing repair
@@ -640,10 +854,12 @@ class _RepairFormPageState extends ConsumerState<RepairFormPage> {
         priority: _selectedPriority,
         estimatedCost: estimatedCost,
         finalCost: finalCost,
+        serviceCharge: serviceCharge,
         estimatedCompletion: _estimatedCompletion,
         actualCompletion: _actualCompletion,
         warrantyProvided: _warrantyProvided,
         warrantyDays: warrantyDays,
+        issues: issuesToSubmit,
       );
 
       final success = await ref
@@ -685,9 +901,11 @@ class _RepairFormPageState extends ConsumerState<RepairFormPage> {
                 : _diagnosisNotesController.text,
             priority: _selectedPriority,
             estimatedCost: estimatedCost,
+            serviceCharge: serviceCharge,
             estimatedCompletion: _estimatedCompletion,
             warrantyProvided: _warrantyProvided,
             warrantyDays: warrantyDays,
+            issues: issuesToSubmit,
           );
 
       if (newRepair != null && mounted) {

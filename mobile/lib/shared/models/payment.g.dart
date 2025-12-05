@@ -11,7 +11,8 @@ Payment _$PaymentFromJson(Map<String, dynamic> json) => Payment(
   createdAt: DateTime.parse(json['createdAt'] as String),
   updatedAt: DateTime.parse(json['updatedAt'] as String),
   syncStatus: (json['syncStatus'] as num?)?.toInt() ?? 0,
-  saleId: (json['saleId'] as num).toInt(),
+  saleId: (json['saleId'] as num?)?.toInt(),
+  repairId: (json['repairId'] as num?)?.toInt(),
   paymentMethod: json['paymentMethod'] == null
       ? null
       : PaymentMethod.fromJson(json['paymentMethod'] as Map<String, dynamic>),
@@ -29,6 +30,7 @@ Map<String, dynamic> _$PaymentToJson(Payment instance) => <String, dynamic>{
   'updatedAt': instance.updatedAt.toIso8601String(),
   'syncStatus': instance.syncStatus,
   'saleId': instance.saleId,
+  'repairId': instance.repairId,
   'paymentMethod': instance.paymentMethod,
   'amount': instance.amount,
   'referenceNumber': instance.referenceNumber,

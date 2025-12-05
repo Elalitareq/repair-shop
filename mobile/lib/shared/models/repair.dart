@@ -2,6 +2,8 @@ import 'package:json_annotation/json_annotation.dart';
 import 'base_model.dart';
 import 'customer.dart';
 import 'repair_item.dart';
+import 'payment.dart';
+import 'payment_allocation.dart';
 
 part 'repair.g.dart';
 
@@ -110,6 +112,7 @@ class Repair extends BaseModel {
   final String priority;
   final double? estimatedCost;
   final double? finalCost;
+  final double? serviceCharge;
   final DateTime? estimatedCompletion;
   final DateTime? actualCompletion;
   final bool warrantyProvided;
@@ -122,6 +125,9 @@ class Repair extends BaseModel {
   final List<RepairIssue> issues;
   final List<RepairItem> items;
   final List<RepairStatusHistory> statusHistory;
+  final String paymentStatus;
+  final List<Payment> payments;
+  final List<PaymentAllocation> paymentAllocations;
 
   const Repair({
     required super.id,
@@ -138,6 +144,7 @@ class Repair extends BaseModel {
     this.priority = 'normal',
     this.estimatedCost,
     this.finalCost,
+    this.serviceCharge,
     this.estimatedCompletion,
     this.actualCompletion,
     this.warrantyProvided = false,
@@ -150,6 +157,9 @@ class Repair extends BaseModel {
     this.issues = const [],
     this.items = const [],
     this.statusHistory = const [],
+    this.paymentStatus = 'pending',
+    this.payments = const [],
+    this.paymentAllocations = const [],
     required super.createdAt,
     required super.updatedAt,
     super.syncStatus,
@@ -174,6 +184,7 @@ class Repair extends BaseModel {
     String? priority,
     double? estimatedCost,
     double? finalCost,
+    double? serviceCharge,
     DateTime? estimatedCompletion,
     DateTime? actualCompletion,
     bool? warrantyProvided,
@@ -186,6 +197,8 @@ class Repair extends BaseModel {
     List<RepairIssue>? issues,
     List<RepairItem>? items,
     List<RepairStatusHistory>? statusHistory,
+    String? paymentStatus,
+    List<Payment>? payments,
     int? syncStatus,
   }) {
     return Repair(
@@ -203,6 +216,7 @@ class Repair extends BaseModel {
       priority: priority ?? this.priority,
       estimatedCost: estimatedCost ?? this.estimatedCost,
       finalCost: finalCost ?? this.finalCost,
+      serviceCharge: serviceCharge ?? this.serviceCharge,
       estimatedCompletion: estimatedCompletion ?? this.estimatedCompletion,
       actualCompletion: actualCompletion ?? this.actualCompletion,
       warrantyProvided: warrantyProvided ?? this.warrantyProvided,
@@ -215,6 +229,8 @@ class Repair extends BaseModel {
       issues: issues ?? this.issues,
       items: items ?? this.items,
       statusHistory: statusHistory ?? this.statusHistory,
+      paymentStatus: paymentStatus ?? this.paymentStatus,
+      payments: payments ?? this.payments,
       createdAt: createdAt,
       updatedAt: updatedAt,
       syncStatus: syncStatus ?? this.syncStatus,
@@ -223,7 +239,10 @@ class Repair extends BaseModel {
 
   bool get isCompleted => completedDate != null;
 
-  double get totalCost => finalCost ?? estimatedCost ?? 0.0;
+  double get totalCost {
+    double itemsCost = items.fold(0.0, (sum, item) => sum + (item.totalPrice));
+    return (serviceCharge ?? 0.0) + itemsCost;
+  }
 }
 
 @JsonSerializable()

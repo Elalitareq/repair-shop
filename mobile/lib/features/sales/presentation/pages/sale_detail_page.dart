@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../shared/providers/sale_provider.dart';
 import '../../../../shared/services/reference_service.dart';
 import '../../../../shared/models/models.dart';
+import '../../../../shared/providers/pdf_provider.dart';
 
 class SaleDetailPage extends ConsumerStatefulWidget {
   final int saleId;
@@ -27,7 +28,6 @@ class _SaleDetailPageState extends ConsumerState<SaleDetailPage> {
   @override
   Widget build(BuildContext context) {
     final saleState = ref.watch(saleDetailProvider);
-    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
       appBar: AppBar(
@@ -38,6 +38,23 @@ class _SaleDetailPageState extends ConsumerState<SaleDetailPage> {
           onPressed: () => context.go('/sales'),
           icon: const Icon(Icons.arrow_back),
         ),
+        actions: [
+          if (saleState.sale != null)
+            IconButton(
+              onPressed: () => ref
+                  .read(pdfServiceProvider)
+                  .printSaleInvoice(saleState.sale!),
+              icon: const Icon(Icons.print),
+              tooltip: 'Print Invoice',
+            ),
+          IconButton(
+            onPressed: () =>
+                _showDeleteConfirmationDialog(context, saleState.sale!.id),
+            icon: const Icon(Icons.delete),
+            tooltip: 'Delete Sale',
+            color: Colors.red,
+          ),
+        ],
       ),
       body: saleState.isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -319,9 +336,23 @@ class _SaleDetailPageState extends ConsumerState<SaleDetailPage> {
                             ],
                           ),
                           const SizedBox(height: 12),
-                          if (saleState.sale!.payments != null &&
-                              saleState.sale!.payments!.isNotEmpty)
-                            ...saleState.sale!.payments!.map(
+                          if ((saleState.sale!.payments?.isNotEmpty ?? false) ||
+                              (saleState
+                                  .sale!
+                                  .paymentAllocations
+                                  .isNotEmpty)) ...[
+                            ...saleState.sale!.paymentAllocations.map(
+                              (allocation) => ListTile(
+                                title: Text(
+                                  '\$${allocation.amount.toStringAsFixed(2)}',
+                                ),
+                                subtitle: Text(
+                                  '${allocation.payment?.paymentMethodDisplay ?? 'Unknown'} • ${allocation.payment?.paymentDate.toLocal().toString().split(' ')[0] ?? ''}',
+                                ),
+                                trailing: const Chip(label: Text('Allocated')),
+                              ),
+                            ),
+                            ...(saleState.sale!.payments ?? []).map(
                               (payment) => ListTile(
                                 title: Text(
                                   '\$${payment.amount.toStringAsFixed(2)}',
@@ -329,9 +360,10 @@ class _SaleDetailPageState extends ConsumerState<SaleDetailPage> {
                                 subtitle: Text(
                                   '${payment.paymentMethodDisplay} • ${payment.paymentDate.toLocal().toString().split(' ')[0]}',
                                 ),
+                                trailing: const Chip(label: Text('Direct')),
                               ),
-                            )
-                          else
+                            ),
+                          ] else
                             const Center(
                               child: Padding(
                                 padding: EdgeInsets.all(8),
@@ -427,10 +459,7 @@ class _SaleDetailPageState extends ConsumerState<SaleDetailPage> {
                         value: 'refunded',
                         child: Text('Refunded'),
                       ),
-                      DropdownMenuItem(
-                        value: 'Paid',
-                        child: Text('Paid'),
-                      ),
+                      DropdownMenuItem(value: 'Paid', child: Text('Paid')),
                     ],
                     onChanged: (value) {
                       if (value != null) {
@@ -667,5 +696,50 @@ class _SaleDetailPageState extends ConsumerState<SaleDetailPage> {
         );
       },
     );
+  }
+
+  Future<void> _showDeleteConfirmationDialog(
+    BuildContext context,
+    int saleId,
+  ) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Sale'),
+        content: const Text(
+          'Are you sure you want to delete this sale? This action cannot be undone and will return items to stock.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && mounted) {
+      final success = await ref
+          .read(saleDetailProvider.notifier)
+          .deleteSale(saleId);
+
+      if (mounted) {
+        if (success) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Sale deleted successfully')),
+          );
+          context.go('/sales');
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Failed to delete sale')),
+          );
+        }
+      }
+    }
   }
 }

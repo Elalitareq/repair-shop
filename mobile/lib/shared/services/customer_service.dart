@@ -208,6 +208,40 @@ class CustomerService {
       limit: limit,
     );
   }
+
+  /// Get customer ledger
+  Future<ApiResponse<Map<String, dynamic>>> getLedger(
+    int customerId, {
+    DateTime? startDate,
+    DateTime? endDate,
+  }) async {
+    final queryParams = <String, dynamic>{};
+    if (startDate != null) {
+      queryParams['startDate'] = startDate.toIso8601String();
+    }
+    if (endDate != null) {
+      queryParams['endDate'] = endDate.toIso8601String();
+    }
+
+    final response = await _apiClient.get<Map<String, dynamic>>(
+      '/customers/$customerId/ledger',
+      queryParameters: queryParams,
+    );
+
+    if (response.isSuccess && response.data != null) {
+      return ApiResponse.success(
+        data: response.data,
+        message: response.message,
+        statusCode: response.statusCode,
+      );
+    }
+
+    return ApiResponse.error(
+      message: response.message,
+      statusCode: response.statusCode,
+      error: response.error,
+    );
+  }
 }
 
 /// Provider for CustomerService

@@ -17,6 +17,8 @@ Serial _$SerialFromJson(Map<String, dynamic> json) => Serial(
       ? null
       : ItemBatch.fromJson(json['batch'] as Map<String, dynamic>),
   status: json['status'] as String? ?? 'available',
+  saleItemId: (json['saleItemId'] as num?)?.toInt(),
+  repairItemId: (json['repairItemId'] as num?)?.toInt(),
 );
 
 Map<String, dynamic> _$SerialToJson(Serial instance) => <String, dynamic>{
@@ -28,4 +30,6 @@ Map<String, dynamic> _$SerialToJson(Serial instance) => <String, dynamic>{
   'batchId': instance.batchId,
   'batch': instance.batch,
   'status': instance.status,
+  'saleItemId': instance.saleItemId,
+  'repairItemId': instance.repairItemId,
 };
