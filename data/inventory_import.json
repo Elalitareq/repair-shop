@@ -1,0 +1,976 @@
+[
+  {
+    "name": "Infinix NOTE50",
+    "brand": "Infinix",
+    "model": "NOTE50",
+    "category": "Phone",
+    "description": "Specs: 256/8, Color: TITANIUM GREY",
+    "condition": "New",
+    "quality": "Original",
+    "itemType": "phone",
+    "sellingPrice": 301.275,
+    "stockQuantity": 1,
+    "barcode": "358906711525390",
+    "supplier": {
+      "name": "MobileZone",
+      "phone": "70300065"
+    },
+    "batch": {
+      "unitCost": 200.85,
+      "quantity": 1
+    },
+    "serials": [
+      "358906711525390",
+      "358906717111013"
+    ]
+  },
+  {
+    "name": "Infinix NOTE50 PRO",
+    "brand": "Infinix",
+    "model": "NOTE50 PRO",
+    "category": "Phone",
+    "description": "Specs: 256/12, Color: TITANIUM GREY",
+    "condition": "New",
+    "quality": "Original",
+    "itemType": "phone",
+    "sellingPrice": 378.795,
+    "stockQuantity": 1,
+    "barcode": "353036360941451",
+    "supplier": {
+      "name": "MobileZone",
+      "phone": "70300065"
+    },
+    "batch": {
+      "unitCost": 252.53,
+      "quantity": 1
+    },
+    "serials": [
+      "353036360941451",
+      "353036367939474"
+    ]
+  },
+  {
+    "name": "Infinix NOTE50 PRO PLUS",
+    "brand": "Infinix",
+    "model": "NOTE50 PRO PLUS",
+    "category": "Phone",
+    "description": "Specs: 256/12, Color: RACING EDITION",
+    "condition": "New",
+    "quality": "Original",
+    "itemType": "phone",
+    "sellingPrice": 563.0699999999999,
+    "stockQuantity": 1,
+    "barcode": "352225330315422",
+    "supplier": {
+      "name": "MobileZone",
+      "phone": "70300065"
+    },
+    "batch": {
+      "unitCost": 375.38,
+      "quantity": 1
+    },
+    "serials": [
+      "352225330315422",
+      "352225339990605"
+    ]
+  },
+  {
+    "name": "Infinix SMART 10 PLUS",
+    "brand": "Infinix",
+    "model": "SMART 10 PLUS",
+    "category": "Phone",
+    "description": "Specs: 128/8, Color: SLEEK BLACK",
+    "condition": "New",
+    "quality": "Original",
+    "itemType": "phone",
+    "sellingPrice": 157.95,
+    "stockQuantity": 1,
+    "barcode": "358910370571513",
+    "supplier": {
+      "name": "MobileZone",
+      "phone": "70300065"
+    },
+    "batch": {
+      "unitCost": 105.3,
+      "quantity": 1
+    },
+    "serials": [
+      "358910370571513",
+      "358910379010737"
+    ]
+  },
+  {
+    "name": "Infinix HOT 60I",
+    "brand": "Infinix",
+    "model": "HOT 60I",
+    "category": "Phone",
+    "description": "Specs: 256/8, Color: SHADOW BLUE",
+    "condition": "New",
+    "quality": "Original",
+    "itemType": "phone",
+    "sellingPrice": 212.07,
+    "stockQuantity": 1,
+    "barcode": "354944602614316",
+    "supplier": {
+      "name": "MobileZone",
+      "phone": "70300065"
+    },
+    "batch": {
+      "unitCost": 141.38,
+      "quantity": 1
+    },
+    "serials": [
+      "354944602614316",
+      "354944609146056"
+    ]
+  },
+  {
+    "name": "Infinix HOT 60 PRO",
+    "brand": "Infinix",
+    "model": "HOT 60 PRO",
+    "category": "Phone",
+    "description": "Specs: 256/8, Color: JUNGLE BREATH",
+    "condition": "New",
+    "quality": "Original",
+    "itemType": "phone",
+    "sellingPrice": 234.0,
+    "stockQuantity": 1,
+    "barcode": "351789312289187",
+    "supplier": {
+      "name": "MobileZone",
+      "phone": "70300065"
+    },
+    "batch": {
+      "unitCost": 156.0,
+      "quantity": 1
+    },
+    "serials": [
+      "351789312289187",
+      "351789315244510"
+    ]
+  },
+  {
+    "name": "Infinix SMART 10",
+    "brand": "Infinix",
+    "model": "SMART 10",
+    "category": "Phone",
+    "description": "Specs: 128/4, Color: TWILIGHT GOLD",
+    "condition": "New",
+    "quality": "Original",
+    "itemType": "phone",
+    "sellingPrice": 119.92500000000001,
+    "stockQuantity": 1,
+    "barcode": "356032832968955",
+    "supplier": {
+      "name": "MobileZone",
+      "phone": "70300065"
+    },
+    "batch": {
+      "unitCost": 79.95,
+      "quantity": 1
+    },
+    "serials": [
+      "356032832968955",
+      "356032836885494"
+    ]
+  },
+  {
+    "name": "Infinix HOT 60 PRO PLUS",
+    "brand": "Infinix",
+    "model": "HOT 60 PRO PLUS",
+    "category": "Phone",
+    "description": "Specs: 256/8, Color: SLEEK BLACK",
+    "condition": "New",
+    "quality": "Original",
+    "itemType": "phone",
+    "sellingPrice": 276.42,
+    "stockQuantity": 1,
+    "barcode": "353863133234017",
+    "supplier": {
+      "name": "MobileZone",
+      "phone": "70300065"
+    },
+    "batch": {
+      "unitCost": 184.28,
+      "quantity": 1
+    },
+    "serials": [
+      "353863133234017",
+      "353863138660562"
+    ]
+  },
+  {
+    "name": "HONOR X5B PLUS",
+    "brand": "HONOR",
+    "model": "X5B PLUS",
+    "category": "Phone",
+    "description": "Specs: 128/4, Color: Ocean Blue",
+    "condition": "New",
+    "quality": "Original",
+    "itemType": "phone",
+    "sellingPrice": 102.375,
+    "stockQuantity": 1,
+    "barcode": "862242078587529",
+    "supplier": {
+      "name": "MobileZone",
+      "phone": "70300065"
+    },
+    "batch": {
+      "unitCost": 68.25,
+      "quantity": 1
+    },
+    "serials": [
+      "862242078587529",
+      "862242079087529"
+    ]
+  },
+  {
+    "name": "HONOR X5C PLUS",
+    "brand": "HONOR",
+    "model": "X5C PLUS",
+    "category": "Phone",
+    "description": "Specs: 128/4, Color: Ocean Cyan",
+    "condition": "New",
+    "quality": "Original",
+    "itemType": "phone",
+    "sellingPrice": 115.545,
+    "stockQuantity": 1,
+    "barcode": "861486082883942",
+    "supplier": {
+      "name": "MobileZone",
+      "phone": "70300065"
+    },
+    "batch": {
+      "unitCost": 77.03,
+      "quantity": 1
+    },
+    "serials": [
+      "861486082883942",
+      "861486082883959"
+    ]
+  },
+  {
+    "name": "HONOR X7D",
+    "brand": "HONOR",
+    "model": "X7D",
+    "category": "Phone",
+    "description": "Specs: 256/8, Color: Meteor Silver",
+    "condition": "New",
+    "quality": "Original",
+    "itemType": "phone",
+    "sellingPrice": 216.45000000000002,
+    "stockQuantity": 1,
+    "barcode": "869568082927829",
+    "supplier": {
+      "name": "MobileZone",
+      "phone": "70300065"
+    },
+    "batch": {
+      "unitCost": 144.3,
+      "quantity": 1
+    },
+    "serials": [
+      "869568082927829",
+      "869568082927837"
+    ]
+  },
+  {
+    "name": "HONOR X5C",
+    "brand": "HONOR",
+    "model": "X5C",
+    "category": "Phone",
+    "description": "Specs: 64/4, Color: Midnight Black",
+    "condition": "New",
+    "quality": "Original",
+    "itemType": "phone",
+    "sellingPrice": 102.375,
+    "stockQuantity": 1,
+    "barcode": "860158081753506",
+    "supplier": {
+      "name": "MobileZone",
+      "phone": "70300065"
+    },
+    "batch": {
+      "unitCost": 68.25,
+      "quantity": 1
+    },
+    "serials": [
+      "860158081753506",
+      "860158081753514"
+    ]
+  },
+  {
+    "name": "HONOR X6C",
+    "brand": "HONOR",
+    "model": "X6C",
+    "category": "Phone",
+    "description": "Specs: 128/6, Color: Ocean Cyan",
+    "condition": "New",
+    "quality": "Original",
+    "itemType": "phone",
+    "sellingPrice": 136.02,
+    "stockQuantity": 1,
+    "barcode": "862907081867486",
+    "supplier": {
+      "name": "MobileZone",
+      "phone": "70300065"
+    },
+    "batch": {
+      "unitCost": 90.68,
+      "quantity": 1
+    },
+    "serials": [
+      "862907081867486",
+      "862907082367486"
+    ]
+  },
+  {
+    "name": "SAMSUNG A07",
+    "brand": "SAMSUNG",
+    "model": "A07",
+    "category": "Phone",
+    "description": "Specs: 128/4, Color: Black",
+    "condition": "New",
+    "quality": "Original",
+    "itemType": "phone",
+    "sellingPrice": 145.53,
+    "stockQuantity": 1,
+    "barcode": "356354265032160",
+    "supplier": {
+      "name": "MobileZone",
+      "phone": "70300065"
+    },
+    "batch": {
+      "unitCost": 97.02,
+      "quantity": 1
+    },
+    "serials": [
+      "356354265032160",
+      "359558685032165"
+    ]
+  },
+  {
+    "name": "SAMSUNG A07",
+    "brand": "SAMSUNG",
+    "model": "A07",
+    "category": "Phone",
+    "description": "Specs: 64/4, Color: Black",
+    "condition": "New",
+    "quality": "Original",
+    "itemType": "phone",
+    "sellingPrice": 123.255,
+    "stockQuantity": 1,
+    "barcode": "355888303610710",
+    "supplier": {
+      "name": "MobileZone",
+      "phone": "70300065"
+    },
+    "batch": {
+      "unitCost": 82.17,
+      "quantity": 1
+    },
+    "serials": [
+      "355888303610710",
+      "356752273610713"
+    ]
+  },
+  {
+    "name": "SAMSUNG A17",
+    "brand": "SAMSUNG",
+    "model": "A17",
+    "category": "Phone",
+    "description": "Specs: 256/8, Color: Black",
+    "condition": "New",
+    "quality": "Original",
+    "itemType": "phone",
+    "sellingPrice": 285.12,
+    "stockQuantity": 1,
+    "barcode": "356553691342057",
+    "supplier": {
+      "name": "MobileZone",
+      "phone": "70300065"
+    },
+    "batch": {
+      "unitCost": 190.08,
+      "quantity": 1
+    },
+    "serials": [
+      "356553691342057",
+      "356777351342053"
+    ]
+  },
+  {
+    "name": "SAMSUNG A36",
+    "brand": "SAMSUNG",
+    "model": "A36",
+    "category": "Phone",
+    "description": "Specs: 256/8, Color: Awesome White",
+    "condition": "New",
+    "quality": "Original",
+    "itemType": "phone",
+    "sellingPrice": 424.71,
+    "stockQuantity": 1,
+    "barcode": "353745120975308",
+    "supplier": {
+      "name": "MobileZone",
+      "phone": "70300065"
+    },
+    "batch": {
+      "unitCost": 283.14,
+      "quantity": 1
+    },
+    "serials": [
+      "353745120975308",
+      "356560610975305"
+    ]
+  },
+  {
+    "name": "SAMSUNG A17",
+    "brand": "SAMSUNG",
+    "model": "A17",
+    "category": "Phone",
+    "description": "Specs: 128/6, Color: Gray",
+    "condition": "New",
+    "quality": "Original",
+    "itemType": "phone",
+    "sellingPrice": 234.63,
+    "stockQuantity": 1,
+    "barcode": "353066132746318",
+    "supplier": {
+      "name": "MobileZone",
+      "phone": "70300065"
+    },
+    "batch": {
+      "unitCost": 156.42,
+      "quantity": 1
+    },
+    "serials": [
+      "353066132746318",
+      "354651962746311"
+    ]
+  },
+  {
+    "name": "SAMSUNG A56",
+    "brand": "SAMSUNG",
+    "model": "A56",
+    "category": "Phone",
+    "description": "Specs: 256/8, Color: Awesome Graphite",
+    "condition": "New",
+    "quality": "Original",
+    "itemType": "phone",
+    "sellingPrice": 519.75,
+    "stockQuantity": 1,
+    "barcode": "351382275131313",
+    "supplier": {
+      "name": "MobileZone",
+      "phone": "70300065"
+    },
+    "batch": {
+      "unitCost": 346.5,
+      "quantity": 1
+    },
+    "serials": [
+      "351382275131313",
+      "352178695131316"
+    ]
+  },
+  {
+    "name": "XIAOMI REDMI A5",
+    "brand": "XIAOMI",
+    "model": "REDMI A5",
+    "category": "Phone",
+    "description": "Specs: 64/3, Color: Sandy Gold",
+    "condition": "New",
+    "quality": "Original",
+    "itemType": "phone",
+    "sellingPrice": 109.695,
+    "stockQuantity": 1,
+    "barcode": "867811080379789",
+    "supplier": {
+      "name": "MobileZone",
+      "phone": "70300065"
+    },
+    "batch": {
+      "unitCost": 73.13,
+      "quantity": 1
+    },
+    "serials": [
+      "867811080379789",
+      "867811080379797"
+    ]
+  },
+  {
+    "name": "XIAOMI REDMI A5",
+    "brand": "XIAOMI",
+    "model": "REDMI A5",
+    "category": "Phone",
+    "description": "Specs: 128/4, Color: Midnight Black",
+    "condition": "New",
+    "quality": "Original",
+    "itemType": "phone",
+    "sellingPrice": 124.32,
+    "stockQuantity": 1,
+    "barcode": "869293060799282",
+    "supplier": {
+      "name": "MobileZone",
+      "phone": "70300065"
+    },
+    "batch": {
+      "unitCost": 82.88,
+      "quantity": 1
+    },
+    "serials": [
+      "869293060799282",
+      "868293080799290"
+    ]
+  },
+  {
+    "name": "XIAOMI REDMI 15C",
+    "brand": "XIAOMI",
+    "model": "REDMI 15C",
+    "category": "Phone",
+    "description": "Specs: 128/4, Color: Moonlight Blue",
+    "condition": "New",
+    "quality": "Original",
+    "itemType": "phone",
+    "sellingPrice": 149.175,
+    "stockQuantity": 1,
+    "barcode": "861050080493904",
+    "supplier": {
+      "name": "MobileZone",
+      "phone": "70300065"
+    },
+    "batch": {
+      "unitCost": 99.45,
+      "quantity": 1
+    },
+    "serials": [
+      "861050080493904",
+      "861050080493912"
+    ]
+  },
+  {
+    "name": "XIAOMI REDMI 15C",
+    "brand": "XIAOMI",
+    "model": "REDMI 15C",
+    "category": "Phone",
+    "description": "Specs: 256/8, Color: Midnight Black",
+    "condition": "New",
+    "quality": "Original",
+    "itemType": "phone",
+    "sellingPrice": 181.35000000000002,
+    "stockQuantity": 1,
+    "barcode": "865761085257401",
+    "supplier": {
+      "name": "MobileZone",
+      "phone": "70300065"
+    },
+    "batch": {
+      "unitCost": 120.9,
+      "quantity": 1
+    },
+    "serials": [
+      "865761085257401",
+      "865761085257419"
+    ]
+  },
+  {
+    "name": "TECNO SPARK 40",
+    "brand": "TECNO",
+    "model": "SPARK 40",
+    "category": "Phone",
+    "description": "Specs: 256/8, Color: MIRAGE BLUE",
+    "condition": "New",
+    "quality": "Original",
+    "itemType": "phone",
+    "sellingPrice": 196.5,
+    "stockQuantity": 1,
+    "barcode": "351277102210639",
+    "supplier": {
+      "name": "MobileZone",
+      "phone": "70300065"
+    },
+    "batch": {
+      "unitCost": 131.0,
+      "quantity": 1
+    },
+    "serials": [
+      "351277102210639",
+      "351277105726912"
+    ]
+  },
+  {
+    "name": "TECNO SPARK SLIM",
+    "brand": "TECNO",
+    "model": "SPARK SLIM",
+    "category": "Phone",
+    "description": "Specs: 256/8, Color: MAGIC SILVER",
+    "condition": "New",
+    "quality": "Original",
+    "itemType": "phone",
+    "sellingPrice": 271.5,
+    "stockQuantity": 1,
+    "barcode": "351165390816185",
+    "supplier": {
+      "name": "MobileZone",
+      "phone": "70300065"
+    },
+    "batch": {
+      "unitCost": 181.0,
+      "quantity": 1
+    },
+    "serials": [
+      "351165390816185",
+      "351165390816185"
+    ]
+  },
+  {
+    "name": "TECNO SPARK SLIM",
+    "brand": "TECNO",
+    "model": "SPARK SLIM",
+    "category": "Phone",
+    "description": "Specs: 256/8, Color: COOL BLACK",
+    "condition": "New",
+    "quality": "Original",
+    "itemType": "phone",
+    "sellingPrice": 271.5,
+    "stockQuantity": 1,
+    "barcode": "351165390793053",
+    "supplier": {
+      "name": "MobileZone",
+      "phone": "70300065"
+    },
+    "batch": {
+      "unitCost": 181.0,
+      "quantity": 1
+    },
+    "serials": [
+      "351165390793053",
+      "351165399877196"
+    ]
+  },
+  {
+    "name": "TECNO SPARK SLIM",
+    "brand": "TECNO",
+    "model": "SPARK SLIM",
+    "category": "Phone",
+    "description": "Specs: 256/8, Color: COOL BLACK",
+    "condition": "New",
+    "quality": "Original",
+    "itemType": "phone",
+    "sellingPrice": 271.5,
+    "stockQuantity": 1,
+    "barcode": "351165390791891",
+    "supplier": {
+      "name": "MobileZone",
+      "phone": "70300065"
+    },
+    "batch": {
+      "unitCost": 181.0,
+      "quantity": 1
+    },
+    "serials": [
+      "351165390791891",
+      "351165395729664"
+    ]
+  },
+  {
+    "name": "TECNO POVA 7",
+    "brand": "TECNO",
+    "model": "POVA 7",
+    "category": "Phone",
+    "description": "Specs: 256/8, Color: HYPER TITANIUM",
+    "condition": "New",
+    "quality": "Original",
+    "itemType": "phone",
+    "sellingPrice": 231.0,
+    "stockQuantity": 1,
+    "barcode": "359445280735261",
+    "supplier": {
+      "name": "MobileZone",
+      "phone": "70300065"
+    },
+    "batch": {
+      "unitCost": 154.0,
+      "quantity": 1
+    },
+    "serials": [
+      "359445280735261",
+      "359445289144978"
+    ]
+  },
+  {
+    "name": "TECNO POVA 7",
+    "brand": "TECNO",
+    "model": "POVA 7",
+    "category": "Phone",
+    "description": "",
+    "condition": "New",
+    "quality": "Original",
+    "itemType": "phone",
+    "sellingPrice": 231.0,
+    "stockQuantity": 1,
+    "barcode": "359445281133185",
+    "supplier": {
+      "name": "MobileZone",
+      "phone": "70300065"
+    },
+    "batch": {
+      "unitCost": 154.0,
+      "quantity": 1
+    },
+    "serials": [
+      "359445281133185",
+      "359445286596444"
+    ]
+  },
+  {
+    "name": "TECNO SPARK GO 2",
+    "brand": "TECNO",
+    "model": "SPARK GO 2",
+    "category": "Phone",
+    "description": "Specs: 256/4, Color: TURQUOISE GREEN",
+    "condition": "New",
+    "quality": "Original",
+    "itemType": "phone",
+    "sellingPrice": 136.5,
+    "stockQuantity": 1,
+    "barcode": "358530213917390",
+    "supplier": {
+      "name": "MobileZone",
+      "phone": "70300065"
+    },
+    "batch": {
+      "unitCost": 91.0,
+      "quantity": 1
+    },
+    "serials": [
+      "358530213917390",
+      "358530219187873"
+    ]
+  },
+  {
+    "name": "TECNO SPARK GO 2",
+    "brand": "TECNO",
+    "model": "SPARK GO 2",
+    "category": "Phone",
+    "description": "Specs: 128/4, Color: VEIL WHITE",
+    "condition": "New",
+    "quality": "Original",
+    "itemType": "phone",
+    "sellingPrice": 121.5,
+    "stockQuantity": 1,
+    "barcode": "358530214811642",
+    "supplier": {
+      "name": "MobileZone",
+      "phone": "70300065"
+    },
+    "batch": {
+      "unitCost": 81.0,
+      "quantity": 1
+    },
+    "serials": [
+      "358530214811642",
+      "358530214811642"
+    ]
+  },
+  {
+    "name": "TECNO POVA 7 5G",
+    "brand": "TECNO",
+    "model": "POVA 7 5G",
+    "category": "Phone",
+    "description": "Specs: 256/8, Color: STARDUST PINK",
+    "condition": "New",
+    "quality": "Original",
+    "itemType": "phone",
+    "sellingPrice": 310.5,
+    "stockQuantity": 1,
+    "barcode": "355463352014303",
+    "supplier": {
+      "name": "MobileZone",
+      "phone": "70300065"
+    },
+    "batch": {
+      "unitCost": 207.0,
+      "quantity": 1
+    },
+    "serials": [
+      "355463352014303",
+      "355463355948192"
+    ]
+  },
+  {
+    "name": "TECNO MEGAPAD",
+    "brand": "TECNO",
+    "model": "MEGAPAD",
+    "category": "Phone",
+    "description": "Specs: 256/4, Color: DARK GREY",
+    "condition": "New",
+    "quality": "Original",
+    "itemType": "phone",
+    "sellingPrice": 211.5,
+    "stockQuantity": 1,
+    "barcode": "350118431129549",
+    "supplier": {
+      "name": "MobileZone",
+      "phone": "70300065"
+    },
+    "batch": {
+      "unitCost": 141.0,
+      "quantity": 1
+    },
+    "serials": [
+      "350118431129549"
+    ]
+  },
+  {
+    "name": "Apple IPHONE 13promax",
+    "brand": "Apple",
+    "model": "IPHONE 13promax",
+    "category": "Phone",
+    "description": "Storage: 256, Battery: 80%",
+    "condition": "Used",
+    "quality": "Original",
+    "itemType": "phone",
+    "sellingPrice": 855.0,
+    "stockQuantity": 1,
+    "barcode": "353210484460462",
+    "supplier": {
+      "name": "MobileZone",
+      "phone": "70300065"
+    },
+    "batch": {
+      "unitCost": 570.0,
+      "quantity": 1
+    },
+    "serials": [
+      "353210484460462",
+      "353210484270499"
+    ]
+  },
+  {
+    "name": "Apple IPHONE 13pro",
+    "brand": "Apple",
+    "model": "IPHONE 13pro",
+    "category": "Phone",
+    "description": "Storage: 256, Battery: 86%",
+    "condition": "Used",
+    "quality": "Original",
+    "itemType": "phone",
+    "sellingPrice": 765.0,
+    "stockQuantity": 1,
+    "barcode": "353165807314202",
+    "supplier": {
+      "name": "MobileZone",
+      "phone": "70300065"
+    },
+    "batch": {
+      "unitCost": 510.0,
+      "quantity": 1
+    },
+    "serials": [
+      "353165807314202",
+      "353165807340645"
+    ]
+  },
+  {
+    "name": "Apple IPHONE 13",
+    "brand": "Apple",
+    "model": "IPHONE 13",
+    "category": "Phone",
+    "description": "Storage: 128, Battery: 91%",
+    "condition": "Used",
+    "quality": "Original",
+    "itemType": "phone",
+    "sellingPrice": 562.5,
+    "stockQuantity": 1,
+    "barcode": "352824487924380",
+    "supplier": {
+      "name": "MobileZone",
+      "phone": "70300065"
+    },
+    "batch": {
+      "unitCost": 375.0,
+      "quantity": 1
+    },
+    "serials": [
+      "352824487924380",
+      "352824487582634"
+    ]
+  },
+  {
+    "name": "Apple IPHONE 12",
+    "brand": "Apple",
+    "model": "IPHONE 12",
+    "category": "Phone",
+    "description": "Storage: 128, Battery: 87%",
+    "condition": "Used",
+    "quality": "Original",
+    "itemType": "phone",
+    "sellingPrice": 442.5,
+    "stockQuantity": 1,
+    "barcode": "352834610537769",
+    "supplier": {
+      "name": "MobileZone",
+      "phone": "70300065"
+    },
+    "batch": {
+      "unitCost": 295.0,
+      "quantity": 1
+    },
+    "serials": [
+      "352834610537769",
+      "352834610335107"
+    ]
+  },
+  {
+    "name": "Apple IPHONE 11promax",
+    "brand": "Apple",
+    "model": "IPHONE 11promax",
+    "category": "Phone",
+    "description": "Storage: 256, Battery: 95%",
+    "condition": "Used",
+    "quality": "Original",
+    "itemType": "phone",
+    "sellingPrice": 517.5,
+    "stockQuantity": 1,
+    "barcode": "352847112658669",
+    "supplier": {
+      "name": "MobileZone",
+      "phone": "70300065"
+    },
+    "batch": {
+      "unitCost": 345.0,
+      "quantity": 1
+    },
+    "serials": [
+      "352847112658669",
+      "352847112528409"
+    ]
+  },
+  {
+    "name": "Apple IPHONE 12pro",
+    "brand": "Apple",
+    "model": "IPHONE 12pro",
+    "category": "Phone",
+    "description": "Storage: 256, Battery: 100%",
+    "condition": "Used",
+    "quality": "Original",
+    "itemType": "phone",
+    "sellingPrice": 547.5,
+    "stockQuantity": 1,
+    "barcode": "353075113791904",
+    "supplier": {
+      "name": "MobileZone",
+      "phone": "70300065"
+    },
+    "batch": {
+      "unitCost": 365.0,
+      "quantity": 1
+    },
+    "serials": [
+      "353075113791904",
+      "353075114039543"
+    ]
+  }
+]
