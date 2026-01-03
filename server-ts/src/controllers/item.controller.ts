@@ -431,38 +431,52 @@ export class ItemController {
         const supplierName = parts[7]?.trim() || "MobileZone"; // Default to MobileZone if not provided
         const supplierPhone = parts[8]?.trim() || "70300065"; // Default phone if not provided
         const supplierType = parts[9]?.trim() || "dealer"; // Default to dealer if not provided
+        const sellingPriceStr = parts[10]?.trim(); // New Selling Price column
 
-        console.log(`CSV Row ${i}: code="${code}", supplierName="${supplierName}", supplierPhone="${supplierPhone}", supplierType="${supplierType}"`);
+        console.log(
+          `CSV Row ${i}: code="${code}", supplierName="${supplierName}", supplierPhone="${supplierPhone}", supplierType="${supplierType}"`
+        );
 
         const quantity = parseFloat(quantityStr);
         const unitCost = parseFloat(amountStr); // Unit Cost from CSV
+        const csvSellingPrice = sellingPriceStr
+          ? parseFloat(sellingPriceStr)
+          : null;
 
         if (!code || !description) continue;
 
         // Find or create supplier from CSV with name, phone, and type
-        console.log(`Looking for supplier: name="${supplierName}", type="${supplierType}"`);
+        console.log(
+          `Looking for supplier: name="${supplierName}", type="${supplierType}"`
+        );
         let supplier = await prisma.customer.findFirst({
-          where: { 
+          where: {
             type: supplierType,
-            name: supplierName
+            name: supplierName,
           },
         });
-        
+
         if (!supplier) {
-          console.log(`Supplier not found, creating new supplier: name="${supplierName}", phone="${supplierPhone}", type="${supplierType}"`);
+          console.log(
+            `Supplier not found, creating new supplier: name="${supplierName}", phone="${supplierPhone}", type="${supplierType}"`
+          );
           // Create supplier if not found with CSV phone number and type
           supplier = await prisma.customer.create({
             data: {
               name: supplierName,
               type: supplierType, // Use type from CSV
               phone: supplierPhone, // Use phone from CSV
-              email: `${supplierName.toLowerCase().replace(/\s+/g, '')}@example.com`,
+              email: `${supplierName
+                .toLowerCase()
+                .replace(/\s+/g, "")}@example.com`,
               address: "Default Address",
             },
           });
           console.log(`Created supplier with ID: ${supplier.id}`);
         } else {
-          console.log(`Found existing supplier: ID=${supplier.id}, name="${supplier.name}", type="${supplier.type}"`);
+          console.log(
+            `Found existing supplier: ID=${supplier.id}, name="${supplier.name}", type="${supplier.type}"`
+          );
         }
 
         // Find or create category if provided
@@ -470,25 +484,25 @@ export class ItemController {
         if (category) {
           // Try exact match first
           const existingCategory = await prisma.category.findFirst({
-            where: { 
+            where: {
               name: {
                 equals: category,
-              }
+              },
             },
           });
-          
+
           if (existingCategory) {
             categoryId = existingCategory.id;
           } else {
             // Try case-insensitive match
             const caseInsensitiveCategory = await prisma.category.findFirst({
-              where: { 
+              where: {
                 name: {
-                  contains: category.toLowerCase()
-                }
+                  contains: category.toLowerCase(),
+                },
               },
             });
-            
+
             if (caseInsensitiveCategory) {
               categoryId = caseInsensitiveCategory.id;
             } else {
@@ -531,6 +545,10 @@ export class ItemController {
             where: { id: itemId },
             data: {
               stockQuantity: { increment: quantity },
+              // Update selling price if provided in CSV
+              ...(csvSellingPrice !== null && {
+                sellingPrice: csvSellingPrice,
+              }),
               ...(category && { categoryId }),
               ...(model && { model }),
               ...(brand && { brand }),
@@ -550,7 +568,9 @@ export class ItemController {
               data: { barcode: code, itemId },
             });
             // Create Batch & Update Stock
-            console.log(`Creating batch for existing item with supplier ID: ${supplier.id}`);
+            console.log(
+              `Creating batch for existing item with supplier ID: ${supplier.id}`
+            );
             await prisma.batch.create({
               data: {
                 batchNumber: `IMP-${Date.now()}-${i}`,
@@ -568,6 +588,10 @@ export class ItemController {
               where: { id: itemId },
               data: {
                 stockQuantity: { increment: quantity },
+                // Update selling price if provided in CSV
+                ...(csvSellingPrice !== null && {
+                  sellingPrice: csvSellingPrice,
+                }),
                 ...(category && { categoryId }),
                 ...(model && { model }),
                 ...(brand && { brand }),
@@ -576,10 +600,14 @@ export class ItemController {
             updatedCount++;
           } else {
             // 3. Create New Item
+            // Determine selling price: Use CSV value if present, otherwise 50% markup (1.5x)
+            const finalSellingPrice =
+              csvSellingPrice !== null ? csvSellingPrice : unitCost * 1.5;
+
             await prisma.item.create({
               data: {
                 name: description,
-                sellingPrice: unitCost * 1.3, // Selling price as 30% markup on unit cost
+                sellingPrice: finalSellingPrice,
                 categoryId,
                 conditionId: defaultConditionId,
                 qualityId: defaultQualityId,
