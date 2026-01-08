@@ -30,10 +30,13 @@ import '../../features/settings/presentation/pages/repair_states_settings_page.d
 import '../../features/settings/presentation/pages/issue_types_settings_page.dart';
 import '../../shared/providers/auth_provider.dart';
 
+final routeObserver = RouteObserver<ModalRoute<void>>();
+
 final appRouterProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authProvider);
 
   final router = GoRouter(
+    observers: [routeObserver],
     initialLocation: authState.isLoading
         ? '/splash'
         : (authState.isAuthenticated ? '/dashboard' : '/login'),
@@ -53,7 +56,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       if (!isLoading && isSplash) {
         final from = state.uri.queryParameters['from'];
         if (isLoggedIn) {
-          if (from != null && from.isNotEmpty && from != '/login' && from != '/splash') {
+          if (from != null &&
+              from.isNotEmpty &&
+              from != '/login' &&
+              from != '/splash') {
             return from;
           }
           return '/dashboard';

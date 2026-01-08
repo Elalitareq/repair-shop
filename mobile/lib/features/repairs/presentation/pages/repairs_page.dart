@@ -6,6 +6,8 @@ import 'package:intl/intl.dart';
 import '../../../../shared/models/repair.dart';
 import '../../../../shared/providers/repair_provider.dart';
 
+import '../../../../core/router/app_router.dart';
+
 class RepairsPage extends ConsumerStatefulWidget {
   const RepairsPage({super.key});
 
@@ -13,7 +15,7 @@ class RepairsPage extends ConsumerStatefulWidget {
   ConsumerState<RepairsPage> createState() => _RepairsPageState();
 }
 
-class _RepairsPageState extends ConsumerState<RepairsPage> {
+class _RepairsPageState extends ConsumerState<RepairsPage> with RouteAware {
   final _searchController = TextEditingController();
   String? _selectedStatus;
   String? _selectedPriority;
@@ -28,9 +30,21 @@ class _RepairsPageState extends ConsumerState<RepairsPage> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    routeObserver.subscribe(this, ModalRoute.of(context)!);
+  }
+
+  @override
   void dispose() {
+    routeObserver.unsubscribe(this);
     _searchController.dispose();
     super.dispose();
+  }
+
+  @override
+  void didPopNext() {
+    ref.read(repairListProvider.notifier).loadRepairs(refresh: true);
   }
 
   @override
@@ -390,19 +404,25 @@ class _RepairCard extends StatelessWidget {
               // Cost breakdown
               Row(
                 children: [
-                  const Icon(Icons.miscellaneous_services,
-                      size: 14, color: Colors.grey),
+                  const Icon(
+                    Icons.miscellaneous_services,
+                    size: 14,
+                    color: Colors.grey,
+                  ),
                   const SizedBox(width: 4),
                   Text(
                     'Service: \$${(repair.serviceCharge ?? 0.0).toStringAsFixed(2)}',
                     style: theme.textTheme.bodySmall,
                   ),
                   const SizedBox(width: 12),
-                  const Icon(Icons.inventory_2_outlined,
-                      size: 14, color: Colors.grey),
+                  const Icon(
+                    Icons.inventory_2_outlined,
+                    size: 14,
+                    color: Colors.grey,
+                  ),
                   const SizedBox(width: 4),
                   Text(
-                    'Parts: \$${repair.items.fold(0.0, (sum, item) => sum + (item.totalPrice ?? 0.0)).toStringAsFixed(2)}',
+                    'Parts: \$${repair.items.fold(0.0, (sum, item) => sum + (item.totalPrice)).toStringAsFixed(2)}',
                     style: theme.textTheme.bodySmall,
                   ),
                 ],

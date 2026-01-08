@@ -19,10 +19,7 @@ class PdfService {
     doc.addPage(
       pw.MultiPage(
         pageFormat: PdfPageFormat.a4,
-        theme: pw.ThemeData.withFont(
-          base: font,
-          bold: boldFont,
-        ),
+        theme: pw.ThemeData.withFont(base: font, bold: boldFont),
         build: (pw.Context context) => _buildRepairInvoice(repair),
         footer: (pw.Context context) => _buildFooter(),
       ),
@@ -43,10 +40,7 @@ class PdfService {
     doc.addPage(
       pw.MultiPage(
         pageFormat: PdfPageFormat.a4,
-        theme: pw.ThemeData.withFont(
-          base: font,
-          bold: boldFont,
-        ),
+        theme: pw.ThemeData.withFont(base: font, bold: boldFont),
         build: (pw.Context context) => _buildSaleInvoice(sale),
         footer: (pw.Context context) => _buildFooter(),
       ),
@@ -79,13 +73,16 @@ class PdfService {
         problem: repair.problemDescription,
       ),
       pw.SizedBox(height: 20),
-      pw.Text('Items & Services',
-          style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
+      pw.Text(
+        'Items & Services',
+        style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold),
+      ),
       pw.SizedBox(height: 10),
       _buildRepairItemsTable(repair),
       pw.SizedBox(height: 20),
       _buildTotals(
-        subtotal: repair.totalCost, // Using totalCost as subtotal for simplicity
+        subtotal:
+            repair.totalCost, // Using totalCost as subtotal for simplicity
         total: repair.totalCost,
         paid: totalPaid,
         remaining: remaining > 0 ? remaining : 0.0,
@@ -105,8 +102,10 @@ class PdfService {
           address: sale.customer!.address,
         ),
       pw.SizedBox(height: 20),
-      pw.Text('Items',
-          style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
+      pw.Text(
+        'Items',
+        style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold),
+      ),
       pw.SizedBox(height: 10),
       _buildSaleItemsTable(sale),
       pw.SizedBox(height: 20),
@@ -128,9 +127,10 @@ class PdfService {
         pw.Column(
           crossAxisAlignment: pw.CrossAxisAlignment.start,
           children: [
-            pw.Text('REPAIR SHOP',
-                style:
-                    pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold)),
+            pw.Text(
+              'REPAIR SHOP',
+              style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold),
+            ),
             pw.Text('123 Repair St, Tech City'), // TODO: Get from settings
             pw.Text('Phone: (555) 123-4567'),
           ],
@@ -138,9 +138,10 @@ class PdfService {
         pw.Column(
           crossAxisAlignment: pw.CrossAxisAlignment.end,
           children: [
-            pw.Text(title,
-                style:
-                    pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold)),
+            pw.Text(
+              title,
+              style: pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold),
+            ),
             pw.Text('Number: $number'),
             pw.Text('Date: ${dateFormat.format(DateTime.now())}'),
           ],
@@ -164,8 +165,10 @@ class PdfService {
       child: pw.Column(
         crossAxisAlignment: pw.CrossAxisAlignment.start,
         children: [
-          pw.Text('Bill To:',
-              style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+          pw.Text(
+            'Bill To:',
+            style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+          ),
           pw.SizedBox(height: 5),
           pw.Text(name),
           pw.Text(phone),
@@ -192,8 +195,10 @@ class PdfService {
       child: pw.Column(
         crossAxisAlignment: pw.CrossAxisAlignment.start,
         children: [
-          pw.Text('Device Details:',
-              style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+          pw.Text(
+            'Device Details:',
+            style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+          ),
           pw.SizedBox(height: 5),
           pw.Text('$brand $model'),
           if (imei != null) pw.Text('IMEI/Serial: $imei'),
@@ -219,10 +224,10 @@ class PdfService {
 
     for (final item in repair.items) {
       data.add([
-        item.itemName ?? 'Item',
-        item.quantity?.toStringAsFixed(0) ?? '0',
-        currencyFormat.format(item.unitPrice ?? 0),
-        currencyFormat.format(item.totalPrice ?? 0),
+        item.itemName,
+        item.quantity.toStringAsFixed(0),
+        currencyFormat.format(item.unitPrice),
+        currencyFormat.format(item.totalPrice),
       ]);
     }
 
@@ -287,29 +292,44 @@ class PdfService {
           _buildTotalRow('Total After Tax', total, isBold: true),
           _buildTotalRow('Amount Paid', paid),
           pw.SizedBox(height: 5),
-          _buildTotalRow('Balance Due', remaining,
-              isBold: true, color: remaining > 0 ? PdfColors.red : PdfColors.black),
+          _buildTotalRow(
+            'Balance Due',
+            remaining,
+            isBold: true,
+            color: remaining > 0 ? PdfColors.red : PdfColors.black,
+          ),
         ],
       ),
     );
   }
 
-  pw.Widget _buildTotalRow(String label, double value,
-      {bool isBold = false, PdfColor? color}) {
+  pw.Widget _buildTotalRow(
+    String label,
+    double value, {
+    bool isBold = false,
+    PdfColor? color,
+  }) {
     return pw.Row(
       mainAxisSize: pw.MainAxisSize.min,
       children: [
-        pw.Text(label,
-            style: pw.TextStyle(
-                fontWeight: isBold ? pw.FontWeight.bold : null, color: color)),
+        pw.Text(
+          label,
+          style: pw.TextStyle(
+            fontWeight: isBold ? pw.FontWeight.bold : null,
+            color: color,
+          ),
+        ),
         pw.SizedBox(width: 20),
         pw.Container(
           width: 80,
           alignment: pw.Alignment.centerRight,
-          child: pw.Text(currencyFormat.format(value),
-              style: pw.TextStyle(
-                  fontWeight: isBold ? pw.FontWeight.bold : null,
-                  color: color)),
+          child: pw.Text(
+            currencyFormat.format(value),
+            style: pw.TextStyle(
+              fontWeight: isBold ? pw.FontWeight.bold : null,
+              color: color,
+            ),
+          ),
         ),
       ],
     );
@@ -320,8 +340,10 @@ class PdfService {
       crossAxisAlignment: pw.CrossAxisAlignment.center,
       children: [
         pw.Divider(),
-        pw.Text('Thank you for your business!',
-            style: pw.TextStyle(fontStyle: pw.FontStyle.italic)),
+        pw.Text(
+          'Thank you for your business!',
+          style: pw.TextStyle(fontStyle: pw.FontStyle.italic),
+        ),
       ],
     );
   }

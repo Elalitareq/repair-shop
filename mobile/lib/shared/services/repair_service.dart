@@ -16,11 +16,7 @@ class IssueType {
   final String name;
   final String? description;
 
-  const IssueType({
-    required this.id,
-    required this.name,
-    this.description,
-  });
+  const IssueType({required this.id, required this.name, this.description});
 
   factory IssueType.fromJson(Map<String, dynamic> json) =>
       _$IssueTypeFromJson(json);
@@ -435,7 +431,7 @@ class RepairService {
   }
 
   /// Add item to repair
-  Future<ApiResponse<RepairItem>>   addRepairItem({
+  Future<ApiResponse<RepairItem>> addRepairItem({
     required int repairId,
     required String itemName,
     String? description,
@@ -512,8 +508,8 @@ class RepairService {
           final currentItem = RepairItem.fromJson(
             currentItemData as Map<String, dynamic>,
           );
-          final newQuantity = quantity ?? currentItem.quantity ?? 0.0;
-          final newUnitPrice = unitPrice ?? currentItem.unitPrice ?? 0.0;
+          final newQuantity = quantity ?? currentItem.quantity;
+          final newUnitPrice = unitPrice ?? currentItem.unitPrice;
           data['total_price'] = newQuantity * newUnitPrice;
         }
       }
@@ -658,12 +654,13 @@ class RepairService {
       final response = await _apiClient.get<Map<String, dynamic>>(
         '/reference/issue-types',
       );
-      
 
       if (response.isSuccess && response.data != null) {
         final List<dynamic> data = response.data!['data'] ?? [];
-        final issueTypes = data.map((json) => IssueType.fromJson(json)).toList();
-        
+        final issueTypes = data
+            .map((json) => IssueType.fromJson(json))
+            .toList();
+
         return ApiResponse<List<IssueType>>.success(
           data: issueTypes,
           message: response.message,

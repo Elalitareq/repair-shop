@@ -150,8 +150,8 @@ class _ItemFormPageState extends ConsumerState<ItemFormPage> {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         setState(() {
           _nameController.text = item.name;
-          _brandController.text = item.brand;
-          _modelController.text = item.model;
+          _brandController.text = item.brand ?? '';
+          _modelController.text = item.model ?? '';
           _sellingPriceController.text = item.sellingPrice.toString();
           _stockController.text = item.stockQuantity.toString();
           _minStockLevelController.text = item.minStockLevel.toString();

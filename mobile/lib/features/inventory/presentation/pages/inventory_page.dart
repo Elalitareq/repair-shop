@@ -9,6 +9,7 @@ import '../../../../shared/providers/item_provider.dart';
 import '../../../../shared/services/item_service.dart';
 import '../../../../core/network/api_client.dart';
 import 'batch_form_page.dart';
+import '../../../../core/router/app_router.dart';
 
 class InventoryPage extends ConsumerStatefulWidget {
   const InventoryPage({super.key});
@@ -17,7 +18,7 @@ class InventoryPage extends ConsumerStatefulWidget {
   ConsumerState<InventoryPage> createState() => _InventoryPageState();
 }
 
-class _InventoryPageState extends ConsumerState<InventoryPage> {
+class _InventoryPageState extends ConsumerState<InventoryPage> with RouteAware {
   final TextEditingController _searchController = TextEditingController();
   String _selectedCategory = 'All';
   String _selectedCondition = 'All';
@@ -34,9 +35,22 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    routeObserver.subscribe(this, ModalRoute.of(context)!);
+  }
+
+  @override
   void dispose() {
+    routeObserver.unsubscribe(this);
     _searchController.dispose();
     super.dispose();
+  }
+
+  @override
+  void didPopNext() {
+    // Refresh data when returning to this page
+    ref.read(itemListProvider.notifier).loadItems(refresh: true);
   }
 
   @override
@@ -490,7 +504,7 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
       if (result == null || result.files.isEmpty) return;
 
       dynamic file;
-      
+
       if (kIsWeb) {
         // Web: Use PlatformFile directly
         file = result.files.single;
@@ -524,7 +538,7 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
               Text('File: ${result.files.single.name}'),
               const SizedBox(height: 8),
               const Text(
-                'CSV format should be: Code,Description,Quantity,Amount,Category,Brand,Model,SupplierName,SupplierPhone,SupplierType',
+                'CSV format should be: Code,Description,Quantity,Amount,Category,Brand,Model,SupplierName,SupplierPhone,SupplierType,SellingPrice',
                 style: TextStyle(fontSize: 12, color: Colors.grey),
               ),
               const SizedBox(height: 4),
@@ -573,7 +587,7 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
       if (response.isSuccess) {
         // Refresh the item list
         ref.read(itemListProvider.notifier).loadItems(refresh: true);
-        
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(response.message),
@@ -592,7 +606,7 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
       // Close loading dialog if it's open
       if (mounted) {
         Navigator.of(context).pop();
-        
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error importing CSV: $e'),

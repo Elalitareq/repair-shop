@@ -14,9 +14,9 @@ class Item extends BaseModel {
   final int categoryId;
 
   final Category? category;
-  final String brand;
+  final String? brand;
 
-  final String model;
+  final String? model;
   @JsonKey(name: 'description')
   final String? description;
   @JsonKey(name: 'conditionId')
@@ -44,8 +44,8 @@ class Item extends BaseModel {
     required this.name,
     required this.categoryId,
     this.category,
-    required this.brand,
-    required this.model,
+    this.brand,
+    this.model,
     this.description,
     required this.conditionId,
     this.condition,
@@ -85,7 +85,6 @@ class Item extends BaseModel {
     double? lastBatchPrice,
     List<String>? barcodes,
   }) {
-    
     return Item(
       id: id ?? this.id,
       createdAt: createdAt ?? this.createdAt,
@@ -113,7 +112,10 @@ class Item extends BaseModel {
   bool get isOutOfStock => stockQuantity == 0;
 
   String get displayName {
-    return '$brand $model - $name';
+    final b = brand ?? '';
+    final m = model ?? '';
+    if (b.isEmpty && m.isEmpty) return name;
+    return '$b $m - $name'.trim();
   }
 
   String get stockStatus {

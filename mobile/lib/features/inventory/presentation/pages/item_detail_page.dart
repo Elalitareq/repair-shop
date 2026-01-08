@@ -65,9 +65,7 @@ class _ItemDetailPageState extends ConsumerState<ItemDetailPage> {
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            style: TextButton.styleFrom(
-              foregroundColor: Colors.red,
-            ),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
             child: const Text('Delete'),
           ),
         ],
@@ -90,7 +88,7 @@ class _ItemDetailPageState extends ConsumerState<ItemDetailPage> {
 
       final itemDetail = ref.read(itemDetailProvider);
       final itemId = itemDetail.item?.id ?? int.tryParse(widget.itemId);
-      
+
       if (itemId != null) {
         ref.invalidate(serialsForItemProvider(itemId));
       }
@@ -108,6 +106,7 @@ class _ItemDetailPageState extends ConsumerState<ItemDetailPage> {
       }
     }
   }
+
   @override
   void initState() {
     super.initState();
@@ -146,8 +145,14 @@ class _ItemDetailPageState extends ConsumerState<ItemDetailPage> {
               title: const Text('Name'),
               subtitle: Text(item.displayName),
             ),
-            ListTile(title: const Text('Brand'), subtitle: Text(item.brand)),
-            ListTile(title: const Text('Model'), subtitle: Text(item.model)),
+            ListTile(
+              title: const Text('Brand'),
+              subtitle: Text(item.brand ?? 'N/A'),
+            ),
+            ListTile(
+              title: const Text('Model'),
+              subtitle: Text(item.model ?? 'N/A'),
+            ),
             const SizedBox.shrink(),
             // Show batches associated with item
             Consumer(
@@ -159,26 +164,27 @@ class _ItemDetailPageState extends ConsumerState<ItemDetailPage> {
                     children: batches.isEmpty
                         ? [const ListTile(title: Text('No batches found'))]
                         : batches
-                            .map(
-                              (b) => ListTile(
-                                title: Text('Batch: ${b.batch.batchNumber}'),
-                                subtitle: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'Supplier: ${b.batch.supplier?.name ?? 'Unknown'}',
-                                    ),
-                                    Text(
-                                      'Date: ${b.batch.purchaseDate.toString().split(' ')[0]}',
-                                    ),
-                                    Text(
-                                      'Qty: ${b.batch.totalQuantity} (Remaining: ${b.remainingStock})',
-                                    ),
-                                  ],
+                              .map(
+                                (b) => ListTile(
+                                  title: Text('Batch: ${b.batch.batchNumber}'),
+                                  subtitle: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Supplier: ${b.batch.supplier?.name ?? 'Unknown'}',
+                                      ),
+                                      Text(
+                                        'Date: ${b.batch.purchaseDate.toString().split(' ')[0]}',
+                                      ),
+                                      Text(
+                                        'Qty: ${b.batch.totalQuantity} (Remaining: ${b.remainingStock})',
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                            )
-                            .toList(),
+                              )
+                              .toList(),
                   ),
                   loading: () =>
                       const Center(child: CircularProgressIndicator()),
@@ -198,7 +204,10 @@ class _ItemDetailPageState extends ConsumerState<ItemDetailPage> {
                         const Spacer(),
                         if (!_isSelectionMode && serials.isNotEmpty)
                           IconButton(
-                            icon: const Icon(Icons.checklist_outlined, size: 20),
+                            icon: const Icon(
+                              Icons.checklist_outlined,
+                              size: 20,
+                            ),
                             onPressed: _toggleSelectionMode,
                             tooltip: 'Select Multiple',
                           ),
@@ -213,7 +222,11 @@ class _ItemDetailPageState extends ConsumerState<ItemDetailPage> {
                           ),
                           if (_selectedSerials.isNotEmpty)
                             IconButton(
-                              icon: const Icon(Icons.delete, size: 20, color: Colors.red),
+                              icon: const Icon(
+                                Icons.delete,
+                                size: 20,
+                                color: Colors.red,
+                              ),
                               onPressed: _deleteSelectedSerials,
                               tooltip: 'Delete Selected',
                             ),
@@ -254,9 +267,13 @@ class _ItemDetailPageState extends ConsumerState<ItemDetailPage> {
                                         icon: const Icon(Icons.edit_outlined),
                                         onPressed: () {
                                           // TODO: Add edit serial functionality
-                                          ScaffoldMessenger.of(context).showSnackBar(
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
                                             const SnackBar(
-                                              content: Text('Edit serial functionality coming soon'),
+                                              content: Text(
+                                                'Edit serial functionality coming soon',
+                                              ),
                                             ),
                                           );
                                         },
@@ -267,17 +284,23 @@ class _ItemDetailPageState extends ConsumerState<ItemDetailPage> {
                                           final confirmed = await showDialog<bool>(
                                             context: context,
                                             builder: (context) => AlertDialog(
-                                              title: const Text('Delete Serial'),
+                                              title: const Text(
+                                                'Delete Serial',
+                                              ),
                                               content: Text(
                                                 'Are you sure you want to delete serial "${s.imei}"?\n\nThis action cannot be undone.',
                                               ),
                                               actions: [
                                                 TextButton(
-                                                  onPressed: () => Navigator.of(context).pop(false),
+                                                  onPressed: () => Navigator.of(
+                                                    context,
+                                                  ).pop(false),
                                                   child: const Text('Cancel'),
                                                 ),
                                                 TextButton(
-                                                  onPressed: () => Navigator.of(context).pop(true),
+                                                  onPressed: () => Navigator.of(
+                                                    context,
+                                                  ).pop(true),
                                                   style: TextButton.styleFrom(
                                                     foregroundColor: Colors.red,
                                                   ),
@@ -288,23 +311,33 @@ class _ItemDetailPageState extends ConsumerState<ItemDetailPage> {
                                           );
 
                                           if (confirmed == true) {
-                                            final service = ref.read(serialServiceProvider);
-                                            final resp = await service.deleteSerial(s.id);
+                                            final service = ref.read(
+                                              serialServiceProvider,
+                                            );
+                                            final resp = await service
+                                                .deleteSerial(s.id);
                                             if (resp.isSuccess) {
                                               ref.invalidate(
                                                 serialsForItemProvider(item.id),
                                               );
                                               if (mounted) {
-                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                ScaffoldMessenger.of(
+                                                  context,
+                                                ).showSnackBar(
                                                   const SnackBar(
-                                                    content: Text('Serial deleted successfully'),
-                                                    backgroundColor: Colors.green,
+                                                    content: Text(
+                                                      'Serial deleted successfully',
+                                                    ),
+                                                    backgroundColor:
+                                                        Colors.green,
                                                   ),
                                                 );
                                               }
                                             } else {
                                               if (mounted) {
-                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                ScaffoldMessenger.of(
+                                                  context,
+                                                ).showSnackBar(
                                                   SnackBar(
                                                     content: Text(resp.message),
                                                     backgroundColor: Colors.red,

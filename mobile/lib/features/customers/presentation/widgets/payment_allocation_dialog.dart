@@ -197,7 +197,7 @@ class _PaymentAllocationDialogState
   double _calculateRepairTotal(Repair repair) {
     final itemsCost = repair.items.fold<double>(
       0.0,
-      (sum, item) => sum + (item.totalPrice ?? 0.0),
+      (sum, item) => sum + (item.totalPrice),
     );
     return (repair.serviceCharge ?? 0.0) + itemsCost;
   }

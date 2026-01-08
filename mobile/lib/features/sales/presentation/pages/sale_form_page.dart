@@ -412,8 +412,8 @@ class _SaleFormPageState extends ConsumerState<SaleFormPage> {
             final filteredItems = availableItems.where((item) {
               final query = searchQuery.toLowerCase();
               return (item.name.toLowerCase().contains(query)) ||
-                  (item.brand.toLowerCase().contains(query)) ||
-                  (item.model.toLowerCase().contains(query));
+                  (item.brand?.toLowerCase().contains(query) ?? false) ||
+                  (item.model?.toLowerCase().contains(query) ?? false);
             }).toList();
 
             return AlertDialog(

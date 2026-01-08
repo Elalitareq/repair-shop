@@ -141,35 +141,37 @@ class _CustomerSearchSelectorState
       },
       suggestionsBuilder:
           (BuildContext context, SearchController controller) async {
-        final query = controller.text;
-        final customers = await _searchCustomers(query);
+            final query = controller.text;
+            final customers = await _searchCustomers(query);
 
-        return [
-          if (customers.isEmpty && query.length >= 2)
-            const ListTile(title: Text('No customers found')),
-          ...customers.map(
-            (customer) => ListTile(
-              leading: Icon(customer.isDealer ? Icons.business : Icons.person),
-              title: Text(customer.name),
-              subtitle: Text(customer.phone),
-              onTap: () {
-                widget.onCustomerSelected(customer);
-                controller.closeView(customer.name);
-              },
-            ),
-          ),
-          if (widget.showAddButton)
-            ListTile(
-              leading: const Icon(Icons.add),
-              title: const Text('Add New Customer'),
-              onTap: () {
-                // Close the search view first
-                controller.closeView(controller.text);
-                _showAddCustomerDialog();
-              },
-            ),
-        ];
-      },
+            return [
+              if (customers.isEmpty && query.length >= 2)
+                const ListTile(title: Text('No customers found')),
+              ...customers.map(
+                (customer) => ListTile(
+                  leading: Icon(
+                    customer.isDealer ? Icons.business : Icons.person,
+                  ),
+                  title: Text(customer.name),
+                  subtitle: Text(customer.phone),
+                  onTap: () {
+                    widget.onCustomerSelected(customer);
+                    controller.closeView(customer.name);
+                  },
+                ),
+              ),
+              if (widget.showAddButton)
+                ListTile(
+                  leading: const Icon(Icons.add),
+                  title: const Text('Add New Customer'),
+                  onTap: () {
+                    // Close the search view first
+                    controller.closeView(controller.text);
+                    _showAddCustomerDialog();
+                  },
+                ),
+            ];
+          },
     );
   }
 }
@@ -209,21 +211,6 @@ class _AddCustomerDialogState extends ConsumerState<AddCustomerDialog> {
 
     try {
       final customerService = ref.read(customerServiceProvider);
-      final customerData = {
-        'name': _nameController.text.trim(),
-        'companyName': _companyController.text.isEmpty
-            ? null
-            : _companyController.text.trim(),
-        'type': _customerType,
-        'phone': _phoneController.text.trim(),
-        'address': _addressController.text.isEmpty
-            ? null
-            : _addressController.text.trim(),
-        'taxNumber': _taxNumberController.text.isEmpty
-            ? null
-            : _taxNumberController.text.trim(),
-      };
-
 
       final response = await customerService.createCustomer(
         name: _nameController.text.trim(),
